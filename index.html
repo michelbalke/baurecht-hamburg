@@ -481,7 +481,15 @@ a.ghostbtn::before { content: ""; width: 14px; height: 14px; background: current
 .lg-plot { border: 3px solid var(--plot); }
 .lg-meas { border: 2px dashed var(--accent); }
 .layerbtn { display: none; position: absolute; top: 12px; right: 12px; z-index: 6; align-items: center; gap: 6px; background: var(--panel); color: var(--fg); border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; font: 600 14px var(--sans); box-shadow: 0 4px 14px rgba(16,32,56,.16); cursor: pointer; }
-.panelbtn { display: none; position: absolute; left: 8px; bottom: 34px; z-index: 6; align-items: center; background: var(--panel); color: var(--fg); border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; font: 600 14px var(--sans); box-shadow: 0 4px 14px rgba(16,32,56,.16); cursor: pointer; }
+.menubtn { display: none; place-items: center; margin-left: auto; width: 40px; height: 40px; padding: 0; border-radius: 10px; background: rgba(255,255,255,.14); border: 0; color: #fff; flex: none; }
+.menubtn svg { width: 22px; height: 22px; }
+.pipcatch, .infocatch { display: none; position: absolute; inset: 0; z-index: 30; background: transparent; border: 0; padding: 0; cursor: pointer; }
+.infocatch { position: fixed; inset: auto; top: 10px; right: 10px; width: 42.3vw; height: 32.2vw; border-radius: 12px; }
+.pipcatch::after, .infocatch::after { content: "⤢"; position: absolute; right: 6px; bottom: 6px; width: 26px; height: 26px; border-radius: 8px; background: var(--panel); color: var(--fg); display: grid; place-items: center; font-size: 15px; box-shadow: var(--shadow); }
+.drawer { position: fixed; inset: 0 auto 0 0; width: min(86vw, 380px); background: var(--bg); z-index: 50; transform: translateX(-105%); transition: transform .25s ease; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 14px; box-shadow: 8px 0 30px rgba(0,0,0,.25); }
+.drawer.open { transform: none; }
+.drawer .close { align-self: flex-end; }
+.backdrop { position: fixed; inset: 0; background: rgba(10,20,40,.45); z-index: 45; }
 .mapctl summary { font-weight: 600; color: var(--fg); font-size: 13px; }
 .zoomhint { position: absolute; left: 50%; bottom: 34px; transform: translateX(-50%); z-index: 4; background: var(--panel); color: var(--muted); border: 1px solid var(--line); border-radius: 99px; padding: 5px 14px; font-size: 12.5px; box-shadow: var(--shadow); }
 .ol-zoom { top: 12px !important; left: 12px !important; }
@@ -489,23 +497,36 @@ a.ghostbtn::before { content: ""; width: 14px; height: 14px; background: current
 .ol-control { background: transparent !important; }
 
 @media (max-width: 760px) {
-  /* Start: Suche oben, Karte in der unteren Hälfte */
-  .app { height: 100dvh; grid-template-columns: 1fr; grid-template-rows: 50% 50%; }
-  .side { border-right: 0; border-bottom: 1px solid var(--line); }
+  /* Start: Suchleiste oben, Karte groß darunter */
+  .app { height: 100dvh; grid-template-columns: 1fr; grid-template-rows: auto 1fr; position: relative; overflow: hidden; }
+  .side { border-right: 0; border-bottom: 1px solid var(--line); padding-bottom: 12px; }
+  .menubtn { display: grid; }
   .recent { display: none; }
   body.searching .recent:not([hidden]) { display: flex; }
-  /* Nach der Suche: Infos links, Karte rechts (wie am PC) */
-  body.has-result .app { grid-template-columns: minmax(0, 1fr) 40%; grid-template-rows: 100%; transition: grid-template-columns .3s ease; }
-  body.has-result .side { border-bottom: 0; border-right: 1px solid var(--line); padding: 0 10px 16px; gap: 10px; }
-  body.has-result .side > header { margin: 0 -10px; padding: 12px 10px 46px; }
+  body:not(.has-result) #results, body:not(.has-result) .side > .tools, .side > details, .side > .legal { display: none; }
+  .mapwrap > .tools { display: flex; position: absolute; left: 8px; right: 8px; bottom: 30px; z-index: 6; justify-content: center; flex-wrap: wrap; gap: 6px; }
+  .mapwrap > .tools button { box-shadow: 0 3px 10px rgba(16,32,56,.18); padding: 7px 10px; font-size: 14px !important; }
+  .zoomhint { bottom: 132px; }
+  body.has-result:not(.mapmain) #map .ol-control, body.has-result:not(.mapmain) #map .ol-scale-line { display: none; }
+  /* Nach der Suche: Infos füllen den Bildschirm, Karte als Bild-im-Bild oben rechts */
+  body.has-result .side { position: absolute; inset: 0; z-index: 1; border: 0; }
+  body.has-result .side > header { padding: 10px 16px 46px; }
   body.has-result .side > header .sub { display: none; }
-  body.has-result.mapbig .app { grid-template-columns: 0 1fr; }
-  body.has-result.mapbig .side { padding: 0; border: 0; }
-  body.has-result .panelbtn { display: flex; }
-  body.has-result form.search button { padding: 8px 10px; font-size: 14px !important; }
-  body.has-result form.search input { padding-left: 30px !important; padding-right: 4px; }
-  body.has-result form.search svg { left: 12px; width: 16px; }
-  body.has-result .mapctl { width: auto; left: 8px; right: 8px; }
+  body.has-result #results > :first-child { margin-right: calc(42vw - 6px); }
+  body.has-result .mapwrap { position: absolute; top: 122px; right: 10px; width: 42vw; height: 32vw; z-index: 20; border-radius: 12px; overflow: hidden; box-shadow: 0 8px 24px rgba(16,32,56,.35); border: 2px solid var(--panel); }
+  body.has-result .mapwrap > :not(#map):not(.pipcatch) { display: none !important; }
+  body.has-result .pipcatch { display: block; }
+  /* Karte angetippt: Karte groß, Infos als Bild-im-Bild */
+  body.has-result.mapmain .mapwrap { inset: 0; width: auto; height: auto; border-radius: 0; border: 0; box-shadow: none; z-index: 1; }
+  body.has-result.mapmain .mapwrap > :not(#map):not(.pipcatch):not(.mapctl):not(.zoomhint) { display: flex !important; }
+  body.has-result.mapmain .mapwrap > .mapctl.open { display: flex !important; }
+  body.has-result.mapmain .mapwrap > .pipcatch { display: none; }
+  body.has-result.mapmain .layerbtn { right: auto; left: 56px; }
+  body.has-result.mapmain .mapctl { right: auto; left: 12px; }
+  body.has-result.mapmain .side { inset: auto; top: 10px; right: 10px; width: 92vw; height: 70vw; zoom: .46; z-index: 20; overflow: hidden; border-radius: 26px; border: 4px solid var(--panel); box-shadow: 0 16px 48px rgba(16,32,56,.4); pointer-events: none; }
+  body.has-result.mapmain .side > header, body.has-result.mapmain .side > form, body.has-result.mapmain .side > .recent { display: none; }
+  body.has-result.mapmain #results > :first-child { margin: 12px 0 0; }
+  body.has-result.mapmain .infocatch { display: block; }
   .mapctl { width: 190px; padding: 10px; gap: 8px; font-size: 13.5px; display: none; top: 56px; }
   .mapctl.open { display: flex; }
   .layerbtn { display: flex; }
@@ -559,12 +580,23 @@ details.okfold .checks { margin-top: 6px; }
 </head>
 <body>
 <div id="printHead" class="printonly"></div>
+<div class="backdrop" id="backdrop" hidden></div>
+<nav class="drawer" id="drawer" aria-label="Menü">
+  <button type="button" class="ghost close" id="drawerClose">Schließen ✕</button>
+  <section class="card">
+    <h2>So funktioniert es</h2>
+    <p class="hint">Adresse eingeben oder einen Punkt in der Karte antippen. Die App fasst den geltenden Bebauungsplan in einfachen Worten zusammen: was gebaut werden darf, wie hoch und wie viel Fläche.</p>
+    <p class="hint">Nach der Suche sehen Sie die Infos groß und die Karte klein oben rechts. Tippen Sie auf die kleine Karte, um sie groß zu machen und zu messen. Tippen Sie auf das kleine Infofenster, um zurückzukehren.</p>
+  </section>
+</nav>
+<button type="button" class="infocatch" id="pipInfo" aria-label="Infos groß anzeigen"></button>
 <div class="app">
   <aside class="side">
     <header>
       <div class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M10 21v-6h4v6"/></svg></div>
       <div><h1>Baurecht Hamburg</h1>
       <p class="sub">Was darf ich auf meinem Grundstück bauen?</p></div>
+      <button type="button" class="menubtn" id="menuBtn" aria-label="Menü öffnen" aria-controls="drawer" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
     </header>
 
     <form class="search" id="searchForm">
@@ -600,7 +632,7 @@ details.okfold .checks { margin-top: 6px; }
 
   <div class="mapwrap">
     <div id="map"></div>
-    <button type="button" class="panelbtn" id="panelBtn">Karte groß</button>
+    <button type="button" class="pipcatch" id="pipMap" aria-label="Karte groß anzeigen"></button>
     <button type="button" class="layerbtn" id="layerBtn" aria-controls="mapctl" aria-expanded="false">Karte ▾</button>
     <div class="mapctl" id="mapctl">
       <div class="seg" role="radiogroup" aria-label="Grundkarte">
@@ -949,26 +981,37 @@ document.querySelectorAll("input[name=bg]").forEach(r => r.addEventListener("cha
 }));
 $("tBounds").addEventListener("change", e => { boundsLayer.setVisible(e.target.checked); updateZoomHint(); });
 $("tDrawing").addEventListener("change", e => { drawingLayer.setVisible(e.target.checked); $("opDrawing").hidden = !e.target.checked; if (e.target.checked) initDrawing(); });
-// Handy: Grundstück einpassen, Infos/Karte umschalten, Verlauf nur beim Suchen zeigen
+// Handy: Menü, Bild-im-Bild für Karte und Infos
 function fitPlot(duration = 600) {
   const f = plotSrc.getFeatures()[0]; if (!f) return;
   map.getView().cancelAnimations();
-  map.getView().fit(ol.extent.buffer(f.getGeometry().getExtent(), 15), {padding: isPhone() ? [40, 14, 40, 14] : [60, 60, 60, 60], minResolution: 0.25, duration});
+  const small = isPhone() && document.body.classList.contains("has-result") && !document.body.classList.contains("mapmain");
+  map.getView().fit(ol.extent.buffer(f.getGeometry().getExtent(), small ? 4 : 15), {padding: small ? [8, 8, 8, 8] : [60, 60, 60, 60], minResolution: 0.25, duration});
 }
 const isPhone = () => matchMedia("(max-width: 760px)").matches;
-function relayout() { setTimeout(() => { map.updateSize(); fitPlot(300); }, 330); }
-function showResultLayout() {
-  if (document.body.classList.contains("has-result")) return;
-  document.body.classList.add("has-result");
-  if (isPhone()) relayout();
-}
-$("panelBtn").addEventListener("click", e => {
-  const big = document.body.classList.toggle("mapbig");
-  e.currentTarget.textContent = big ? "Infos zeigen" : "Karte groß";
+function relayout() { requestAnimationFrame(() => { map.updateSize(); fitPlot(0); }); }
+function setMapMain(on) {
+  document.body.classList.toggle("mapmain", on);
+  if (!on) { stopMeasure(); $("mapctl").classList.remove("open"); }
   relayout();
-});
+}
 $("q").addEventListener("focus", () => document.body.classList.add("searching"));
 $("q").addEventListener("blur", () => setTimeout(() => document.body.classList.remove("searching"), 250));
+$("pipMap").addEventListener("click", () => setMapMain(true));
+$("pipInfo").addEventListener("click", () => setMapMain(false));
+function toggleDrawer(open) {
+  $("drawer").classList.toggle("open", open); $("backdrop").hidden = !open;
+  $("menuBtn").setAttribute("aria-expanded", open);
+}
+$("menuBtn").addEventListener("click", () => toggleDrawer(true));
+$("drawerClose").addEventListener("click", () => toggleDrawer(false));
+$("backdrop").addEventListener("click", () => toggleDrawer(false));
+// Auf dem Handy: Einstellungen und Rechtliches ins Menü, Messwerkzeuge auf die Karte
+if (isPhone()) {
+  const side = document.querySelector(".side");
+  $("drawer").append(side.querySelector(":scope > details"), side.querySelector(":scope > .legal"));
+  document.querySelector(".mapwrap").append(side.querySelector(":scope > .tools"));
+}
 $("layerBtn").addEventListener("click", e => { const o = $("mapctl").classList.toggle("open"); e.currentTarget.setAttribute("aria-expanded", o); });
 $("opDrawing").addEventListener("input", e => drawingLayer.setOpacity(+e.target.value));
 
@@ -1072,6 +1115,7 @@ async function gazetteer(q) {
 
 $("searchForm").addEventListener("submit", async e => {
   e.preventDefault();
+  if (document.body.classList.contains("mapmain")) setMapMain(false);
   const q = $("q").value.trim();
   if (!q) return;
   const c = parseCoordinates(q);
@@ -1139,7 +1183,7 @@ async function queryAt(coord, placeName) {
 
 function renderResult(coord, placeName, plans, plot) {
   const r = $("results"); r.innerHTML = "";
-  showResultLayout();
+  if (!document.body.classList.contains("has-result")) { document.body.classList.add("has-result"); if (isPhone()) relayout(); }
   const found = findSummary(plans);
   const valid = plans.filter(p => p.status === "festgestellt");
   const main = found?.plan || valid[0] || plans[0];
