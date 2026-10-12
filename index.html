@@ -481,6 +481,7 @@ a.ghostbtn::before { content: ""; width: 14px; height: 14px; background: current
 .lg-plot { border: 3px solid var(--plot); }
 .lg-meas { border: 2px dashed var(--accent); }
 .layerbtn { display: none; position: absolute; top: 12px; right: 12px; z-index: 6; align-items: center; gap: 6px; background: var(--panel); color: var(--fg); border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; font: 600 14px var(--sans); box-shadow: 0 4px 14px rgba(16,32,56,.16); cursor: pointer; }
+.side > header button.logo { padding: 0; border: 0; background: rgba(255,255,255,.14); color: #fff; cursor: pointer; }
 .menubtn { display: none; place-items: center; margin-left: auto; width: 40px; height: 40px; padding: 0; border-radius: 10px; background: rgba(255,255,255,.14); border: 0; color: #fff; flex: none; }
 .menubtn svg { width: 22px; height: 22px; }
 .pipcatch, .infocatch { display: none; position: absolute; inset: 0; z-index: 30; background: transparent; border: 0; padding: 0; cursor: pointer; }
@@ -593,7 +594,7 @@ details.okfold .checks { margin-top: 6px; }
 <div class="app">
   <aside class="side">
     <header>
-      <div class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M10 21v-6h4v6"/></svg></div>
+      <button type="button" class="logo" id="homeBtn" aria-label="Zur Startseite" title="Zur Startseite"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M10 21v-6h4v6"/></svg></button>
       <div><h1>Baurecht Hamburg</h1>
       <p class="sub">Was darf ich auf meinem Grundstück bauen?</p></div>
       <button type="button" class="menubtn" id="menuBtn" aria-label="Menü öffnen" aria-controls="drawer" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
@@ -997,6 +998,16 @@ function setMapMain(on) {
 }
 $("q").addEventListener("focus", () => document.body.classList.add("searching"));
 $("q").addEventListener("blur", () => setTimeout(() => document.body.classList.remove("searching"), 250));
+// Haus-Symbol: zurück zur Startseite
+const startResults = $("results").innerHTML, startView = {center: map.getView().getCenter(), resolution: map.getView().getResolution()};
+$("homeBtn").addEventListener("click", () => {
+  $("mClear").click(); toggleDrawer(false); $("mapctl").classList.remove("open");
+  document.body.classList.remove("has-result", "mapmain");
+  markerSrc.clear(); selSrc.clear(); plotSrc.clear();
+  $("results").innerHTML = startResults; $("q").value = ""; curPlace = null; cur = {sum: null, zone: null};
+  document.querySelector(".side").scrollTop = 0;
+  requestAnimationFrame(() => { map.updateSize(); map.getView().cancelAnimations(); map.getView().animate({...startView, duration: 500}); });
+});
 $("pipMap").addEventListener("click", () => setMapMain(true));
 $("pipInfo").addEventListener("click", () => setMapMain(false));
 function toggleDrawer(open) {
