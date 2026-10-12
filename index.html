@@ -481,6 +481,7 @@ a.ghostbtn::before { content: ""; width: 14px; height: 14px; background: current
 .lg-plot { border: 3px solid var(--plot); }
 .lg-meas { border: 2px dashed var(--accent); }
 .layerbtn { display: none; position: absolute; top: 12px; right: 12px; z-index: 6; align-items: center; gap: 6px; background: var(--panel); color: var(--fg); border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; font: 600 14px var(--sans); box-shadow: 0 4px 14px rgba(16,32,56,.16); cursor: pointer; }
+.panelbtn { display: none; position: absolute; left: 8px; bottom: 34px; z-index: 6; align-items: center; background: var(--panel); color: var(--fg); border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; font: 600 14px var(--sans); box-shadow: 0 4px 14px rgba(16,32,56,.16); cursor: pointer; }
 .mapctl summary { font-weight: 600; color: var(--fg); font-size: 13px; }
 .zoomhint { position: absolute; left: 50%; bottom: 34px; transform: translateX(-50%); z-index: 4; background: var(--panel); color: var(--muted); border: 1px solid var(--line); border-radius: 99px; padding: 5px 14px; font-size: 12.5px; box-shadow: var(--shadow); }
 .ol-zoom { top: 12px !important; left: 12px !important; }
@@ -488,10 +489,23 @@ a.ghostbtn::before { content: ""; width: 14px; height: 14px; background: current
 .ol-control { background: transparent !important; }
 
 @media (max-width: 760px) {
-  .app { grid-template-columns: 1fr; grid-template-rows: 50% 50%; }
-  .side { order: 2; border-right: 0; border-top: 1px solid var(--line); }
-  .mapwrap { order: 1; }
-  .app { height: 100dvh; grid-template-rows: 44% 56%; }
+  /* Start: Suche oben, Karte in der unteren Hälfte */
+  .app { height: 100dvh; grid-template-columns: 1fr; grid-template-rows: 50% 50%; }
+  .side { border-right: 0; border-bottom: 1px solid var(--line); }
+  .recent { display: none; }
+  body.searching .recent:not([hidden]) { display: flex; }
+  /* Nach der Suche: Infos links, Karte rechts (wie am PC) */
+  body.has-result .app { grid-template-columns: minmax(0, 1fr) 40%; grid-template-rows: 100%; transition: grid-template-columns .3s ease; }
+  body.has-result .side { border-bottom: 0; border-right: 1px solid var(--line); padding: 0 10px 16px; gap: 10px; }
+  body.has-result .side > header { margin: 0 -10px; padding: 12px 10px 46px; }
+  body.has-result .side > header .sub { display: none; }
+  body.has-result.mapbig .app { grid-template-columns: 0 1fr; }
+  body.has-result.mapbig .side { padding: 0; border: 0; }
+  body.has-result .panelbtn { display: flex; }
+  body.has-result form.search button { padding: 8px 10px; font-size: 14px !important; }
+  body.has-result form.search input { padding-left: 30px !important; padding-right: 4px; }
+  body.has-result form.search svg { left: 12px; width: 16px; }
+  body.has-result .mapctl { width: auto; left: 8px; right: 8px; }
   .mapctl { width: 190px; padding: 10px; gap: 8px; font-size: 13.5px; display: none; top: 56px; }
   .mapctl.open { display: flex; }
   .layerbtn { display: flex; }
@@ -586,6 +600,7 @@ details.okfold .checks { margin-top: 6px; }
 
   <div class="mapwrap">
     <div id="map"></div>
+    <button type="button" class="panelbtn" id="panelBtn">Karte groß</button>
     <button type="button" class="layerbtn" id="layerBtn" aria-controls="mapctl" aria-expanded="false">Karte ▾</button>
     <div class="mapctl" id="mapctl">
       <div class="seg" role="radiogroup" aria-label="Grundkarte">
@@ -934,6 +949,26 @@ document.querySelectorAll("input[name=bg]").forEach(r => r.addEventListener("cha
 }));
 $("tBounds").addEventListener("change", e => { boundsLayer.setVisible(e.target.checked); updateZoomHint(); });
 $("tDrawing").addEventListener("change", e => { drawingLayer.setVisible(e.target.checked); $("opDrawing").hidden = !e.target.checked; if (e.target.checked) initDrawing(); });
+// Handy: Grundstück einpassen, Infos/Karte umschalten, Verlauf nur beim Suchen zeigen
+function fitPlot(duration = 600) {
+  const f = plotSrc.getFeatures()[0]; if (!f) return;
+  map.getView().cancelAnimations();
+  map.getView().fit(ol.extent.buffer(f.getGeometry().getExtent(), 15), {padding: isPhone() ? [40, 14, 40, 14] : [60, 60, 60, 60], minResolution: 0.25, duration});
+}
+const isPhone = () => matchMedia("(max-width: 760px)").matches;
+function relayout() { setTimeout(() => { map.updateSize(); fitPlot(300); }, 330); }
+function showResultLayout() {
+  if (document.body.classList.contains("has-result")) return;
+  document.body.classList.add("has-result");
+  if (isPhone()) relayout();
+}
+$("panelBtn").addEventListener("click", e => {
+  const big = document.body.classList.toggle("mapbig");
+  e.currentTarget.textContent = big ? "Infos zeigen" : "Karte groß";
+  relayout();
+});
+$("q").addEventListener("focus", () => document.body.classList.add("searching"));
+$("q").addEventListener("blur", () => setTimeout(() => document.body.classList.remove("searching"), 250));
 $("layerBtn").addEventListener("click", e => { const o = $("mapctl").classList.toggle("open"); e.currentTarget.setAttribute("aria-expanded", o); });
 $("opDrawing").addEventListener("input", e => drawingLayer.setOpacity(+e.target.value));
 
@@ -1093,8 +1128,7 @@ async function queryAt(coord, placeName) {
   if (plot?.geometry) {
     plotSrc.addFeature(new ol.Feature({geometry: plot.geometry, label: "Ihr Grundstück" + (plot.area ? "\n" + fmt(plot.area) + " m²" : "")}));
     // automatisch auf das Grundstück zoomen
-    map.getView().cancelAnimations();
-    map.getView().fit(ol.extent.buffer(plot.geometry.getExtent(), 15), {padding: [60, 60, 60, 60], minResolution: 0.25, duration: 600});
+    fitPlot();
   }
   for (const p of [...plans, ...xplan, ...(plot ? [plot] : [])].map(f => f.props))
     for (const [k, v] of Object.entries(p)) { const key = k.toLowerCase(); if (MASS[key] && !lastMass[key]) lastMass[key] = v; }
@@ -1105,6 +1139,7 @@ async function queryAt(coord, placeName) {
 
 function renderResult(coord, placeName, plans, plot) {
   const r = $("results"); r.innerHTML = "";
+  showResultLayout();
   const found = findSummary(plans);
   const valid = plans.filter(p => p.status === "festgestellt");
   const main = found?.plan || valid[0] || plans[0];
