@@ -506,6 +506,96 @@ details.okfold .checks { margin-top: 6px; }
 .ol-zoom button { width: 32px !important; height: 32px !important; font-size: 18px !important; border-radius: 8px !important; background: var(--panel) !important; color: var(--fg) !important; border: 1px solid var(--line) !important; justify-content: center; }
 .ol-control { background: transparent !important; }
 
+/* ---------- Modernes Design: Glasflächen, weiche Schatten, Bewegung ---------- */
+:root { --bg: #f2f4f8; --accent: #2563eb; --accent-soft: #e9f0ff; --radius: 18px; --ease: cubic-bezier(.2, .8, .2, 1);
+  --glass: rgba(255,255,255,.74); --glass-line: rgba(255,255,255,.7); --shadow: 0 1px 2px rgba(16,32,56,.04), 0 10px 30px rgba(16,32,56,.08); --lift: 0 14px 40px rgba(16,32,56,.14); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #0b0f15; --accent: #7aa2ff; --glass: rgba(20,27,36,.72); --glass-line: rgba(255,255,255,.08); --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 30px rgba(0,0,0,.25); --lift: 0 14px 40px rgba(0,0,0,.4); } }
+body { letter-spacing: -.006em; }
+.side > header { background: radial-gradient(130% 160% at 0% 0%, #3a6fe8 0%, var(--brand-2) 38%, var(--brand) 72%, #06152f 100%); }
+h1 { font-size: 20px; font-weight: 760; letter-spacing: -.02em; }
+.side > header .logo, .menubtn { border-radius: 12px; background: rgba(255,255,255,.16); box-shadow: inset 0 0 0 1px rgba(255,255,255,.18); transition: background .2s, transform .2s var(--ease); }
+.side > header .logo:hover, .menubtn:hover { background: rgba(255,255,255,.26); filter: none; }
+form.search { border-radius: 16px; transition: box-shadow .3s var(--ease), transform .3s var(--ease); }
+form.search:focus-within { transform: translateY(-2px); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 35%, transparent), var(--lift); }
+button, .btn { border-radius: 12px; transition: transform .16s var(--ease), filter .2s, background .2s, box-shadow .25s var(--ease), border-color .2s; }
+button:active, .btn:active { transform: scale(.96); }
+form.search button[type=submit], #printBtn { background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 82%, #fff), var(--accent)); border-color: transparent; box-shadow: 0 6px 16px color-mix(in srgb, var(--accent) 35%, transparent); }
+button.ghost:hover, a.ghostbtn:hover, .recent button:hover { box-shadow: 0 4px 14px rgba(16,32,56,.1); transform: translateY(-1px); }
+section.card { border-radius: var(--radius); border-color: color-mix(in srgb, var(--line) 60%, transparent); box-shadow: var(--shadow); animation: rise .5s var(--ease) both; }
+#results > :nth-child(2) { animation-delay: .05s; } #results > :nth-child(3) { animation-delay: .1s; } #results > :nth-child(4) { animation-delay: .15s; }
+#results > :nth-child(5) { animation-delay: .2s; } #results > :nth-child(n+6) { animation-delay: .25s; }
+section.hero { background: linear-gradient(150deg, var(--plan-soft), var(--panel) 65%); }
+.plan-name { font-size: 25px; letter-spacing: -.025em; }
+.big div { border-radius: 14px; border-color: transparent; transition: transform .25s var(--ease), box-shadow .25s var(--ease); }
+.big div:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(16,32,56,.1); }
+#calcOut div:first-child { box-shadow: 0 10px 24px color-mix(in srgb, var(--brand-2) 35%, transparent); }
+.big b, #calcOut b { animation: pop .4s var(--ease) both; }
+.pill, .meta span:not(.pill), .checksum span { transition: background .3s, color .3s; }
+.checks li { border-radius: 12px; transition: background .4s var(--ease); }
+.checks li::before { transition: background .3s; }
+details > summary { transition: color .2s; }
+details[open] > :not(summary) { animation: rise .35s var(--ease) both; }
+select, input[type=text], input[type=number] { border-radius: 12px; transition: border-color .2s, box-shadow .2s; }
+select:focus, input[type=number]:focus { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent); outline: none; }
+section.busy::after { content: ""; height: 4px; border-radius: 4px; background: linear-gradient(90deg, transparent, var(--accent), transparent) 0 0 / 50% 100% no-repeat, var(--accent-soft); animation: load 1.1s ease-in-out infinite; }
+.mapctl, .layerbtn, .zoomhint, .ol-zoom button, .mapwrap > .tools button { background: var(--glass) !important; -webkit-backdrop-filter: blur(16px) saturate(1.6); backdrop-filter: blur(16px) saturate(1.6); border-color: var(--glass-line) !important; }
+.mapctl { border-radius: 18px; box-shadow: var(--lift); transform-origin: top right; }
+.mapctl.open { animation: pop .22s var(--ease); }
+.ol-zoom button { border-radius: 12px !important; box-shadow: var(--shadow); }
+.ol-zoom button:hover { filter: none; transform: translateY(-1px); }
+.zoomhint { animation: rise .4s var(--ease); }
+.drawer { border-radius: 0 24px 24px 0; transition: transform .38s var(--ease); }
+.backdrop { -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); animation: fade .3s ease; }
+.recent button { animation: rise .3s var(--ease) both; }
+.tip { border-radius: 8px; -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+.side { view-transition-name: info; } .mapwrap { view-transition-name: karte; }
+::view-transition-group(info), ::view-transition-group(karte) { animation-duration: .42s; animation-timing-function: var(--ease); }
+::view-transition-old(info), ::view-transition-new(info), ::view-transition-old(karte), ::view-transition-new(karte) { height: 100%; object-fit: cover; }
+/* kräftiger: weiche Farbflächen, randlose Karten, Pillen, Farbkante wieder sichtbar */
+.side { background: radial-gradient(90% 40% at 100% 0%, color-mix(in srgb, var(--accent) 9%, transparent), transparent 70%), radial-gradient(70% 30% at 0% 60%, color-mix(in srgb, var(--plot) 7%, transparent), transparent 70%), var(--bg); background-attachment: local; }
+.side > header { padding-bottom: 58px; border-radius: 0 0 28px 28px; box-shadow: 0 12px 30px color-mix(in srgb, var(--brand) 30%, transparent); }
+form.search { border-radius: 99px; padding: 6px 6px 6px 8px; box-shadow: 0 10px 30px rgba(12,45,94,.2); }
+form.search input { border-radius: 99px; }
+form.search button[type=submit] { border-radius: 99px; padding-inline: 20px; }
+.recent button, .meta span:not(.pill) { border-radius: 99px; }
+section.card { border: 0; padding: 18px; }
+section.hero { box-shadow: inset 4px 0 0 var(--plan), var(--shadow); }
+section.warn { box-shadow: inset 4px 0 0 var(--warn), var(--shadow); }
+h2 .ico { border-radius: 10px; width: 30px; height: 30px; background: linear-gradient(140deg, var(--accent-soft), color-mix(in srgb, var(--accent) 22%, var(--panel))); }
+.big div { background: linear-gradient(160deg, var(--accent-soft), color-mix(in srgb, var(--accent-soft) 40%, var(--panel))) !important; }
+#calcOut div:first-child { background: linear-gradient(140deg, var(--brand), var(--brand-2) 55%, color-mix(in srgb, var(--accent) 55%, var(--brand-2))) !important; }
+.mapwrap > .tools button { border-radius: 99px; box-shadow: var(--shadow); }
+/* Kopfzeile: drei Varianten (hdr-a Skyline, hdr-b Bauplan, hdr-c Hafenabend) */
+.side > header { position: relative; overflow: hidden; isolation: isolate; }
+.side > header > * { position: relative; z-index: 1; }
+.side > header::before, .side > header::after { content: ""; position: absolute; pointer-events: none; z-index: 0; }
+h1 .hh { background: linear-gradient(90deg, #fff, #ffd29a 60%, #ff8a7a); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.side > header h1 { font-size: 23px; letter-spacing: -.03em; }
+.side > header .logo { background: linear-gradient(140deg, rgba(255,255,255,.28), rgba(255,255,255,.08)); }
+/* A: Hamburger Skyline mit Elbphilharmonie, Michel und Kran, Lichtschein wandert */
+header.hdr-a { background: linear-gradient(160deg, #0a1f45 0%, #123a80 45%, #2b5fd0 100%) !important; }
+header.hdr-a::after { left: 0; right: 0; bottom: 38px; height: 76px; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 110' fill='white' stroke='white' stroke-linecap='round'%3E%3Cg stroke-width='1.6' fill='none'%3E%3Cpath d='M8 100V62M34 100V62M4 60h46M50 60l22-6M4 60l-4-2M21 60V44M8 62l13-18 13 18M21 44l29 16M62 100V70M78 100V70M56 68h32M88 68l12-4M70 68V58M62 70l8-12 8 12'/%3E%3C/g%3E%3Cg stroke='none'%3E%3Crect x='42' y='88' width='24' height='12'/%3E%3Crect x='44' y='80' width='18' height='8' opacity='.8'/%3E%3Cpath d='M100 100V70h120v30z'/%3E%3Cpath d='M100 70V54Q116 54 124 40Q133 51 146 49Q155 46 161 26Q170 45 180 45Q186 45 191 36Q201 49 220 45V70z' opacity='.75'/%3E%3Cpath d='M228 100V84l20-10h12v26z'/%3E%3Cpath d='M262 100V44h22v56zM264 44v-8h18v8zM266 36V24h14v12zM268 24l5-6 5 6zM272.2 18V2h1.6v16z'/%3E%3Ccircle cx='273' cy='5' r='1.8'/%3E%3Cpath d='M284 100V80l14-8h8v28zM312 100V86h10v14z'/%3E%3Cpath d='M324 100V72l6-8h72l6 8v28z'/%3E%3Cpath d='M354 64V38h18v26zM356 38l7-20 7 20zM362.3 18V8h1.4v10z'/%3E%3Cpath d='M412 100V74h12v26z'/%3E%3Cpath d='M423 100V44h14v56zM423 44l7-40 7 40zM429.5 4V0h1v4z'/%3E%3Cpath d='M440 100V80h20v20z'/%3E%3Cpath d='M475 100l3-58h4l3 58z'/%3E%3Cellipse cx='480' cy='40' rx='11' ry='3'/%3E%3Cellipse cx='480' cy='34' rx='9' ry='2.5'/%3E%3Cpath d='M477 34l1-6h4l1 6zM479.3 28V2h1.4v26z'/%3E%3Cpath d='M494 100V66l14-6v40zM512 100V72h16v28zM532 100V58h10l4 6v36zM550 100V76h16v24z'/%3E%3C/g%3E%3Cg stroke-width='1.6' fill='none'%3E%3Cpath d='M584 100V48M570 46h30M574 46l10-14 10 14M584 32v14'/%3E%3C/g%3E%3Cg stroke='white' stroke-opacity='.35' stroke-width='.8' fill='none'%3E%3Cpath d='M104 76h112M104 82h112M104 88h112M104 94h112'/%3E%3Cpath d='M108 56v12M118 54v14M128 48v20M138 52v16M148 50v18M158 38v30M168 46v22M178 46v22M188 42v26M198 48v20M208 48v20'/%3E%3C/g%3E%3Cpath d='M0 100h600' stroke-width='1.2'/%3E%3Cpath d='M20 104h80M140 104h120M300 104h90M430 104h110M60 108h60M200 108h70M380 108h90' stroke-width='.8' stroke-opacity='.6'/%3E%3C/svg%3E") center bottom / 100% auto no-repeat; opacity: .42; animation: rise 1.2s var(--ease) both; }
+header.hdr-a { padding-bottom: 112px !important; flex-shrink: 0; }
+@media (max-width: 760px) { body.has-result header.hdr-a { padding-bottom: 46px !important; } body.has-result header.hdr-a::after { display: none; } }
+header.hdr-a::before { width: 260px; height: 260px; right: -60px; top: -120px; border-radius: 50%; background: radial-gradient(circle, rgba(255,190,120,.55), rgba(255,120,120,.15) 45%, transparent 70%); animation: glow 7s ease-in-out infinite alternate; }
+/* B: Bauplan-Raster wie Millimeterpapier */
+header.hdr-b { background: linear-gradient(rgba(255,255,255,.07) 1px, transparent 1px) 0 0 / 22px 22px, linear-gradient(90deg, rgba(255,255,255,.07) 1px, transparent 1px) 0 0 / 22px 22px, linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px) 0 0 / 5.5px 5.5px, linear-gradient(135deg, #0b2a5b, #1d5fc4) !important; animation: grid 40s linear infinite; }
+header.hdr-b::after { right: 18px; top: 12px; width: 120px; height: 90px; border: 1.5px dashed rgba(255,214,154,.55); border-radius: 4px; transform: rotate(-6deg); box-shadow: inset 0 0 0 14px rgba(255,214,154,.06); }
+header.hdr-b::before { right: 46px; top: 34px; width: 52px; height: 40px; background: rgba(255,214,154,.22); border: 1.5px solid rgba(255,214,154,.7); transform: rotate(-6deg); }
+/* C: Hafenabend, warmer Verlauf mit Wellen */
+header.hdr-c { background: linear-gradient(170deg, #0b1c3f 0%, #2a2f7a 40%, #8a3b7d 75%, #e0705a 100%) !important; }
+header.hdr-c::before { width: 120px; height: 120px; right: 30px; top: 6px; border-radius: 50%; background: radial-gradient(circle, #ffd59a, #ff9a6a 50%, transparent 72%); opacity: .7; }
+header.hdr-c::after { left: -10%; right: -10%; bottom: 30px; height: 40px; background: radial-gradient(28px 10px at 28px 0, transparent 96%, rgba(255,255,255,.18) 100%) 0 6px / 56px 20px repeat-x, radial-gradient(28px 10px at 28px 0, transparent 96%, rgba(255,255,255,.1) 100%) 28px 20px / 56px 20px repeat-x; animation: waves 6s linear infinite; }
+@keyframes drift { to { background-position: calc(100% - 400px) bottom; } }
+@keyframes glow { to { transform: translate(-30px, 20px) scale(1.15); opacity: .8; } }
+@keyframes grid { to { background-position: 22px 22px, 22px 22px, 5.5px 5.5px, 0 0; } }
+@keyframes waves { to { transform: translateX(56px); } }
+@media (prefers-reduced-motion: reduce) { .side > header, .side > header::before, .side > header::after { animation: none !important; } }
+@keyframes rise { from { opacity: 0; transform: translateY(12px) scale(.985); } }
+@keyframes pop { from { opacity: 0; transform: scale(.94); } }
+@keyframes fade { from { opacity: 0; } }
+@keyframes load { from { background-position: -50% 0, 0 0; } to { background-position: 150% 0, 0 0; } }
+
 @media (max-width: 760px) {
   /* Start: Suchleiste oben, Karte groß darunter */
   .app { height: 100dvh; grid-template-columns: 1fr; grid-template-rows: auto 1fr; position: relative; overflow: hidden; }
@@ -549,6 +639,7 @@ details.okfold .checks { margin-top: 6px; }
   .mapwrap, form.search, .recent, .side > .tools, .side > details, .side header .sub, .noprint, #zoomhint, button, #mArea2 { display: none !important; }
   .side > header { background: none !important; color: #000 !important; padding: 0 0 8px !important; margin: 0 !important; }
   .side > header .logo, .ghostbtn::before, details.more > summary { display: none; }
+  .side > header::before, .side > header::after { display: none !important; } h1 .hh { color: #000 !important; background: none !important; }
   .ghostbtn { border: 0 !important; padding: 0 !important; display: block; }
   details.okfold, details.more > *, .printonly { display: block; }
   details.okfold > * { display: block !important; }
@@ -576,9 +667,9 @@ details.okfold .checks { margin-top: 6px; }
 <button type="button" class="infocatch" id="pipInfo" aria-label="Infos groß anzeigen"></button>
 <div class="app">
   <aside class="side">
-    <header>
+    <header class="hdr-a">
       <button type="button" class="logo" id="homeBtn" aria-label="Zur Startseite" title="Zur Startseite"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M10 21v-6h4v6"/></svg></button>
-      <div><h1>Baurecht Hamburg</h1><p class="sub">Was darf ich auf meinem Grundstück bauen?</p></div>
+      <div><h1>Baurecht <span class="hh">Hamburg</span></h1><p class="sub">Was darf ich auf meinem Grundstück bauen?</p></div>
       <button type="button" class="menubtn" id="menuBtn" aria-label="Menü öffnen" aria-controls="drawer" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
     </header>
     <form class="search" id="searchForm">
@@ -974,11 +1065,13 @@ function setMapMain(v) { body.toggle("mapmain", v); if (!v) { stopMeasure(); $("
 function showMapBig() {
   if (!isPhone()) return;
   document.activeElement?.blur(); // Tastatur schließen
-  body.add("has-result", "mapmain"); $("mapctl").classList.remove("open"); qs(".side").scrollTop = 0; map.updateSize();
+  if (body.contains("mapmain")) return;
+  vt(() => { body.add("has-result", "mapmain"); $("mapctl").classList.remove("open"); qs(".side").scrollTop = 0; map.updateSize(); fitPlot(); });
 }
 function toggleDrawer(v) { $("drawer").classList.toggle("open", v); $("backdrop").hidden = !v; $("menuBtn").setAttribute("aria-expanded", v); }
-on("pipMap", "click", () => setMapMain(true));
-on("pipInfo", "click", () => setMapMain(false));
+const vt = fn => document.startViewTransition && !matchMedia("(prefers-reduced-motion: reduce)").matches ? document.startViewTransition(fn) : fn();
+on("pipMap", "click", () => vt(() => setMapMain(true)));
+on("pipInfo", "click", () => vt(() => setMapMain(false)));
 on("menuBtn", "click", () => toggleDrawer(true));
 on("drawerClose", "click", () => toggleDrawer(false));
 on("backdrop", "click", () => toggleDrawer(false));
@@ -1351,7 +1444,7 @@ const TITLE_ICO = {"Bitte beachten": "alert", "Ihr Grundstück": "home", "Was da
   "Gilt außerdem in ganz Hamburg": "city", "Ihr Ansprechpartner": "phone", "Kein Bebauungsplan gefunden": "search"};
 const icon = n => `<span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICO[n] || ICO.info}</svg></span>`;
 function card(title, html, cls = "") { const s = document.createElement("section"); s.className = "card " + cls; s.innerHTML = (title ? `<h2>${icon(TITLE_ICO[title])}${esc(title)}</h2>` : "") + html; return s; }
-function showCard(title, msg) { $("results").innerHTML = ""; $("results").append(card(title, `<p class="hint">${esc(msg)}</p>`)); }
+function showCard(title, msg) { $("results").innerHTML = ""; $("results").append(card(title, `<p class="hint">${esc(msg)}</p>`, title === "Bitte warten" ? "busy" : "")); }
 
 const openDetails = () => document.querySelectorAll("#results details").forEach(x => x.open = true);
 window.addEventListener("beforeprint", openDetails); // auch bei Strg+P alles aufklappen
