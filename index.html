@@ -360,41 +360,38 @@
 }
 </style>
 <style>
-/* Layout: Karte füllt den Bildschirm, Ergebnisse in einer Seitenleiste (Desktop) bzw. unten (Handy); Kartensteuerung schwebt oben rechts */
+/* Desktop: Seitenleiste links, Karte rechts. Handy: siehe @media unten */
 :root {
-  --bg: #eef2f6; --panel: #ffffff; --fg: #142030; --muted: #5d6b7a; --line: #dfe5ec;
-  --brand: #0c2d5e; --brand-2: #1a4d9c; --accent: #1f5bd1; --accent-soft: #e8effd;
+  --bg: #eef2f6; --panel: #fff; --fg: #142030; --muted: #5d6b7a; --line: #dfe5ec; --brand: #0c2d5e; --brand-2: #1a4d9c; --accent: #1f5bd1; --accent-soft: #e8effd;
   --plan: #c8102e; --plan-soft: #fdecee; --plot: #e0a100; --warn-soft: #fff5e6; --ok: #17804a; --ok-soft: #e7f6ee; --warn: #a65b00;
   --shadow: 0 1px 2px rgba(16,32,56,.06), 0 4px 14px rgba(16,32,56,.06);
-  --sans: Inter, "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
-  --mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --sans: Inter, "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif; --mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --ico-file: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z'/%3E%3Cpath d='M14 3v6h6'/%3E%3C/svg%3E");
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
-  --bg: #0c1117; --panel: #151c25; --fg: #e8edf3; --muted: #9aa8b6; --line: #263241;
-  --brand: #0a1a33; --brand-2: #17366b; --accent: #82a7ff; --accent-soft: #1b2a47;
+  --bg: #0c1117; --panel: #151c25; --fg: #e8edf3; --muted: #9aa8b6; --line: #263241; --brand: #0a1a33; --brand-2: #17366b; --accent: #82a7ff; --accent-soft: #1b2a47;
   --plan: #ff6b7a; --plan-soft: #3a1c22; --plot: #f2b400; --warn-soft: #2e2414; --ok: #4cc485; --ok-soft: #14301f; --warn: #f0a742;
   --shadow: 0 1px 2px rgba(0,0,0,.3); color-scheme: dark } }
-:root[data-theme="dark"] {
-  --bg: #0c1117; --panel: #151c25; --fg: #e8edf3; --muted: #9aa8b6; --line: #263241;
-  --brand: #0a1a33; --brand-2: #17366b; --accent: #82a7ff; --accent-soft: #1b2a47;
-  --plan: #ff6b7a; --plan-soft: #3a1c22; --plot: #f2b400; --warn-soft: #2e2414; --ok: #4cc485; --ok-soft: #14301f; --warn: #f0a742;
-  --shadow: 0 1px 2px rgba(0,0,0,.3); color-scheme: dark }
 
 * { box-sizing: border-box; }
 html, body { height: 100%; margin: 0; }
 body { background: var(--bg); color: var(--fg); font: 14.5px/1.5 var(--sans); -webkit-font-smoothing: antialiased; }
+p, .hint, .legal, dl.kv, dl.rules { margin: 0; }
+a { color: var(--accent); }
 .app { display: grid; grid-template-columns: minmax(340px, 460px) 1fr; height: 100%; }
 .side { background: var(--bg); border-right: 1px solid var(--line); overflow-y: auto; display: flex; flex-direction: column; gap: 14px; min-width: 0; padding: 0 16px 20px; }
+.side > .tools, .side > details, .side > .legal { padding: 0 4px; }
 .mapwrap { position: relative; min-height: 0; }
 #map { position: absolute; inset: 0; }
 
-/* Kopfbereich */
 .side > header { margin: 0 -16px; padding: 18px 16px 52px; background: linear-gradient(135deg, var(--brand), var(--brand-2)); color: #fff; display: flex; gap: 12px; align-items: center; }
-.side > header .logo { width: 40px; height: 40px; border-radius: 10px; background: rgba(255,255,255,.14); display: grid; place-items: center; flex: none; }
+.side > header .logo, .menubtn { width: 40px; height: 40px; padding: 0; border: 0; border-radius: 10px; background: rgba(255,255,255,.14); color: #fff; display: grid; place-items: center; flex: none; }
 .side > header .logo svg { width: 24px; height: 24px; }
+.menubtn { display: none; margin-left: auto; }
+.menubtn svg { width: 22px; height: 22px; }
 h1 { font-size: 19px; margin: 0; letter-spacing: -.01em; }
 .sub { color: rgba(255,255,255,.78); font-size: 13px; margin: 2px 0 0; }
-form.search { display: flex; gap: 0; margin-top: -40px; background: var(--panel); border-radius: 12px; box-shadow: 0 6px 20px rgba(12,45,94,.18); padding: 6px; position: relative; }
+form.search { display: flex; margin-top: -40px; background: var(--panel); border-radius: 12px; box-shadow: 0 6px 20px rgba(12,45,94,.18); padding: 6px; position: relative; }
 form.search svg { width: 18px; height: 18px; position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
 form.search input { border: 0 !important; background: transparent !important; padding-left: 36px !important; font-size: 15px; }
 form.search input:focus-visible { outline: none; }
@@ -403,30 +400,38 @@ form.search:focus-within { box-shadow: 0 0 0 2px var(--accent), 0 6px 20px rgba(
 h2 { font-size: 13px; font-weight: 650; letter-spacing: .01em; color: var(--fg); margin: 0; display: flex; align-items: center; gap: 8px; }
 h2 .ico { width: 26px; height: 26px; border-radius: 8px; background: var(--accent-soft); color: var(--accent); display: grid; place-items: center; flex: none; }
 h2 .ico svg { width: 15px; height: 15px; }
-input[type=text], input[type=number], input[type=url] { flex: 1; min-width: 0; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--fg); font: inherit; }
+input[type=text], input[type=number], input[type=url], select { flex: 1; min-width: 0; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--fg); font: inherit; }
+select { flex: initial; min-width: auto; padding: 10px; width: 100%; }
 button, .btn { padding: 9px 14px; border-radius: 8px; border: 1px solid var(--accent); background: var(--accent); color: #fff; font: inherit; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: filter .15s, background .15s; }
 button:hover, .btn:hover { filter: brightness(1.08); }
-button.ghost { background: var(--panel); color: var(--accent); border-color: var(--line); padding: 7px 12px; font-size: 13px; font-weight: 550; }
+button.ghost, .recent button, a.ghostbtn { background: var(--panel); color: var(--accent); border-color: var(--line); }
+button.ghost { padding: 7px 12px; font-size: 13px; font-weight: 550; }
 button.ghost:hover { border-color: var(--accent); filter: none; }
 button.on { background: var(--accent-soft); border-color: var(--accent); }
 button:focus-visible, input:focus-visible, a:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.tools { display: flex; flex-wrap: wrap; gap: 6px; }
-.hint { color: var(--muted); font-size: 13px; margin: 0; }
-p { margin: 0; }
+.tools, .recent, .meta, .linkbtns, .checksum { display: flex; flex-wrap: wrap; gap: 6px; }
+.linkbtns, .checksum { gap: 8px; }
+.recent[hidden] { display: none; }
+.recent button { padding: 4px 11px; font-size: 12.5px; font-weight: 550; border-radius: 99px; }
+.hint { color: var(--muted); font-size: 13px; }
 #results { display: flex; flex-direction: column; gap: 14px; }
 section.card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 10px; box-shadow: var(--shadow); }
 section.hero { border: 0; background: linear-gradient(160deg, var(--plan-soft), var(--panel) 70%); border-left: 5px solid var(--plan); }
+section.warn { border-color: transparent; background: var(--warn-soft); border-left: 5px solid var(--warn); }
+section.warn h2 .ico { background: rgba(166,91,0,.12); color: var(--warn); }
 .plan-name { font-size: 23px; font-weight: 750; color: var(--fg); margin: 2px 0 0; letter-spacing: -.015em; text-wrap: balance; line-height: 1.2; }
 .pill { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; padding: 3px 10px; border-radius: 99px; background: var(--ok-soft); color: var(--ok); font-weight: 650; width: fit-content; }
 .pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
 .pill.draft { background: var(--warn-soft); color: var(--warn); }
 .pill.none { background: var(--accent-soft); color: var(--accent); }
 .pill.none::before { display: none; }
-.meta { display: flex; flex-wrap: wrap; gap: 6px; }
 .meta span:not(.pill) { font-size: 12.5px; color: var(--muted); background: var(--panel); border: 1px solid var(--line); border-radius: 99px; padding: 2px 9px; }
-dl.kv { display: grid; grid-template-columns: max-content 1fr; gap: 3px 10px; margin: 0; font-size: 13px; }
-dl.kv dt { color: var(--muted); }
+dl.kv { display: grid; grid-template-columns: max-content 1fr; gap: 3px 10px; font-size: 13px; }
+dl.kv dt, .contact dt { color: var(--muted); }
 dl.kv dd { margin: 0; overflow-wrap: anywhere; }
+.contact { display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; align-items: baseline; }
+.contact dt { font-size: 12.5px; }
+.contact dd { margin: 0; }
 .big { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; }
 .big div { background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; }
 .big b { display: block; font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums; overflow-wrap: break-word; hyphens: auto; line-height: 1.25; }
@@ -435,38 +440,48 @@ dl.kv dd { margin: 0; overflow-wrap: anywhere; }
 #calcOut div:first-child { background: linear-gradient(135deg, var(--brand), var(--brand-2)); }
 #calcOut div:first-child b, #calcOut div:first-child span { color: #fff; }
 #calcOut b { font-size: 20px; color: var(--accent); }
-a { color: var(--accent); }
 .status { font-size: 12px; font-family: var(--mono); padding-left: 18px; }
 .ok { color: var(--ok); } .fail { color: var(--plan); }
 details > summary { cursor: pointer; color: var(--muted); font-size: 13px; }
 details[open] > summary { margin-bottom: 6px; }
-.legal { font-size: 11.5px; color: var(--muted); margin: 0; }
+.legal { font-size: 11.5px; color: var(--muted); }
 .calc { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .calc label { font-weight: 600; }
 .calc input { max-width: 130px; font-size: 16px; font-weight: 600; }
-section.warn { border-color: transparent; background: var(--warn-soft); border-left: 5px solid var(--warn); }
-section.warn h2 .ico { background: rgba(166,91,0,.12); color: var(--warn); }
 ul.warn-list, ul.plain { margin: 0; padding-left: 18px; display: grid; gap: 6px; }
-dl.rules { margin: 0; display: grid; gap: 0; }
+dl.rules { display: grid; }
 dl.rules dt { font-weight: 650; padding-top: 10px; margin-top: 10px; border-top: 1px solid var(--line); }
 dl.rules dt:first-child { margin-top: 0; padding-top: 0; border-top: 0; }
 dl.rules dd { margin: 2px 0 0; }
-select { padding: 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--fg); font: inherit; width: 100%; }
 .srcline { display: flex; flex-direction: column; gap: 4px; padding: 0 4px; }
-.recent { display: flex; flex-wrap: wrap; gap: 6px; }
-.recent button { background: var(--panel); color: var(--accent); border-color: var(--line); padding: 4px 11px; font-size: 12.5px; font-weight: 550; border-radius: 99px; }
-.linkbtns { display: flex; flex-wrap: wrap; gap: 8px; }
-a.ghostbtn { background: var(--panel); color: var(--accent); border-color: var(--line); }
 a.ghostbtn::before { content: ""; width: 14px; height: 14px; background: currentColor; -webkit-mask: var(--ico-file) center/contain no-repeat; mask: var(--ico-file) center/contain no-repeat; }
-:root { --ico-file: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z'/%3E%3Cpath d='M14 3v6h6'/%3E%3C/svg%3E"); }
-.contact { display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; align-items: baseline; }
-.contact dt { color: var(--muted); font-size: 12.5px; }
-.contact dd { margin: 0; }
 .tip { background: rgba(20,32,48,.9); color: #fff; padding: 3px 8px; border-radius: 6px; font: 12px var(--sans); white-space: nowrap; }
-.side > .tools, .side > details, .side > .legal { padding: 0 4px; }
+details.more > summary { color: var(--accent); font-weight: 600; font-size: 13.5px; padding: 4px 0; }
+details.more[open] > summary { margin-bottom: 10px; }
+details.more > dl.rules { padding-top: 10px; border-top: 1px solid var(--line); }
+ul.facts { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; font-size: 13.5px; }
+ul.facts li { display: grid; gap: 1px; padding-left: 12px; border-left: 3px solid var(--accent-soft); }
+ul.facts b { font-size: 12px; color: var(--muted); font-weight: 650; }
 
-/* schwebende Kartensteuerung */
-.mapctl { position: absolute; top: 12px; right: 12px; z-index: 5; background: var(--panel); color: var(--fg); border: 1px solid var(--line); border-radius: 12px; padding: 12px; width: 228px; max-width: calc(100% - 60px); box-shadow: 0 6px 24px rgba(16,32,56,.16); font-size: 13px; display: flex; flex-direction: column; gap: 8px; }
+/* Prüfungen am Grundstück */
+.checksum span { font-size: 12.5px; font-weight: 650; border-radius: 99px; padding: 3px 10px; }
+.checksum .s-ok { background: var(--ok-soft); color: var(--ok); }
+.checksum .s-hit { background: var(--warn-soft); color: var(--warn); }
+.checksum .s-unk { background: var(--bg); color: var(--muted); }
+.checks { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.checks li { padding: 8px 10px 8px 34px; position: relative; border-radius: 9px; background: var(--bg); font-size: 13.5px; }
+.checks li::before { position: absolute; left: 10px; top: 8px; width: 16px; height: 16px; border-radius: 50%; display: grid; place-items: center; font-size: 10.5px; font-weight: 800; content: "…"; color: var(--muted); }
+.checks li.ok { background: var(--ok-soft); }
+.checks li.hit { background: var(--warn-soft); }
+.checks li.ok::before { content: "✓"; background: var(--ok); color: #fff; }
+.checks li.hit::before { content: "!"; background: var(--warn); color: #fff; }
+.checks li.unk::before { content: "?"; background: var(--muted); color: #fff; }
+details.okfold > summary { font-weight: 550; color: var(--ok); }
+details.okfold .checks { margin-top: 6px; }
+
+/* Karte: Steuerung, Knöpfe, Bild-im-Bild, Menü */
+.mapctl, .layerbtn, .zoomhint { position: absolute; z-index: 5; background: var(--panel); color: var(--fg); border: 1px solid var(--line); }
+.mapctl { top: 12px; right: 12px; border-radius: 12px; padding: 12px; width: 228px; max-width: calc(100% - 60px); box-shadow: 0 6px 24px rgba(16,32,56,.16); font-size: 13px; display: flex; flex-direction: column; gap: 8px; }
 .mapctl .seg { display: flex; background: var(--bg); border-radius: 8px; padding: 3px; }
 .mapctl .seg label { flex: 1; text-align: center; padding: 5px 0; cursor: pointer; border-radius: 6px; font-weight: 550; }
 .mapctl .seg input { position: absolute; opacity: 0; pointer-events: none; }
@@ -480,19 +495,15 @@ a.ghostbtn::before { content: ""; width: 14px; height: 14px; background: current
 .lg-sel { border: 3px solid var(--plan); background: var(--plan-soft); }
 .lg-plot { border: 3px solid var(--plot); }
 .lg-meas { border: 2px dashed var(--accent); }
-.layerbtn { display: none; position: absolute; top: 12px; right: 12px; z-index: 6; align-items: center; gap: 6px; background: var(--panel); color: var(--fg); border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; font: 600 14px var(--sans); box-shadow: 0 4px 14px rgba(16,32,56,.16); cursor: pointer; }
-.side > header button.logo { padding: 0; border: 0; background: rgba(255,255,255,.14); color: #fff; cursor: pointer; }
-.menubtn { display: none; place-items: center; margin-left: auto; width: 40px; height: 40px; padding: 0; border-radius: 10px; background: rgba(255,255,255,.14); border: 0; color: #fff; flex: none; }
-.menubtn svg { width: 22px; height: 22px; }
-.pipcatch, .infocatch { display: none; position: absolute; inset: 0; z-index: 30; background: transparent; border: 0; padding: 0; cursor: pointer; }
+.layerbtn { display: none; top: 12px; right: 12px; z-index: 6; gap: 6px; border-radius: 10px; padding: 8px 12px; font: 600 14px var(--sans); box-shadow: 0 4px 14px rgba(16,32,56,.16); }
+.zoomhint { left: 50%; bottom: 34px; transform: translateX(-50%); z-index: 4; color: var(--muted); border-radius: 99px; padding: 5px 14px; font-size: 12.5px; box-shadow: var(--shadow); }
+.pipcatch, .infocatch { display: none; position: absolute; inset: 0; z-index: 30; background: transparent; border: 0; padding: 0; }
 .infocatch { position: fixed; inset: auto; top: 10px; right: 10px; width: 42.3vw; height: 32.2vw; border-radius: 12px; }
 .pipcatch::after, .infocatch::after { content: "⤢"; position: absolute; right: 6px; bottom: 6px; width: 26px; height: 26px; border-radius: 8px; background: var(--panel); color: var(--fg); display: grid; place-items: center; font-size: 15px; box-shadow: var(--shadow); }
 .drawer { position: fixed; inset: 0 auto 0 0; width: min(86vw, 380px); background: var(--bg); z-index: 50; transform: translateX(-105%); transition: transform .25s ease; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 14px; box-shadow: 8px 0 30px rgba(0,0,0,.25); }
 .drawer.open { transform: none; }
 .drawer .close { align-self: flex-end; }
 .backdrop { position: fixed; inset: 0; background: rgba(10,20,40,.45); z-index: 45; }
-.mapctl summary { font-weight: 600; color: var(--fg); font-size: 13px; }
-.zoomhint { position: absolute; left: 50%; bottom: 34px; transform: translateX(-50%); z-index: 4; background: var(--panel); color: var(--muted); border: 1px solid var(--line); border-radius: 99px; padding: 5px 14px; font-size: 12.5px; box-shadow: var(--shadow); }
 .ol-zoom { top: 12px !important; left: 12px !important; }
 .ol-zoom button { width: 32px !important; height: 32px !important; font-size: 18px !important; border-radius: 8px !important; background: var(--panel) !important; color: var(--fg) !important; border: 1px solid var(--line) !important; justify-content: center; }
 .ol-control { background: transparent !important; }
@@ -501,15 +512,22 @@ a.ghostbtn::before { content: ""; width: 14px; height: 14px; background: current
   /* Start: Suchleiste oben, Karte groß darunter */
   .app { height: 100dvh; grid-template-columns: 1fr; grid-template-rows: auto 1fr; position: relative; overflow: hidden; }
   .side { border-right: 0; border-bottom: 1px solid var(--line); padding-bottom: 12px; }
+  .side > header { padding: 14px 16px 48px; }
   .menubtn { display: grid; }
-  .recent { display: none; }
+  .layerbtn { display: flex; }
+  .recent, .side > details, .side > .legal, body:not(.has-result) #results, body:not(.has-result) .side > .tools { display: none; }
   body.searching .recent:not([hidden]) { display: flex; }
-  body:not(.has-result) #results, body:not(.has-result) .side > .tools, .side > details, .side > .legal { display: none; }
-  .mapwrap > .tools { display: flex; position: absolute; left: 8px; right: 8px; bottom: 30px; z-index: 6; justify-content: center; flex-wrap: wrap; gap: 6px; }
+  input, button, select { font-size: 16px !important; }
+  .mapctl { width: 190px; padding: 10px; font-size: 13.5px; display: none; top: 56px; }
+  .mapctl.open { display: flex; }
+  .mapctl input[type=checkbox] { width: 20px; height: 20px; }
+  .mapctl label.row { min-height: 32px; }
+  .mapctl .legend { display: none; }
+  .mapwrap > .tools { position: absolute; left: 8px; right: 8px; bottom: 30px; z-index: 6; justify-content: center; }
   .mapwrap > .tools button { box-shadow: 0 3px 10px rgba(16,32,56,.18); padding: 7px 10px; font-size: 14px !important; }
   .zoomhint { bottom: 132px; }
-  body.has-result:not(.mapmain) #map .ol-control, body.has-result:not(.mapmain) #map .ol-scale-line { display: none; }
   /* Nach der Suche: Infos füllen den Bildschirm, Karte als Bild-im-Bild oben rechts */
+  body.has-result:not(.mapmain) #map .ol-control, body.has-result:not(.mapmain) #map .ol-scale-line { display: none; }
   body.has-result .side { position: absolute; inset: 0; z-index: 1; border: 0; }
   body.has-result .side > header { padding: 10px 16px 46px; }
   body.has-result .side > header .sub { display: none; }
@@ -519,57 +537,24 @@ a.ghostbtn::before { content: ""; width: 14px; height: 14px; background: current
   body.has-result .pipcatch { display: block; }
   /* Karte angetippt: Karte groß, Infos als Bild-im-Bild */
   body.has-result.mapmain .mapwrap { inset: 0; width: auto; height: auto; border-radius: 0; border: 0; box-shadow: none; z-index: 1; }
-  body.has-result.mapmain .mapwrap > :not(#map):not(.pipcatch):not(.mapctl):not(.zoomhint) { display: flex !important; }
-  body.has-result.mapmain .mapwrap > .mapctl.open { display: flex !important; }
-  body.has-result.mapmain .mapwrap > .pipcatch { display: none; }
+  body.has-result.mapmain .mapwrap > :not(#map):not(.pipcatch):not(.mapctl):not(.zoomhint), body.has-result.mapmain .mapwrap > .mapctl.open { display: flex !important; }
+  body.has-result.mapmain .mapwrap > .pipcatch, body.has-result.mapmain .side > header, body.has-result.mapmain .side > form, body.has-result.mapmain .side > .recent { display: none; }
   body.has-result.mapmain .layerbtn { right: auto; left: 56px; }
   body.has-result.mapmain .mapctl { right: auto; left: 12px; }
   body.has-result.mapmain .side { inset: auto; top: 10px; right: 10px; width: 92vw; height: 70vw; zoom: .46; z-index: 20; overflow: hidden; border-radius: 26px; border: 4px solid var(--panel); box-shadow: 0 16px 48px rgba(16,32,56,.4); pointer-events: none; }
-  body.has-result.mapmain .side > header, body.has-result.mapmain .side > form, body.has-result.mapmain .side > .recent { display: none; }
   body.has-result.mapmain #results > :first-child { margin: 12px 0 0; }
   body.has-result.mapmain .infocatch { display: block; }
-  .mapctl { width: 190px; padding: 10px; gap: 8px; font-size: 13.5px; display: none; top: 56px; }
-  .mapctl.open { display: flex; }
-  .layerbtn { display: flex; }
-  .mapctl input[type=checkbox] { width: 20px; height: 20px; }
-  .mapctl label.row { min-height: 32px; }
-  input, button, select { font-size: 16px !important; }
-  .mapctl .legend { display: none; }
-  .side > header { padding: 14px 16px 48px; }
 }
 
-details.more > summary { color: var(--accent); font-weight: 600; font-size: 13.5px; padding: 4px 0; }
-details.more[open] > summary { margin-bottom: 10px; }
-details.more > dl.rules { padding-top: 10px; border-top: 1px solid var(--line); }
-ul.facts { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; font-size: 13.5px; }
-ul.facts li { display: grid; gap: 1px; padding-left: 12px; border-left: 3px solid var(--accent-soft); }
-ul.facts b { font-size: 12px; color: var(--muted); font-weight: 650; }
-/* Prüfungen am Grundstück */
-.checksum { display: flex; gap: 8px; flex-wrap: wrap; }
-.checksum span { font-size: 12.5px; font-weight: 650; border-radius: 99px; padding: 3px 10px; }
-.checksum .s-ok { background: var(--ok-soft); color: var(--ok); }
-.checksum .s-hit { background: var(--warn-soft); color: var(--warn); }
-.checksum .s-unk { background: var(--bg); color: var(--muted); }
-.checks { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
-.checks li { padding: 8px 10px 8px 34px; position: relative; border-radius: 9px; background: var(--bg); font-size: 13.5px; }
-.checks li::before { position: absolute; left: 10px; top: 8px; width: 16px; height: 16px; border-radius: 50%; display: grid; place-items: center; font-size: 10.5px; font-weight: 800; content: "…"; color: var(--muted); }
-.checks li.ok { background: var(--ok-soft); }
-.checks li.ok::before { content: "✓"; background: var(--ok); color: #fff; }
-.checks li.hit { background: var(--warn-soft); }
-.checks li.hit::before { content: "!"; background: var(--warn); color: #fff; }
-.checks li.unk::before { content: "?"; background: var(--muted); color: #fff; }
-details.okfold > summary { font-weight: 550; color: var(--ok); }
-details.okfold .checks { margin-top: 6px; }
 .printonly { display: none; }
 @media print {
   .mapwrap, form.search, .recent, .side > .tools, .side > details, .side header .sub, #results > details, .noprint, #zoomhint, button, #mArea2 { display: none !important; }
   .side > header { background: none !important; color: #000 !important; padding: 0 0 8px !important; margin: 0 !important; }
-  .side > header .logo { display: none; }
+  .side > header .logo, .ghostbtn::before, details.more > summary { display: none; }
   .ghostbtn { border: 0 !important; padding: 0 !important; display: block; }
-  .ghostbtn::before { display: none; }
-  details.okfold { display: block; } details.okfold > * { display: block !important; }
-  .printonly { display: block; font-weight: 650; margin: 0 0 12px; }
-  details.more > summary { display: none; } details.more > * { display: block; }
+  details.okfold, details.more > *, .printonly { display: block; }
+  details.okfold > * { display: block !important; }
+  .printonly { font-weight: 650; margin: 0 0 12px; }
   .app, .side { display: block !important; height: auto !important; overflow: visible !important; border: 0 !important; background: #fff !important; }
   body { background: #fff !important; color: #000 !important; }
   section.card { break-inside: avoid; border-color: #999; box-shadow: none; margin-bottom: 10px; }
@@ -595,42 +580,34 @@ details.okfold .checks { margin-top: 6px; }
   <aside class="side">
     <header>
       <button type="button" class="logo" id="homeBtn" aria-label="Zur Startseite" title="Zur Startseite"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M10 21v-6h4v6"/></svg></button>
-      <div><h1>Baurecht Hamburg</h1>
-      <p class="sub">Was darf ich auf meinem Grundstück bauen?</p></div>
+      <div><h1>Baurecht Hamburg</h1><p class="sub">Was darf ich auf meinem Grundstück bauen?</p></div>
       <button type="button" class="menubtn" id="menuBtn" aria-label="Menü öffnen" aria-controls="drawer" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
     </header>
-
     <form class="search" id="searchForm">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
       <input type="text" id="q" placeholder="Adresse, z. B. Bramfelder Chaussee 300" aria-label="Adresse oder Koordinate" autocomplete="off">
       <button type="submit">Suchen</button>
     </form>
-
     <div class="recent" id="recent" hidden></div>
-
     <div id="results">
       <section class="card">
         <h2>So funktioniert es</h2>
         <p class="hint">Adresse eingeben oder einen Punkt in der Karte antippen. Die App fasst den geltenden Bebauungsplan in einfachen Worten zusammen: was gebaut werden darf, wie hoch und wie viel Fläche.</p>
       </section>
     </div>
-
     <div class="tools">
       <button type="button" class="ghost" id="mLine">Strecke messen</button>
       <button type="button" class="ghost" id="mArea">Fläche messen</button>
       <button type="button" class="ghost" id="mClear">Messung löschen</button>
     </div>
-
     <details>
       <summary>Einstellungen und Diagnose</summary>
       <p class="hint">XPlanung-WFS für detaillierte Festsetzungen (optional):</p>
       <input type="url" id="xplanUrl" placeholder="https://…/wfs">
       <ul class="status" id="diag"></ul>
     </details>
-
     <p class="legal">Fachdaten: Freie und Hansestadt Hamburg (LGV und Bezirksämter), Datenlizenz Deutschland Namensnennung 2.0. Grundkarte: © basemap.de / BKG, Datenquellen © GeoBasis-DE. Alle Angaben ohne Gewähr. Rechtsverbindlich ist nur der festgestellte Plan mit Verordnung; für eine verbindliche Auskunft das Bezirksamt fragen.</p>
   </aside>
-
   <div class="mapwrap">
     <div id="map"></div>
     <button type="button" class="pipcatch" id="pipMap" aria-label="Karte groß anzeigen"></button>
@@ -886,17 +863,14 @@ const CHECKS = [
 <script>
 "use strict";
 // ---------- Konfiguration ----------
+const HH = "https://geodienste.hamburg.de/";
 const CFG = {
-  basemap: layer => `https://sgx.geodatenzentrum.de/wmts_basemapde/tile/1.0.0/${layer}/default/GLOBAL_WEBMERCATOR/{z}/{y}/{x}.png`,
-  gazetteer: "https://geodienste.hamburg.de/HH_WFS_GAGES?service=WFS&request=GetFeature&version=2.0.0",
-  bplanWfs: "https://geodienste.hamburg.de/HH_WFS_Bebauungsplaene",
-  bplanTypes: [
-    {type: "app:hh_hh_festgestellt", label: "festgestellt"},
-    {type: "app:prosin_imverfahren", label: "im Verfahren"}
-  ],
-  bplanWms: "https://geodienste.hamburg.de/HH_WMS_Bebauungsplaene",
-  // ALKIS vereinfacht (LGV). Der Objektart-Name wird aus GetCapabilities gelesen.
-  alkisWfs: ["https://geodienste.hamburg.de/WFS_HH_ALKIS_vereinfacht", "https://geodienste.hamburg.de/HH_WFS_ALKIS_vereinfacht"],
+  basemap: n => `https://sgx.geodatenzentrum.de/wmts_basemapde/tile/1.0.0/de_basemapde_web_raster_${n}/default/GLOBAL_WEBMERCATOR/{z}/{y}/{x}.png`,
+  gazetteer: HH + "HH_WFS_GAGES?service=WFS&request=GetFeature&version=2.0.0",
+  bplanWfs: HH + "HH_WFS_Bebauungsplaene",
+  bplanTypes: [{type: "app:hh_hh_festgestellt", label: "festgestellt"}, {type: "app:prosin_imverfahren", label: "im Verfahren"}],
+  bplanWms: HH + "HH_WMS_Bebauungsplaene",
+  alkisWfs: [HH + "WFS_HH_ALKIS_vereinfacht", HH + "HH_WFS_ALKIS_vereinfacht"], // Objektart wird aus GetCapabilities gelesen
   boundsMaxRes: 6 // B-Plan-Grenzen erst ab dieser Auflösung (m/Pixel) laden
 };
 // Festsetzungen nach XPlanung / BauNVO ("Maß der baulichen Nutzung")
@@ -909,137 +883,16 @@ const MASS = {
   maxzahlwohnungen: "max. Wohnungen", besondereartderbaulnutzung: "Baugebiet", allgartderbaulnutzung: "Nutzungsart", bautiefe: "Bautiefe m"
 };
 
-// ---------- Projektion & Karte ----------
-proj4.defs("EPSG:25832", "+proj=utm +zone=32 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs");
-ol.proj.proj4.register(proj4);
-const UTM = ol.proj.get("EPSG:25832");
-UTM.setExtent([-1877994.66, 3932281.56, 836715.13, 9440581.95]);
-
-const $ = id => document.getElementById(id);
-const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
-const diag = (msg, cls = "") => { const li = document.createElement("li"); li.className = cls; li.textContent = msg; $("diag").appendChild(li); };
-
-const basemap = name => new ol.layer.Tile({
-  visible: name === "farbe",
-  source: new ol.source.XYZ({url: CFG.basemap("de_basemapde_web_raster_" + name), maxZoom: 18, crossOrigin: "anonymous",
-    attributions: "© basemap.de / BKG"}),
-  properties: {bg: name}
-});
-const bgLayers = [basemap("grau"), basemap("farbe")];
-
-// Planzeichnungen (Raster) aus dem Hamburger WMS, Layer werden aus GetCapabilities gelesen
-const drawingLayer = new ol.layer.Image({visible: false, opacity: 0.7, minZoom: 0});
-
-// Alle B-Plan-Grenzen im Kartenausschnitt (dünn, mit Namen)
-const boundsSrc = new ol.source.Vector({
-  format: new ol.format.WFS(),
-  strategy: ol.loadingstrategy.bbox,
-  url: extent => wfsUrlBbox(CFG.bplanWfs, CFG.bplanTypes[0].type, extent, 500)
-});
-boundsSrc.on("featuresloaderror", () => diag("✗ B-Plan-Grenzen konnten nicht geladen werden", "fail"));
-const boundsLayer = new ol.layer.Vector({
-  source: boundsSrc, maxResolution: CFG.boundsMaxRes,
-  style: (f, res) => new ol.style.Style({
-    stroke: new ol.style.Stroke({color: css("--plan"), width: 1.5}),
-    fill: new ol.style.Fill({color: "rgba(0,0,0,0)"}),
-    text: res < 2.5 ? new ol.style.Text({text: planName(f.getProperties()), font: "600 12px system-ui, sans-serif",
-      fill: new ol.style.Fill({color: css("--plan")}), stroke: new ol.style.Stroke({color: "#fff", width: 3}), overflow: false}) : undefined
-  })
-});
-
-const selSrc = new ol.source.Vector(), plotSrc = new ol.source.Vector(), measureSrc = new ol.source.Vector(), markerSrc = new ol.source.Vector();
-const selLayer = new ol.layer.Vector({source: selSrc, style: () => new ol.style.Style({
-  stroke: new ol.style.Stroke({color: css("--plan"), width: 4}), fill: new ol.style.Fill({color: "rgba(194,39,45,0.10)"})})});
-// Grundstück kräftig hervorheben: weißer Rand als Kontrast, gelbe Kontur und Füllung, Beschriftung mit Fläche
-const plotLayer = new ol.layer.Vector({source: plotSrc, zIndex: 10, style: (f, res) => [
-  new ol.style.Style({stroke: new ol.style.Stroke({color: "rgba(255,255,255,0.95)", width: 9})}),
-  new ol.style.Style({stroke: new ol.style.Stroke({color: css("--plot"), width: 4}), fill: new ol.style.Fill({color: "rgba(255,190,0,0.32)"})}),
-  // Beschriftung über dem Grundstück, damit sie den Plannamen in der Mitte nicht überdeckt
-  ...(res < 2.5 ? [new ol.style.Style({
-    geometry: g => { const e = g.getGeometry().getExtent(); return new ol.geom.Point([(e[0] + e[2]) / 2, e[3]]); },
-    text: new ol.style.Text({text: (f.get("label") || "").replace("\n", " · "), font: "650 13px " + css("--sans"), offsetY: -16,
-      fill: new ol.style.Fill({color: "#1a1300"}), backgroundFill: new ol.style.Fill({color: "rgba(255,255,255,0.92)"}),
-      backgroundStroke: new ol.style.Stroke({color: css("--plot"), width: 1.5}), padding: [3, 7, 3, 7], overflow: true})})] : [])
-]});
-const measureLayer = new ol.layer.Vector({source: measureSrc, style: () => new ol.style.Style({
-  stroke: new ol.style.Stroke({color: css("--accent"), width: 2, lineDash: [6, 4]}), fill: new ol.style.Fill({color: "rgba(31,79,191,0.12)"})})});
-const markerLayer = new ol.layer.Vector({source: markerSrc, style: new ol.style.Style({image: new ol.style.Circle({
-  radius: 7, fill: new ol.style.Fill({color: "#c2272d"}), stroke: new ol.style.Stroke({color: "#fff", width: 2})})})});
-
-const map = new ol.Map({
-  target: "map",
-  layers: [...bgLayers, drawingLayer, boundsLayer, selLayer, plotLayer, measureLayer, markerLayer],
-  view: new ol.View({projection: UTM, center: [565500, 5934000], resolution: 40, maxResolution: 300, minResolution: 0.1}),
-  controls: ol.control.defaults.defaults({attributionOptions: {collapsible: true}}).extend([new ol.control.ScaleLine({units: "metric"})])
-});
-const updateZoomHint = () => { $("zoomhint").hidden = !$("tBounds").checked || map.getView().getResolution() <= CFG.boundsMaxRes; };
-map.getView().on("change:resolution", updateZoomHint); updateZoomHint();
-
-// ---------- Kartensteuerung ----------
-document.querySelectorAll("input[name=bg]").forEach(r => r.addEventListener("change", () => {
-  const sel = document.querySelector("input[name=bg]:checked").value;
-  bgLayers.forEach(l => l.setVisible(l.get("bg") === sel));
-}));
-$("tBounds").addEventListener("change", e => { boundsLayer.setVisible(e.target.checked); updateZoomHint(); });
-$("tDrawing").addEventListener("change", e => { drawingLayer.setVisible(e.target.checked); $("opDrawing").hidden = !e.target.checked; if (e.target.checked) initDrawing(); });
-// Handy: Menü, Bild-im-Bild für Karte und Infos
-function fitPlot(duration = 600) {
-  const f = plotSrc.getFeatures()[0]; if (!f) return;
-  map.getView().cancelAnimations();
-  const small = isPhone() && document.body.classList.contains("has-result") && !document.body.classList.contains("mapmain");
-  map.getView().fit(ol.extent.buffer(f.getGeometry().getExtent(), small ? 4 : 15), {padding: small ? [8, 8, 8, 8] : [60, 60, 60, 60], minResolution: 0.25, duration});
-}
-const isPhone = () => matchMedia("(max-width: 760px)").matches;
-function relayout() { requestAnimationFrame(() => { map.updateSize(); fitPlot(0); }); }
-function setMapMain(on) {
-  document.body.classList.toggle("mapmain", on);
-  if (!on) { stopMeasure(); $("mapctl").classList.remove("open"); }
-  relayout();
-}
-$("q").addEventListener("focus", () => document.body.classList.add("searching"));
-$("q").addEventListener("blur", () => setTimeout(() => document.body.classList.remove("searching"), 250));
-// Haus-Symbol: zurück zur Startseite
-const startResults = $("results").innerHTML, startView = {center: map.getView().getCenter(), resolution: map.getView().getResolution()};
-$("homeBtn").addEventListener("click", () => {
-  $("mClear").click(); toggleDrawer(false); $("mapctl").classList.remove("open");
-  document.body.classList.remove("has-result", "mapmain");
-  markerSrc.clear(); selSrc.clear(); plotSrc.clear();
-  $("results").innerHTML = startResults; $("q").value = ""; curPlace = null; cur = {sum: null, zone: null};
-  document.querySelector(".side").scrollTop = 0;
-  requestAnimationFrame(() => { map.updateSize(); map.getView().cancelAnimations(); map.getView().animate({...startView, duration: 500}); });
-});
-$("pipMap").addEventListener("click", () => setMapMain(true));
-$("pipInfo").addEventListener("click", () => setMapMain(false));
-function toggleDrawer(open) {
-  $("drawer").classList.toggle("open", open); $("backdrop").hidden = !open;
-  $("menuBtn").setAttribute("aria-expanded", open);
-}
-$("menuBtn").addEventListener("click", () => toggleDrawer(true));
-$("drawerClose").addEventListener("click", () => toggleDrawer(false));
-$("backdrop").addEventListener("click", () => toggleDrawer(false));
-// Auf dem Handy: Einstellungen und Rechtliches ins Menü, Messwerkzeuge auf die Karte
-if (isPhone()) {
-  const side = document.querySelector(".side");
-  $("drawer").append(side.querySelector(":scope > details"), side.querySelector(":scope > .legal"));
-  document.querySelector(".mapwrap").append(side.querySelector(":scope > .tools"));
-}
-$("layerBtn").addEventListener("click", e => { const o = $("mapctl").classList.toggle("open"); e.currentTarget.setAttribute("aria-expanded", o); });
-$("opDrawing").addEventListener("input", e => drawingLayer.setOpacity(+e.target.value));
-
-let drawingReady = false;
-async function initDrawing() {
-  if (drawingReady) return; drawingReady = true;
-  const t = await getText(CFG.bplanWms + "?SERVICE=WMS&REQUEST=GetCapabilities&VERSION=1.3.0", "Planzeichnungen (WMS)");
-  if (!t) return;
-  try {
-    const caps = new ol.format.WMSCapabilities().read(t), names = [];
-    (function walk(l) { if (!l) return; if (l.Name && !(l.Layer || []).length) names.push(l.Name); (l.Layer || []).forEach(walk); })(caps.Capability.Layer);
-    drawingLayer.setSource(new ol.source.ImageWMS({url: CFG.bplanWms, projection: UTM,
-      params: {LAYERS: names.join(","), FORMAT: "image/png", TRANSPARENT: true, VERSION: "1.3.0"}}));
-  } catch { diag("✗ Planzeichnungen: Antwort nicht lesbar", "fail"); }
-}
-
 // ---------- Hilfsfunktionen ----------
+const $ = id => document.getElementById(id), qs = s => document.querySelector(s), body = document.body.classList;
+const on = (id, ev, fn) => $(id).addEventListener(ev, fn);
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
+const fmt = (n, d = 0) => Number(n).toLocaleString("de-DE", {maximumFractionDigits: d});
+const isUrl = v => typeof v === "string" && /^https?:\/\//.test(v);
+const parseXml = t => new DOMParser().parseFromString(t, "application/xml");
+const tags = (node, n) => node.getElementsByTagNameNS("*", n);
+const diag = (msg, cls = "") => $("diag").insertAdjacentHTML("beforeend", `<li class="${cls}">${esc(msg)}</li>`);
 async function getText(url, label) {
   try {
     const r = await fetch(url);
@@ -1049,215 +902,242 @@ async function getText(url, label) {
     return t;
   } catch (e) { diag("✗ " + label + ": " + (e.message || e), "fail"); return null; }
 }
-const parseXml = t => new DOMParser().parseFromString(t, "application/xml");
-const esc = s => String(s).replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
-const fmt = (n, d = 0) => Number(n).toLocaleString("de-DE", {maximumFractionDigits: d});
-const isUrl = v => typeof v === "string" && /^https?:\/\//.test(v);
-
 function planName(p) {
   for (const k of ["plan", "planname", "name", "bezeichnung", "bplan", "titel"]) if (typeof p[k] === "string" && p[k] && !isUrl(p[k])) return p[k];
   const k = Object.keys(p).find(k => /plan|name/i.test(k) && typeof p[k] === "string" && !isUrl(p[k]));
   return k ? p[k] : "";
 }
-
-// Liest Features aus einer GML-Antwort: Geometrie über OpenLayers, Attribute generisch über das DOM
+// Features aus GML: Geometrie über OpenLayers, Attribute generisch über das DOM
 function readGml(xmlText) {
   const doc = parseXml(xmlText);
   if (doc.getElementsByTagName("parsererror").length) return [];
-  let olFeatures = [];
-  try { olFeatures = new ol.format.WFS().readFeatures(doc, {dataProjection: UTM, featureProjection: UTM}); } catch (e) { /* nur Attribute */ }
-  const feats = [...doc.documentElement.children].filter(n => /members?$/i.test(n.localName)).flatMap(m => [...m.children]);
-  return feats.map((f, i) => {
+  let olf = [];
+  try { olf = new ol.format.WFS().readFeatures(doc, {dataProjection: UTM, featureProjection: UTM}); } catch { /* nur Attribute */ }
+  return [...doc.documentElement.children].filter(n => /members?$/i.test(n.localName)).flatMap(m => [...m.children]).map((f, i) => {
     const props = {};
     for (const c of f.children) {
-      if (c.localName === "boundedBy") continue;
-      if (c.getElementsByTagNameNS("*", "posList").length || c.getElementsByTagNameNS("*", "pos").length || c.getElementsByTagNameNS("*", "coordinates").length) continue;
+      if (c.localName === "boundedBy" || ["posList", "pos", "coordinates"].some(n => tags(c, n).length)) continue;
       const href = c.getAttribute("xlink:href") || c.getAttributeNS("http://www.w3.org/1999/xlink", "href");
       const val = (c.children.length ? [...c.querySelectorAll("*")].filter(x => !x.children.length).map(x => x.textContent.trim()).filter(Boolean).join(" | ") : c.textContent.trim()) || href || "";
       if (val) props[c.localName] = val;
     }
-    return {type: f.localName, props, geometry: olFeatures[i] ? olFeatures[i].getGeometry() : null};
+    return {type: f.localName, props, geometry: olf[i] ? olf[i].getGeometry() : null};
   });
 }
-
 function wfsUrlBbox(base, typeName, ext, max = 20) {
   const u = new URL(base);
-  u.search = new URLSearchParams({service: "WFS", version: "1.1.0", request: "GetFeature", typeName,
-    srsName: "EPSG:25832", bbox: ext.join(",") + ",urn:ogc:def:crs:EPSG::25832", maxFeatures: String(max)}).toString();
-  return u.toString();
+  u.search = new URLSearchParams({service: "WFS", version: "1.1.0", request: "GetFeature", typeName, srsName: "EPSG:25832", bbox: ext + ",urn:ogc:def:crs:EPSG::25832", maxFeatures: max});
+  return "" + u;
 }
 const wfsUrl = (base, typeName, [x, y]) => wfsUrlBbox(base, typeName, [x - 1, y - 1, x + 1, y + 1]);
+
+// ---------- Karte ----------
+proj4.defs("EPSG:25832", "+proj=utm +zone=32 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs");
+ol.proj.proj4.register(proj4);
+const UTM = ol.proj.get("EPSG:25832");
+UTM.setExtent([-1877994.66, 3932281.56, 836715.13, 9440581.95]);
+const St = o => new ol.style.Style(o), Sk = (color, width, lineDash) => new ol.style.Stroke({color, width, lineDash}), Fl = color => new ol.style.Fill({color});
+const vec = (source, style, o) => new ol.layer.Vector({source, style, ...o});
+
+const bgLayers = ["grau", "farbe"].map(n => new ol.layer.Tile({visible: n === "farbe", properties: {bg: n},
+  source: new ol.source.XYZ({url: CFG.basemap(n), maxZoom: 18, crossOrigin: "anonymous", attributions: "© basemap.de / BKG"})}));
+const drawingLayer = new ol.layer.Image({visible: false, opacity: 0.7, minZoom: 0}); // Planzeichnungen (WMS)
+// Alle B-Plan-Grenzen im Kartenausschnitt, dünn und mit Namen
+const boundsSrc = new ol.source.Vector({format: new ol.format.WFS(), strategy: ol.loadingstrategy.bbox, url: ext => wfsUrlBbox(CFG.bplanWfs, CFG.bplanTypes[0].type, ext, 500)});
+boundsSrc.on("featuresloaderror", () => diag("✗ B-Plan-Grenzen konnten nicht geladen werden", "fail"));
+const boundsLayer = vec(boundsSrc, (f, res) => St({stroke: Sk(css("--plan"), 1.5), fill: Fl("rgba(0,0,0,0)"),
+  text: res < 2.5 ? new ol.style.Text({text: planName(f.getProperties()), font: "600 12px system-ui, sans-serif", fill: Fl(css("--plan")), stroke: Sk("#fff", 3), overflow: false}) : undefined}),
+  {maxResolution: CFG.boundsMaxRes});
+const [selSrc, plotSrc, measureSrc, markerSrc] = [1, 2, 3, 4].map(() => new ol.source.Vector());
+const clearMap = () => [markerSrc, selSrc, plotSrc].forEach(s => s.clear());
+const selLayer = vec(selSrc, () => St({stroke: Sk(css("--plan"), 4), fill: Fl("rgba(194,39,45,0.10)")}));
+// Grundstück: weißer Rand, gelbe Kontur und Füllung, Beschriftung über dem Grundstück (verdeckt den Plannamen nicht)
+const plotLayer = vec(plotSrc, (f, res) => [St({stroke: Sk("rgba(255,255,255,0.95)", 9)}), St({stroke: Sk(css("--plot"), 4), fill: Fl("rgba(255,190,0,0.32)")}),
+  ...(res < 2.5 ? [St({geometry: g => { const e = g.getGeometry().getExtent(); return new ol.geom.Point([(e[0] + e[2]) / 2, e[3]]); },
+    text: new ol.style.Text({text: (f.get("label") || "").replace("\n", " · "), font: "650 13px " + css("--sans"), offsetY: -16, fill: Fl("#1a1300"),
+      backgroundFill: Fl("rgba(255,255,255,0.92)"), backgroundStroke: Sk(css("--plot"), 1.5), padding: [3, 7, 3, 7], overflow: true})})] : [])], {zIndex: 10});
+const measureLayer = vec(measureSrc, () => St({stroke: Sk(css("--accent"), 2, [6, 4]), fill: Fl("rgba(31,79,191,0.12)")}));
+const markerLayer = vec(markerSrc, St({image: new ol.style.Circle({radius: 7, fill: Fl("#c2272d"), stroke: Sk("#fff", 2)})}));
+const map = new ol.Map({target: "map", layers: [...bgLayers, drawingLayer, boundsLayer, selLayer, plotLayer, measureLayer, markerLayer],
+  view: new ol.View({projection: UTM, center: [565500, 5934000], resolution: 40, maxResolution: 300, minResolution: 0.1}),
+  controls: ol.control.defaults.defaults({attributionOptions: {collapsible: true}}).extend([new ol.control.ScaleLine({units: "metric"})])});
+const view = map.getView();
+const updateZoomHint = () => { $("zoomhint").hidden = !$("tBounds").checked || view.getResolution() <= CFG.boundsMaxRes; };
+view.on("change:resolution", updateZoomHint); updateZoomHint();
+
+// ---------- Kartensteuerung, Menü, Bild-im-Bild (Handy) ----------
+document.querySelectorAll("input[name=bg]").forEach(r => r.addEventListener("change", () => bgLayers.forEach(l => l.setVisible(l.get("bg") === qs("input[name=bg]:checked").value))));
+on("tBounds", "change", e => { boundsLayer.setVisible(e.target.checked); updateZoomHint(); });
+on("tDrawing", "change", e => { drawingLayer.setVisible(e.target.checked); $("opDrawing").hidden = !e.target.checked; if (e.target.checked) initDrawing(); });
+on("opDrawing", "input", e => drawingLayer.setOpacity(+e.target.value));
+on("layerBtn", "click", e => e.currentTarget.setAttribute("aria-expanded", $("mapctl").classList.toggle("open")));
+let drawingReady = false;
+async function initDrawing() { // Layer der Planzeichnungen aus GetCapabilities
+  if (drawingReady) return; drawingReady = true;
+  const t = await getText(CFG.bplanWms + "?SERVICE=WMS&REQUEST=GetCapabilities&VERSION=1.3.0", "Planzeichnungen (WMS)");
+  if (!t) return;
+  try {
+    const names = [];
+    (function walk(l) { if (!l) return; if (l.Name && !(l.Layer || []).length) names.push(l.Name); (l.Layer || []).forEach(walk); })(new ol.format.WMSCapabilities().read(t).Capability.Layer);
+    drawingLayer.setSource(new ol.source.ImageWMS({url: CFG.bplanWms, projection: UTM, params: {LAYERS: names.join(","), FORMAT: "image/png", TRANSPARENT: true, VERSION: "1.3.0"}}));
+  } catch { diag("✗ Planzeichnungen: Antwort nicht lesbar", "fail"); }
+}
+const isPhone = () => matchMedia("(max-width: 760px)").matches;
+function fitPlot(duration = 600) {
+  const f = plotSrc.getFeatures()[0]; if (!f) return;
+  const small = isPhone() && body.contains("has-result") && !body.contains("mapmain");
+  view.cancelAnimations();
+  view.fit(ol.extent.buffer(f.getGeometry().getExtent(), small ? 4 : 15), {padding: Array(4).fill(small ? 8 : 60), minResolution: 0.25, duration});
+}
+const relayout = () => requestAnimationFrame(() => { map.updateSize(); fitPlot(0); });
+function setMapMain(v) { body.toggle("mapmain", v); if (!v) { stopMeasure(); $("mapctl").classList.remove("open"); } relayout(); }
+function toggleDrawer(v) { $("drawer").classList.toggle("open", v); $("backdrop").hidden = !v; $("menuBtn").setAttribute("aria-expanded", v); }
+on("pipMap", "click", () => setMapMain(true));
+on("pipInfo", "click", () => setMapMain(false));
+on("menuBtn", "click", () => toggleDrawer(true));
+on("drawerClose", "click", () => toggleDrawer(false));
+on("backdrop", "click", () => toggleDrawer(false));
+on("q", "focus", () => body.add("searching"));
+on("q", "blur", () => setTimeout(() => body.remove("searching"), 250));
+if (isPhone()) { // Einstellungen und Rechtliches ins Menü, Messwerkzeuge auf die Karte
+  const side = qs(".side");
+  $("drawer").append(side.querySelector(":scope > details"), side.querySelector(":scope > .legal"));
+  qs(".mapwrap").append(side.querySelector(":scope > .tools"));
+}
+// Haus-Symbol: zurück zur Startseite
+const startResults = $("results").innerHTML, startView = {center: view.getCenter(), resolution: view.getResolution()};
+on("homeBtn", "click", () => {
+  $("mClear").click(); toggleDrawer(false); $("mapctl").classList.remove("open"); body.remove("has-result", "mapmain"); clearMap();
+  queryId++; $("results").innerHTML = startResults; $("q").value = ""; curPlace = null; cur = {sum: null, zone: null}; qs(".side").scrollTop = 0;
+  requestAnimationFrame(() => { map.updateSize(); view.cancelAnimations(); view.animate({...startView, duration: 500}); });
+});
 
 // ---------- Suche ----------
 function parseCoordinates(q) {
   const m = q.trim().match(/^(-?\d+(?:[.,]\d+)?)\s*[,;\s]\s*(-?\d+(?:[.,]\d+)?)$/);
   if (!m) return null;
-  let a = parseFloat(m[1].replace(",", ".")), b = parseFloat(m[2].replace(",", "."));
+  let [a, b] = [m[1], m[2]].map(v => parseFloat(v.replace(",", ".")));
   if (Math.abs(a) <= 90 && Math.abs(b) <= 180) {
     if (a < b) [a, b] = [b, a]; // Hamburg: Breite ~53.5 > Länge ~10
     return ol.proj.transform([b, a], "EPSG:4326", UTM);
   }
   if (a > 1e6 && b < 1e6) [a, b] = [b, a];
-  if (a > 100000 && a < 900000 && b > 5e6 && b < 7e6) return [a, b];
-  return null;
+  return a > 100000 && a < 900000 && b > 5e6 && b < 7e6 ? [a, b] : null;
 }
-
 async function gazetteer(q) {
-  const m = q.trim().match(/^(.*?)[\s,]+(\d+)\s*([a-zA-Z])?$/);
-  let url;
-  if (m) {
-    const [, street, nr, zus] = m;
-    url = CFG.gazetteer + (zus
-      ? `&StoredQuery_ID=AdresseMitZusatz&strassenname=${encodeURIComponent(street)}&hausnummer=${nr}&zusatz=${encodeURIComponent(zus)}`
-      : `&StoredQuery_ID=AdresseOhneZusatz&strassenname=${encodeURIComponent(street)}&hausnummer=${nr}`);
-  } else {
-    url = CFG.gazetteer + `&StoredQuery_ID=findeStrasse&strassenname=${encodeURIComponent(q.trim())}`;
-  }
-  const t = await getText(url, "Adresssuche Hamburg");
+  const m = q.trim().match(/^(.*?)[\s,]+(\d+)\s*([a-zA-Z])?$/), enc = encodeURIComponent;
+  const t = await getText(CFG.gazetteer + (m ? `&StoredQuery_ID=Adresse${m[3] ? "Mit" : "Ohne"}Zusatz&strassenname=${enc(m[1])}&hausnummer=${m[2]}${m[3] ? "&zusatz=" + enc(m[3]) : ""}`
+    : `&StoredQuery_ID=findeStrasse&strassenname=${enc(q.trim())}`), "Adresssuche Hamburg");
   if (!t) return null;
-  const doc = parseXml(t);
-  const pos = doc.getElementsByTagNameNS("*", "position")[0]?.getElementsByTagNameNS("*", "pos")[0] || doc.getElementsByTagNameNS("*", "pos")[0];
+  const doc = parseXml(t), pos = tags(doc, "position")[0]?.getElementsByTagNameNS("*", "pos")[0] || tags(doc, "pos")[0];
   if (!pos) return null;
-  const [x, y] = pos.textContent.trim().split(/\s+/).map(Number);
-  const name = doc.getElementsByTagNameNS("*", "geographicIdentifier")[0]?.textContent || q;
+  const name = tags(doc, "geographicIdentifier")[0]?.textContent || q;
   const leaf = re => [...doc.getElementsByTagName("*")].find(n => re.test(n.localName) && !n.children.length)?.textContent.trim() || "";
-  return {coord: [x, y], name, stadtteil: leaf(/^stadtteil(name)?$/i) || (name.match(/\(OT ([^)]+)\)/) || [])[1] || "", ortsteil: leaf(/^ortsteil(nummer)?$/i)};
+  return {coord: pos.textContent.trim().split(/\s+/).map(Number).slice(0, 2), name, stadtteil: leaf(/^stadtteil(name)?$/i) || (name.match(/\(OT ([^)]+)\)/) || [])[1] || "", ortsteil: leaf(/^ortsteil(nummer)?$/i)};
 }
-
-$("searchForm").addEventListener("submit", async e => {
+on("searchForm", "submit", async e => {
   e.preventDefault();
-  if (document.body.classList.contains("mapmain")) setMapMain(false);
+  if (body.contains("mapmain")) setMapMain(false);
   const q = $("q").value.trim();
   if (!q) return;
   const c = parseCoordinates(q);
-  if (c) { curPlace = null; map.getView().animate({center: c, resolution: 0.8}); return queryAt(c, "Koordinate " + q); }
-  showBusy("Adresse wird gesucht …");
-  const hit = await gazetteer(q);
-  if (!hit) return showMessage("Adresse nicht gefunden. Bitte Straße und Hausnummer prüfen (z. B. „Bramfelder Chaussee 300“) oder direkt in die Karte tippen.");
-  map.getView().animate({center: hit.coord, resolution: 0.8});
+  if (c) { curPlace = null; view.animate({center: c, resolution: 0.8}); return queryAt(c, "Koordinate " + q); }
+  showCard("Bitte warten", "Adresse wird gesucht …");
+  const id = ++queryId, hit = await gazetteer(q);
+  if (id !== queryId) return;
+  if (!hit) return showCard("Hinweis", "Adresse nicht gefunden. Bitte Straße und Hausnummer prüfen (z. B. „Bramfelder Chaussee 300“) oder direkt in die Karte tippen.");
+  view.animate({center: hit.coord, resolution: 0.8});
   addRecent(q);
   curPlace = hit;
   queryAt(hit.coord, hit.name);
 });
 
 // ---------- Abfrage an einem Punkt ----------
-let lastMass = {};
-let cur = {sum: null, zone: null};
+let lastMass = {}, cur = {sum: null, zone: null}, curPlace = null, queryId = 0; // queryId: nur die neueste Abfrage darf anzeigen
 const normKey = s => String(s || "").toLowerCase().replace(/ä/g, "ae").replace(/ö/g, "oe").replace(/ü/g, "ue").replace(/ß/g, "ss").replace(/[^a-z0-9]/g, "");
-
 function findSummary(plans) {
   for (const p of plans) {
     const k = normKey(planName(p.props));
-    const key = SUMMARIES[k] ? k : Object.keys(SUMMARIES).find(s => k.startsWith(s) || Object.values(p.props).some(v => normKey(v) === s));
+    const key = SUMMARIES[k] ? k : Object.keys(SUMMARIES).find(s => (k.startsWith(s) && !/^\d/.test(k.slice(s.length))) || Object.values(p.props).some(v => normKey(v) === s));
     if (key) return {plan: p, sum: SUMMARIES[key]};
   }
   return null;
 }
-
-// Flurstücksnummer (Zähler) aus den ALKIS-Attributen
-function plotNumber(plot) {
+function plotNumber(plot) { // Flurstücksnummer (Zähler) aus den ALKIS-Attributen
   if (!plot) return null;
   const p = plot.props;
   for (const k of ["flurstuecksnummer", "flstnrzae", "zaehler", "flurstuecksnummer_zaehler"]) if (p[k] && /^\d+/.test(p[k])) return parseInt(p[k], 10);
   const kz = String(p.flurstueckskennzeichen || p.flstkennz || p.kennzeichen || "").replace(/_/g, "0");
-  if (/^\d{14}/.test(kz)) return parseInt(kz.slice(9, 14), 10);
-  return null;
+  return /^\d{14}/.test(kz) ? parseInt(kz.slice(9, 14), 10) : null;
 }
-
 async function queryAt(coord, placeName) {
-  markerSrc.clear(); selSrc.clear(); plotSrc.clear();
+  const id = ++queryId;
+  clearMap();
   markerSrc.addFeature(new ol.Feature(new ol.geom.Point(coord)));
-  showBusy("Bebauungsplan wird gesucht …");
+  showCard("Bitte warten", "Bebauungsplan wird gesucht …");
   lastMass = {};
-
   const [plans, plot, xplan] = await Promise.all([
     Promise.all(CFG.bplanTypes.map(async t => {
       const txt = await getText(wfsUrl(CFG.bplanWfs, t.type, coord), "Bebauungspläne " + t.label);
       return txt ? readGml(txt).map(f => ({...f, status: t.label})) : [];
     })).then(a => a.flat()),
-    queryPlot(coord),
-    queryXplan(coord)
-  ]);
-
+    queryPlot(coord), queryXplan(coord)]);
+  if (id !== queryId) return;
   for (const p of plans) if (p.geometry) selSrc.addFeature(new ol.Feature(p.geometry));
   if (plot?.geometry) {
     plotSrc.addFeature(new ol.Feature({geometry: plot.geometry, label: "Ihr Grundstück" + (plot.area ? "\n" + fmt(plot.area) + " m²" : "")}));
-    // automatisch auf das Grundstück zoomen
-    fitPlot();
+    fitPlot(); // automatisch auf das Grundstück zoomen
   }
   for (const p of [...plans, ...xplan, ...(plot ? [plot] : [])].map(f => f.props))
     for (const [k, v] of Object.entries(p)) { const key = k.toLowerCase(); if (MASS[key] && !lastMass[key]) lastMass[key] = v; }
   if (plot?.area) plotArea = Math.round(plot.area);
-
   renderResult(coord, placeName, plans, plot);
 }
 
+const linkBtns = p => `<div class="linkbtns">${pdfLinks(p).map(l => `<a class="btn ghostbtn" href="${esc(l.u)}" target="_blank" rel="noopener">${esc(l.label)} ansehen</a>`).join("")}</div>`;
+const li = a => a.map(x => `<li>${esc(x)}</li>`).join("");
 function renderResult(coord, placeName, plans, plot) {
   const r = $("results"); r.innerHTML = "";
-  if (!document.body.classList.contains("has-result")) { document.body.classList.add("has-result"); if (isPhone()) relayout(); }
-  const found = findSummary(plans);
-  const valid = plans.filter(p => p.status === "festgestellt");
-  const main = found?.plan || valid[0] || plans[0];
-  const sum = found?.sum || null;
-  const flst = plotNumber(plot);
+  if (!body.contains("has-result")) { body.add("has-result"); if (isPhone()) relayout(); }
+  const found = findSummary(plans), valid = plans.filter(p => p.status === "festgestellt");
+  const main = found?.plan || valid[0] || plans[0], sum = found?.sum || null, flst = plotNumber(plot);
   cur = {sum, zone: sum ? (sum.zones.find(z => flst && z.flst.includes(flst)) || null) : null};
-
   if (!main) {
-    r.appendChild(card("Kein Bebauungsplan gefunden", `<p class="hint">${esc(placeName)}</p>
+    r.append(card("Kein Bebauungsplan gefunden", `<p class="hint">${esc(placeName)}</p>
       <p>Hier gilt vermutlich kein Bebauungsplan. Dann darf so gebaut werden, wie es sich in die Umgebung einfügt (§ 34 BauGB): ähnliche Höhe, Größe und Bauweise wie die Nachbarhäuser.</p>
-      <p class="hint">Falls der Dienst nicht erreichbar war, steht das unter „Einstellungen und Diagnose“.</p>`));
-    r.appendChild(calcCard()); r.appendChild(generalCard());
-    appendExtras(r, coord, plot, null, placeName, null);
-    r.appendChild(rawDetails(coord, plans));
-    updateCalc();
-    return;
-  }
-
-  // Kopf
-  r.appendChild(card("", `
-    <div class="meta"><span class="pill ${main.status === "festgestellt" ? "" : "draft"}">${esc(main.status === "festgestellt" ? "Bebauungsplan gilt" : "Bebauungsplan im Verfahren")}</span>${sum?.auto ? `<span class="pill none">automatisch erstellt</span>` : ""}</div>
-    <p class="plan-name">${esc(sum?.name || planTitle(planName(main.props)) || "Bebauungsplan")}</p>
-    <p class="hint">${esc(placeName)}</p>
-    <div class="meta">${flst ? `<span>Flurstück ${flst}</span>` : ""}${plot?.area ? `<span>${fmt(plot.area)} m²${plot.areaAmtlich ? " amtlich" : ""}</span>` : ""}${sum ? `<span>festgestellt ${esc(sum.festgestellt)}</span>` : ""}</div>`, "hero"));
-
-  // Hinweise
-  const warns = [...(sum?.warnings || []).map(w => w.text)];
-  const kind = planKind(planName(main.props));
-  if (kind && !sum) warns.push(kind.hint);
-  if (valid.length > 1) warns.unshift("An dieser Stelle gelten mehrere Bebauungspläne: " + valid.map(p => planName(p.props)).filter(Boolean).join(", ") + ". Meist geht der neuere vor.");
-  if (main.status !== "festgestellt") warns.unshift("Dieser Plan ist noch nicht beschlossen. Er kann sich noch ändern.");
-  if (warns.length) r.appendChild(card("Bitte beachten", `<ul class="warn-list">${warns.map(w => `<li>${esc(w)}</li>`).join("")}</ul>`, "warn"));
-
-  if (sum) {
-    // Baufeld
-    const opts = sum.zones.map(z => `<option value="${esc(z.id)}" ${cur.zone === z ? "selected" : ""}>${esc(z.lage)}</option>`).join("");
-    const zc = card("Ihr Grundstück", `
-      <label class="hint" for="zoneSel">${cur.zone ? "Erkannt über die Flurstücksnummer. Falls falsch, bitte auswählen:" : "Bitte wählen Sie die Lage Ihres Grundstücks:"}</label>
-      <select id="zoneSel"><option value="">– Lage wählen –</option>${opts}</select>
-      <div id="glance"></div>`);
-    r.appendChild(zc);
-    zc.querySelector("#zoneSel").addEventListener("change", e => { cur.zone = sum.zones.find(z => z.id === e.target.value) || null; renderGlance(); updateCalc(); });
-    r.appendChild(calcCard());
-    if (pdfLinks(main).length) r.appendChild(card("Originalplan", `<p class="hint">Verbindlich ist nur der Originalplan. Hier können Sie ihn selbst ansehen:</p>
-      <div class="linkbtns">${pdfLinks(main).map(l => `<a class="btn ghostbtn" href="${esc(l.u)}" target="_blank" rel="noopener">${esc(l.label)} ansehen</a>`).join("")}</div>`));
-    const rl = x => `<dt>${esc(x.t)}</dt><dd>${esc(x.d)}</dd>`;
-    r.appendChild(card("Das sollten Sie wissen", `<dl class="rules">${sum.rules.slice(0, 4).map(rl).join("")}</dl>
-      ${sum.rules.length > 4 ? `<details class="more"><summary>Alle ${sum.rules.length} Regeln anzeigen</summary><dl class="rules">${sum.rules.slice(4).map(rl).join("")}</dl></details>` : ""}`));
-    r.appendChild(card("Nicht in diesem Plan geregelt", `<ul class="plain">${sum.notRegulated.map(x => `<li>${esc(x)}</li>`).join("")}</ul>`));
-    r.appendChild(generalCard());
-    const src = document.createElement("div"); src.className = "srcline";
-    src.innerHTML = `<p class="legal">Kurzfassung aus: ${esc(sum.sources)} ${esc(sum.zonesNote)} Verbindlich ist nur der Originalplan.</p>
-      <details><summary>Fundstellen</summary><ul class="plain legal">${[...sum.warnings.map(w => w.text.split(".")[0] + ": " + w.src), ...sum.zones.filter(z => z.src).map(z => z.lage + ": " + z.src), ...sum.rules.map(x => x.t + ": " + x.src)].map(t => `<li>${esc(t)}</li>`).join("")}</ul></details>`;
-    r.appendChild(src);
-    renderGlance();
+      <p class="hint">Falls der Dienst nicht erreichbar war, steht das unter „Einstellungen und Diagnose“.</p>`), calcCard(), generalCard());
   } else {
-    r.appendChild(card("Kurzfassung", `<p>Für diesen Plan gibt es noch keine Kurzfassung in der App.</p>
-      ${Object.keys(lastMass).length ? `<div class="big">${Object.entries(lastMass).map(([k, v]) => `<div><b>${esc(v)}</b><span>${esc(MASS[k])}</span></div>`).join("")}</div>` : ""}
-      <div class="linkbtns">${pdfLinks(main).map(l => `<a class="btn ghostbtn" href="${esc(l.u)}" target="_blank" rel="noopener">${esc(l.label)} ansehen</a>`).join("")}</div>`));
-    r.appendChild(calcCard()); r.appendChild(generalCard());
+    const gilt = main.status === "festgestellt";
+    r.append(card("", `<div class="meta"><span class="pill ${gilt ? "" : "draft"}">${gilt ? "Bebauungsplan gilt" : "Bebauungsplan im Verfahren"}</span>${sum?.auto ? `<span class="pill none">automatisch erstellt</span>` : ""}</div>
+      <p class="plan-name">${esc(sum?.name || planTitle(planName(main.props)) || "Bebauungsplan")}</p>
+      <p class="hint">${esc(placeName)}</p>
+      <div class="meta">${flst ? `<span>Flurstück ${flst}</span>` : ""}${plot?.area ? `<span>${fmt(plot.area)} m²${plot.areaAmtlich ? " amtlich" : ""}</span>` : ""}${sum ? `<span>festgestellt ${esc(sum.festgestellt)}</span>` : ""}</div>`, "hero"));
+    const warns = (sum?.warnings || []).map(w => w.text), kind = planKind(planName(main.props));
+    if (kind && !sum) warns.push(kind.hint);
+    if (valid.length > 1) warns.unshift("An dieser Stelle gelten mehrere Bebauungspläne: " + valid.map(p => planName(p.props)).filter(Boolean).join(", ") + ". Meist geht der neuere vor.");
+    if (!gilt) warns.unshift("Dieser Plan ist noch nicht beschlossen. Er kann sich noch ändern.");
+    if (warns.length) r.append(card("Bitte beachten", `<ul class="warn-list">${li(warns)}</ul>`, "warn"));
+    if (sum) {
+      const zc = card("Ihr Grundstück", `<label class="hint" for="zoneSel">${cur.zone ? "Erkannt über die Flurstücksnummer. Falls falsch, bitte auswählen:" : "Bitte wählen Sie die Lage Ihres Grundstücks:"}</label>
+        <select id="zoneSel"><option value="">– Lage wählen –</option>${sum.zones.map(z => `<option value="${esc(z.id)}" ${cur.zone === z ? "selected" : ""}>${esc(z.lage)}</option>`).join("")}</select>
+        <div id="glance"></div>`);
+      zc.querySelector("#zoneSel").addEventListener("change", e => { cur.zone = sum.zones.find(z => z.id === e.target.value) || null; renderGlance(); updateCalc(); });
+      const rl = x => `<dt>${esc(x.t)}</dt><dd>${esc(x.d)}</dd>`, src = document.createElement("div");
+      src.className = "srcline";
+      src.innerHTML = `<p class="legal">Kurzfassung aus: ${esc(sum.sources)} ${esc(sum.zonesNote)} Verbindlich ist nur der Originalplan.</p>
+        <details><summary>Fundstellen</summary><ul class="plain legal">${li([...sum.warnings.map(w => w.text.split(".")[0] + ": " + w.src), ...sum.zones.filter(z => z.src).map(z => z.lage + ": " + z.src), ...sum.rules.map(x => x.t + ": " + x.src)])}</ul></details>`;
+      r.append(zc, calcCard(), pdfLinks(main).length ? card("Originalplan", `<p class="hint">Verbindlich ist nur der Originalplan. Hier können Sie ihn selbst ansehen:</p>${linkBtns(main)}`) : "",
+        card("Das sollten Sie wissen", `<dl class="rules">${sum.rules.slice(0, 4).map(rl).join("")}</dl>
+          ${sum.rules.length > 4 ? `<details class="more"><summary>Alle ${sum.rules.length} Regeln anzeigen</summary><dl class="rules">${sum.rules.slice(4).map(rl).join("")}</dl></details>` : ""}`),
+        card("Nicht in diesem Plan geregelt", `<ul class="plain">${li(sum.notRegulated)}</ul>`), generalCard(), src);
+      renderGlance();
+    } else {
+      r.append(card("Kurzfassung", `<p>Für diesen Plan gibt es noch keine Kurzfassung in der App.</p>
+        ${Object.keys(lastMass).length ? `<div class="big">${Object.entries(lastMass).map(([k, v]) => `<div><b>${esc(v)}</b><span>${esc(MASS[k])}</span></div>`).join("")}</div>` : ""}${linkBtns(main)}`), calcCard(), generalCard());
+    }
   }
-  appendExtras(r, coord, plot, sum, placeName, main);
-  r.appendChild(rawDetails(coord, plans));
+  appendExtras(r, coord, plot, sum, placeName);
+  r.append(rawDetails(coord, plans));
   updateCalc();
 }
 
@@ -1269,78 +1149,45 @@ const PLAN_KINDS = [
 ];
 const planKind = n => PLAN_KINDS.find(k => k.re.test(n || "")) || null;
 function planTitle(n) {
-  const k = planKind(n);
-  const rest = (k ? n.replace(k.re, "") : n || "").replace(/Sued/g, "Süd").replace(/([a-zäöüß])(\d)/g, "$1 $2");
+  const k = planKind(n), rest = (k ? n.replace(k.re, "") : n || "").replace(/Sued/g, "Süd").replace(/([a-zäöüß])(\d)/g, "$1 $2");
   return k ? `${k.title} ${rest}` : rest;
 }
-
-// Links eines Plans mit verständlicher Beschriftung, doppelte Adressen nur einmal
+// Links eines Plans mit verständlicher Beschriftung, doppelte Adressen nur einmal, gleiche Beschriftungen nummeriert
 function pdfLinks(p) {
-  const seen = new Set(), out = [];
-  for (const [k, u] of Object.entries(p.props)) {
-    if (!isUrl(u) || seen.has(u)) continue; seen.add(u);
-    const s = (k + " " + u).toLowerCase();
-    const label = /begr/.test(s) ? "Begründung" : /verord|gesetz|text/.test(s) ? "Verordnung (Text)" : /\.pdf|plan|zeichn/.test(s) ? "Planzeichnung (PDF)" : "Plan im Planportal";
-    out.push({u, label});
-  }
-  const cnt = {};
+  const out = [...new Set(Object.entries(p.props).filter(([, u]) => isUrl(u)).map(([, u]) => u))].map(u => {
+    const s = (Object.keys(p.props).find(k => p.props[k] === u) + " " + u).toLowerCase();
+    return {u, label: /begr/.test(s) ? "Begründung" : /verord|gesetz|text/.test(s) ? "Verordnung (Text)" : /\.pdf|plan|zeichn/.test(s) ? "Planzeichnung (PDF)" : "Plan im Planportal"};
+  });
+  const cnt = {}, n = {};
   out.forEach(l => cnt[l.label] = (cnt[l.label] || 0) + 1);
-  const n = {};
   return out.map(l => ({...l, label: cnt[l.label] > 1 ? `${l.label} ${n[l.label] = (n[l.label] || 0) + 1}` : l.label}));
 }
-
-function vgText(z) { if (z.vg == null) return "–"; return {"höchstens": `höchstens ${z.vg}`, "mindestens": `mindestens ${z.vg}`, "unbekannt": String(z.vg)}[z.vgArt] || `genau ${z.vg}`; }
-
-// Werte für das gewählte Baufeld (Plan-Wert oder Standardwert nach BauNVO)
-function zoneMass(sum, z) {
+const vgText = z => z.vg == null ? "–" : {"höchstens": `höchstens ${z.vg}`, "mindestens": `mindestens ${z.vg}`, "unbekannt": String(z.vg)}[z.vgArt] || `genau ${z.vg}`;
+function zoneMass(sum, z) { // Plan-Wert oder Standardwert nach BauNVO
   if (!sum || !z) return null;
   const d = (z.art === "WR" || z.art === "WA") ? sum.grzDefaults?.[z.vg] : null;
   return {grz: z.grz ?? d?.grz ?? null, gfz: z.gfz ?? d?.gfz ?? null, fromDefault: z.grz == null && !!d, vg: z.vg, vgArt: z.vgArt};
 }
-
+const tile = ([b, s], h = esc) => `<div><b>${h(b)}</b><span>${esc(s)}</span></div>`;
 function renderGlance() {
-  const g = $("glance"); if (!g) return;
-  const z = cur.zone, sum = cur.sum;
+  const g = $("glance"), z = cur.zone; if (!g) return;
   if (!z) { g.innerHTML = ""; return; }
-  const m = zoneMass(sum, z);
-  const tiles = [
-    [z.art, NUTZUNG[z.art]?.split(":")[0] || "Nutzung"],
-    [vgText(z), "Vollgeschosse"],
-    [z.bauweise || "–", "Bauweise"],
-    [z.tiefe || "–", "Tiefe Baufenster"],
-    ...(z.hoehe ? [[z.hoehe, "Höhe laut Plan"]] : []),
-    ...(z.gr ? [[fmt(z.gr) + " m²", "Grundfläche max."]] : []),
-    ...(z.dach ? [[z.dach, "Dach"]] : []),
-    ...(z.wohnungen ? [[String(z.wohnungen), "Wohnungen je Haus max."]] : []),
-    ...(z.gr && m.grz == null ? [] : [[m.grz != null ? String(m.grz).replace(".", ",") + (m.fromDefault ? "*" : "") : "–", "GRZ (Anteil bebaubar)"]]),
-    ...(z.gr && m.gfz == null ? [] : [[m.gfz != null ? String(m.gfz).replace(".", ",") + (m.fromDefault ? "*" : "") : "–", "GFZ (Geschossfläche)"]])
-  ];
+  const m = zoneMass(cur.sum, z), n = NUTZUNG[z.art], zahl = (v, t) => z.gr && v == null ? [] : [[v != null ? String(v).replace(".", ",") + (m.fromDefault ? "*" : "") : "–", t]];
+  const tiles = [[z.art, n?.split(":")[0] || "Nutzung"], [vgText(z), "Vollgeschosse"], [z.bauweise, "Bauweise"], [z.tiefe, "Tiefe Baufenster"], [z.hoehe, "Höhe laut Plan"],
+    [z.gr && fmt(z.gr) + " m²", "Grundfläche max."], [z.dach, "Dach"], [z.wohnungen && String(z.wohnungen), "Wohnungen je Haus max."], ...zahl(m.grz, "GRZ (Anteil bebaubar)"), ...zahl(m.gfz, "GFZ (Geschossfläche)")];
   const shy = t => esc(t).replace(/([a-zäöüß]{4})(häuser|geschosse|bauweise)/gi, "$1&shy;$2");
-  g.innerHTML = `<div class="big">${tiles.filter(([b]) => b && b !== "–").map(([b, s]) => `<div><b>${shy(b)}</b><span>${esc(s)}</span></div>`).join("")}</div>
-    <ul class="facts">${[NUTZUNG[z.art] && ["Nutzung", NUTZUNG[z.art].split(": ").slice(1).join(": ") || NUTZUNG[z.art]], z.extra && ["Besonderheit", z.extra], z.gruen && ["Begrünung", z.gruen],
+  g.innerHTML = `<div class="big">${tiles.filter(([b]) => b && b !== "–").map(t => tile(t, shy)).join("")}</div>
+    <ul class="facts">${[n && ["Nutzung", n.split(": ").slice(1).join(": ") || n], z.extra && ["Besonderheit", z.extra], z.gruen && ["Begrünung", z.gruen],
       z.noGarage && ["Garagen", "Auf diesem Grundstück sind keine eingeschossigen Garagen erlaubt."]].filter(Boolean).map(([t, d]) => `<li><b>${esc(t)}</b>${esc(d)}</li>`).join("")}</ul>
-    ${m.fromDefault ? `<p class="hint">* ${esc(sum.grzDefaultsNote)}</p>` : ""}`;
+    ${m.fromDefault ? `<p class="hint">* ${esc(cur.sum.grzDefaultsNote)}</p>` : ""}`;
 }
-
-// Hamburgweite Regeln, gelten auch ohne Kurzfassung
-function generalCard() {
-  if (typeof HAMBURG_ALLGEMEIN === "undefined") return document.createTextNode("");
-  const c = card("Gilt außerdem in ganz Hamburg", `<details class="more"><summary>Abstände, Bäume, Stellplätze, Solardach, Genehmigung</summary><dl class="rules">${HAMBURG_ALLGEMEIN.map(x => `<dt>${esc(x.t)}</dt><dd>${esc(x.d)} <span class="hint">(${esc(x.src)})</span></dd>`).join("")}</dl>
-    </details><p class="hint">Allgemeine Hinweise ohne Gewähr. Was für Ihr Grundstück gilt, sagt verbindlich das Bezirksamt.</p>`);
-  return c;
-}
-
-function calcCard() {
-  return card("Was darf ich bauen?", `
-    <div class="calc"><label for="plotArea">Grundstücksfläche</label><input type="number" id="plotArea" min="0" step="1" value="${plotArea ?? ""}"> m²</div>
-    <div class="tools"><button type="button" class="ghost" id="mArea2">Grundstück in der Karte umfahren</button></div>
-    <div id="calcOut" class="big"></div>
-    <p class="hint" id="calcNote"></p>`);
-}
-
+const generalCard = () => typeof HAMBURG_ALLGEMEIN === "undefined" ? "" : card("Gilt außerdem in ganz Hamburg", `<details class="more"><summary>Abstände, Bäume, Stellplätze, Solardach, Genehmigung</summary><dl class="rules">${HAMBURG_ALLGEMEIN.map(x => `<dt>${esc(x.t)}</dt><dd>${esc(x.d)} <span class="hint">(${esc(x.src)})</span></dd>`).join("")}</dl>
+  </details><p class="hint">Allgemeine Hinweise ohne Gewähr. Was für Ihr Grundstück gilt, sagt verbindlich das Bezirksamt.</p>`);
+const calcCard = () => card("Was darf ich bauen?", `<div class="calc"><label for="plotArea">Grundstücksfläche</label><input type="number" id="plotArea" min="0" step="1" value="${plotArea ?? ""}"> m²</div>
+  <div class="tools"><button type="button" class="ghost" id="mArea2">Grundstück in der Karte umfahren</button></div>
+  <div id="calcOut" class="big"></div><p class="hint" id="calcNote"></p>`);
 function rawDetails(coord, plans) {
-  const ll = ol.proj.transform(coord, UTM, "EPSG:4326");
-  const d = document.createElement("details");
+  const ll = ol.proj.transform(coord, UTM, "EPSG:4326"), d = document.createElement("details");
   d.innerHTML = `<summary>Technische Angaben</summary>
     <dl class="kv"><dt>UTM 32 (E/N)</dt><dd>${fmt(coord[0], 1)} / ${fmt(coord[1], 1)}</dd><dt>WGS84</dt><dd>${ll[1].toFixed(6)}, ${ll[0].toFixed(6)}</dd></dl>
     ${plans.map(p => `<p class="hint" style="margin-top:8px"><b>${esc(planName(p.props) || p.type)}</b></p><dl class="kv">${Object.entries(p.props).map(([k, v]) =>
@@ -1348,16 +1195,15 @@ function rawDetails(coord, plans) {
   return d;
 }
 
-// Sucht einmal den erreichbaren ALKIS-Dienst und den Namen der Objektart „Flurstück“
+// ---------- Flurstück (ALKIS) und XPlanung ----------
 let alkisSvc = null;
-async function findAlkis() {
+async function findAlkis() { // erreichbaren Dienst und Namen der Objektart „Flurstück“ einmal suchen
   if (alkisSvc) return alkisSvc;
   for (const url of CFG.alkisWfs) {
     try {
       const r = await fetch(url + "?SERVICE=WFS&REQUEST=GetCapabilities&VERSION=1.1.0");
       if (!r.ok) continue;
-      const names = [...parseXml(await r.text()).getElementsByTagNameNS("*", "FeatureType")]
-        .map(ft => ft.getElementsByTagNameNS("*", "Name")[0]?.textContent.trim()).filter(Boolean);
+      const names = [...tags(parseXml(await r.text()), "FeatureType")].map(ft => tags(ft, "Name")[0]?.textContent.trim()).filter(Boolean);
       const type = names.find(n => /(^|:)flurstueck$/i.test(n)) || names.find(n => /flurst/i.test(n));
       if (type) return (alkisSvc = {url, type});
     } catch { /* nächsten Dienst probieren */ }
@@ -1365,30 +1211,22 @@ async function findAlkis() {
   diag("✗ Flurstücke: kein ALKIS-Dienst gefunden", "fail");
   return null;
 }
-
 async function queryPlot(coord) {
-  const svc = await findAlkis();
-  if (!svc) return null;
-  const t = await getText(wfsUrl(svc.url, svc.type, coord), "Flurstücke");
-  if (!t) return null;
-  const f = readGml(t)[0];
+  const svc = await findAlkis(), t = svc && await getText(wfsUrl(svc.url, svc.type, coord), "Flurstücke"), f = t && readGml(t)[0];
   if (!f) return null;
-  // amtliche Fläche bevorzugen, sonst aus der Geometrie
-  const k = Object.keys(f.props).find(k => /^(amtlflsfl|amtlicheflaeche|flaeche)$/i.test(k));
+  const k = Object.keys(f.props).find(k => /^(amtlflsfl|amtlicheflaeche|flaeche)$/i.test(k)); // amtliche Fläche bevorzugen
   const amtl = k ? parseFloat(String(f.props[k]).replace(",", ".")) : NaN;
   f.area = amtl > 0 ? amtl : (f.geometry && f.geometry.getArea ? f.geometry.getArea() : null);
   f.areaAmtlich = amtl > 0;
   return f;
 }
-
 async function queryXplan(coord) {
   const base = $("xplanUrl").value.trim();
   if (!base) return [];
-  const res = await Promise.all(["xplan:BP_BaugebietsTeilFlaeche", "xplan:BP_UeberbaubareGrundstuecksFlaeche"].map(async ty => {
+  return (await Promise.all(["xplan:BP_BaugebietsTeilFlaeche", "xplan:BP_UeberbaubareGrundstuecksFlaeche"].map(async ty => {
     const t = await getText(wfsUrl(base, ty, coord), "XPlanung " + ty);
     return t ? readGml(t) : [];
-  }));
-  return res.flat();
+  }))).flat();
 }
 
 // ---------- Messen ----------
@@ -1398,64 +1236,46 @@ function startMeasure(kind) {
   $("mLine").classList.toggle("on", kind === "LineString");
   $("mArea").classList.toggle("on", kind === "Polygon");
   draw = new ol.interaction.Draw({source: measureSrc, type: kind});
-  let tipEl, tip;
   draw.on("drawstart", ev => {
-    tipEl = document.createElement("div"); tipEl.className = "tip";
-    tip = new ol.Overlay({element: tipEl, offset: [10, -10], positioning: "bottom-left"});
-    map.addOverlay(tip); tips.push(tip);
-    ev.feature.getGeometry().on("change", g => {
-      const geom = g.target;
-      if (geom instanceof ol.geom.Polygon) { tipEl.textContent = fmt(geom.getArea(), 1) + " m²"; tip.setPosition(geom.getInteriorPoint().getCoordinates()); }
-      else { tipEl.textContent = fmt(geom.getLength(), 2) + " m"; tip.setPosition(geom.getLastCoordinate()); }
+    const el = document.createElement("div"), tip = new ol.Overlay({element: el, offset: [10, -10], positioning: "bottom-left"});
+    el.className = "tip"; map.addOverlay(tip); tips.push(tip);
+    ev.feature.getGeometry().on("change", ({target: g}) => {
+      const poly = g instanceof ol.geom.Polygon;
+      el.textContent = poly ? fmt(g.getArea(), 1) + " m²" : fmt(g.getLength(), 2) + " m";
+      tip.setPosition(poly ? g.getInteriorPoint().getCoordinates() : g.getLastCoordinate());
     });
   });
-  draw.on("drawend", ev => {
-    const g = ev.feature.getGeometry();
-    if (g instanceof ol.geom.Polygon) setPlotArea(Math.round(g.getArea()));
-  });
+  draw.on("drawend", ev => { const g = ev.feature.getGeometry(); if (g instanceof ol.geom.Polygon) setPlotArea(Math.round(g.getArea())); });
   map.addInteraction(draw);
 }
 const stopMeasure = () => { if (draw) map.removeInteraction(draw); draw = null; $("mLine").classList.remove("on"); $("mArea").classList.remove("on"); };
-$("mLine").onclick = () => startMeasure("LineString");
-$("mArea").onclick = () => startMeasure("Polygon");
-$("mClear").onclick = () => { stopMeasure(); measureSrc.clear(); tips.forEach(t => map.removeOverlay(t)); tips.length = 0; };
+on("mLine", "click", () => startMeasure("LineString"));
+on("mArea", "click", () => startMeasure("Polygon"));
+on("mClear", "click", () => { stopMeasure(); measureSrc.clear(); tips.forEach(t => map.removeOverlay(t)); tips.length = 0; });
 
 // ---------- Rechner ----------
 const ROMAN = {I: 1, II: 2, III: 3, IV: 4, V: 5, VI: 6, VII: 7, VIII: 8, IX: 9, X: 10, XI: 11, XII: 12};
-const num = v => { const r = ROMAN[String(v ?? "").trim().toUpperCase()]; if (r) return r; const m = String(v ?? "").replace(",", ".").match(/-?\d+(\.\d+)?/); return m ? parseFloat(m[0]) : null; };
+const num = v => { v = String(v ?? ""); const r = ROMAN[v.trim().toUpperCase()]; if (r) return r; const m = v.replace(",", ".").match(/-?\d+(\.\d+)?/); return m ? parseFloat(m[0]) : null; };
 let plotArea = null;
 function setPlotArea(a) { plotArea = a; const el = $("plotArea"); if (el) el.value = a; updateCalc(); }
-
 function updateCalc() {
   const out = $("calcOut"); if (!out) return;
-  const a = num($("plotArea").value); plotArea = a;
-  const zm = zoneMass(cur.sum, cur.zone);
-  const grz = zm ? zm.grz : num(lastMass.grz ?? lastMass.grzmax);
-  const gfz = zm ? zm.gfz : num(lastMass.gfz ?? lastMass.gfzmax);
-  const vg = zm ? zm.vg : num(lastMass.z ?? lastMass.zmax ?? lastMass.zzwingend);
-  const tiles = [];
+  const a = plotArea = num($("plotArea").value), z = cur.zone, zm = zoneMass(cur.sum, z);
+  const grz = zm ? zm.grz : num(lastMass.grz ?? lastMass.grzmax), gfz = zm ? zm.gfz : num(lastMass.gfz ?? lastMass.gfzmax);
+  const vg = zm ? zm.vg : num(lastMass.z ?? lastMass.zmax ?? lastMass.zzwingend), tiles = [];
   // Überschreitung für Garagen, Zufahrten, Nebenanlagen (§ 19 Abs. 4 BauNVO ab 1990: 50 %, höchstens GRZ 0,8)
-  const ueber = cur.zone?.grUeber ?? (/(19[9]\d|20\d\d)/.test(cur.sum?.recht || "") ? 0.5 : null);
-  const gr = cur.zone?.gr || (a && grz ? a * grz : null);
+  const ueber = z?.grUeber ?? (/(19[9]\d|20\d\d)/.test(cur.sum?.recht || "") ? 0.5 : null), gr = z?.gr || (a && grz ? a * grz : null);
   if (gr) {
-    tiles.push([fmt(gr) + " m²", cur.zone?.gr ? "Grundfläche für das Haus (fest im Plan)" : "Grundfläche, die bebaut werden darf"]);
-    if (ueber) {
-      let tot = gr * (1 + ueber);
-      if (a && !cur.zone?.grUeber) tot = Math.min(tot, Math.max(gr, a * 0.8));
-      tiles.push([fmt(tot) + " m²", "inklusive Garage, Zufahrt, Nebengebäude"]);
-    }
+    tiles.push([fmt(gr) + " m²", z?.gr ? "Grundfläche für das Haus (fest im Plan)" : "Grundfläche, die bebaut werden darf"]);
+    if (ueber) tiles.push([fmt(a && !z?.grUeber ? Math.min(gr * (1 + ueber), Math.max(gr, a * 0.8)) : gr * (1 + ueber)) + " m²", "inklusive Garage, Zufahrt, Nebengebäude"]);
   }
   if (a && gfz) tiles.push([fmt(a * gfz) + " m²", "Wohn-/Geschossfläche insgesamt"]);
-  if (cur.zone?.hoehe) tiles.push([cur.zone.hoehe, "Höhe laut Plan"]);
+  if (z?.hoehe) tiles.push([z.hoehe, "Höhe laut Plan"]);
   else if (vg) tiles.push([`ca. ${fmt(vg * 3)} m`, "Höhe bis zur Traufe (Faustwert)"]);
-  out.innerHTML = tiles.map(([b, s]) => `<div><b>${esc(b)}</b><span>${esc(s)}</span></div>`).join("");
-  let note;
-  if (!a && !cur.zone?.gr) note = "Geben Sie die Grundstücksfläche ein oder umfahren Sie das Grundstück in der Karte.";
-  else if (grz || gfz || cur.zone?.gr) note = "Überschlag. Das Haus muss außerdem im Baufenster liegen, und Abstände zum Nachbarn müssen eingehalten werden." +
-    (cur.zone?.hoehe ? "" : " Die Höhe ist ein Faustwert von 3 m je Vollgeschoss, kein Wert aus dem Plan.");
-  else if (cur.sum && !cur.zone) note = "Wählen Sie oben die Lage Ihres Grundstücks, dann rechnet die App.";
-  else note = "Für diesen Ort liegen GRZ und GFZ noch nicht vor.";
-  $("calcNote").textContent = note;
+  out.innerHTML = tiles.map(t => tile(t)).join("");
+  $("calcNote").textContent = !a && !z?.gr ? "Geben Sie die Grundstücksfläche ein oder umfahren Sie das Grundstück in der Karte."
+    : grz || gfz || z?.gr ? "Überschlag. Das Haus muss außerdem im Baufenster liegen, und Abstände zum Nachbarn müssen eingehalten werden." + (z?.hoehe ? "" : " Die Höhe ist ein Faustwert von 3 m je Vollgeschoss, kein Wert aus dem Plan.")
+    : cur.sum && !z ? "Wählen Sie oben die Lage Ihres Grundstücks, dann rechnet die App." : "Für diesen Ort liegen GRZ und GFZ noch nicht vor.";
 }
 document.addEventListener("input", e => { if (e.target.id === "plotArea") updateCalc(); });
 document.addEventListener("click", e => { if (e.target.id === "mArea2") startMeasure("Polygon"); });
@@ -1468,16 +1288,11 @@ function addRecent(q) {
   try { localStorage.setItem("recent", JSON.stringify(recent)); } catch {}
   renderRecent();
 }
-function renderRecent() {
-  const box = $("recent"); box.hidden = !recent.length;
-  box.innerHTML = recent.map(q => `<button type="button" data-q="${esc(q)}">${esc(q)}</button>`).join("");
-}
-$("recent").addEventListener("click", e => { const q = e.target.dataset?.q; if (q) { $("q").value = q; $("searchForm").requestSubmit(); } });
+function renderRecent() { const box = $("recent"); box.hidden = !recent.length; box.innerHTML = recent.map(q => `<button type="button" data-q="${esc(q)}">${esc(q)}</button>`).join(""); }
+on("recent", "click", e => { const q = e.target.dataset?.q; if (q) { $("q").value = q; $("searchForm").requestSubmit(); } });
 renderRecent();
 
-// ---------- UI ----------
 // ---------- Bezirksamt, Prüfungen am Grundstück, Merkblatt ----------
-let curPlace = null;
 function findBezirk(plot, sum) {
   if (typeof BEZIRKE === "undefined") return null;
   const nr = parseInt(curPlace?.ortsteil, 10);
@@ -1485,80 +1300,64 @@ function findBezirk(plot, sum) {
   const fromSum = Object.keys(BEZIRKE).find(b => sum?.bezirk?.includes(b));
   if (fromSum) return fromSum;
   const hay = [curPlace?.stadtteil, curPlace?.name, plot && Object.values(plot.props).join(" ")].filter(Boolean).join(" | ");
-  const norm = t => t.toLowerCase().replace(/[^a-zäöüß]/g, "");
+  const norm = t => t.toLowerCase().replace(/[^a-zäöüß]/g, ""), st = norm(curPlace?.stadtteil || "");
   // Stadtteil im Text suchen, längste Namen zuerst (z. B. „Barmbek-Süd“ vor „Barmbek“)
-  const all = Object.entries(BEZIRKE).flatMap(([b, d]) => d.st.map(st => [st, b])).sort((x, y) => y[0].length - x[0].length);
-  const st = curPlace?.stadtteil || "";
-  const hit = all.find(([n]) => norm(st) === norm(n)) || all.find(([n]) => hay.includes(n));
-  return hit ? hit[1] : null;
+  const all = Object.entries(BEZIRKE).flatMap(([b, d]) => d.st.map(s => [s, b])).sort((x, y) => y[0].length - x[0].length);
+  return (all.find(([n]) => st === norm(n)) || all.find(([n]) => hay.includes(n)) || [])[1] || null;
 }
-
-function appendExtras(r, coord, plot, sum, placeName, main) {
-  // Prüfungen am Grundstück
+function appendExtras(r, coord, plot, sum, placeName) {
   if (typeof CHECKS !== "undefined" && CHECKS.length) {
     const c = card("Weitere Prüfungen am Grundstück", `<div class="checksum" id="checkSum"><span class="s-unk">${CHECKS.length} Prüfungen laufen …</span></div>
       <ul class="checks" id="checksList">${CHECKS.map(k => `<li data-id="${esc(k.id)}"><b>${esc(k.label)}</b>: <span class="hint">wird geprüft …</span></li>`).join("")}</ul>
       <details class="okfold" id="checksOk" hidden><summary></summary><ul class="checks"></ul></details>
       <p class="hint">Automatischer Abgleich mit offenen Daten der Stadt Hamburg. Ohne Treffer heißt nicht, dass nichts zu beachten ist.</p>`);
     // nach „Was darf ich bauen?“ einordnen, sonst unter Kopf und Hinweisen
-    const calc = $("calcOut")?.closest("section");
-    const after = calc || r.querySelector("section.warn") || r.querySelector("section.hero") || r.firstElementChild;
+    const after = $("calcOut")?.closest("section") || r.querySelector("section.warn") || r.querySelector("section.hero") || r.firstElementChild;
     r.insertBefore(c, after ? after.nextSibling : null);
-    runChecks(coord, plot);
+    runChecks(coord, plot, queryId);
   }
-  // Bezirksamt
   const bz = findBezirk(plot, sum), d = bz ? BEZIRKE[bz] : null;
-  r.appendChild(card("Ihr Ansprechpartner", d
-    ? `<p><b>${esc(d.amt)}</b></p>
-       <dl class="contact"><dt>Adresse</dt><dd>${esc(d.adr)}</dd><dt>Telefon</dt><dd><a href="tel:${esc(d.tel.replace(/[^\d+]/g, ""))}">${esc(d.tel)}</a></dd><dt>E-Mail</dt><dd><a href="mailto:${esc(d.mail)}">${esc(d.mail)}</a></dd></dl>
-       <p class="hint">Hier gibt es Bauberatung und verbindliche Auskunft. Zentral erreichbar ist die Stadt auch über die Behördennummer 115.</p>`
-    : `<p>Zuständig ist die Bauprüfabteilung Ihres Bezirksamts. Den Bezirk konnte die App hier nicht sicher erkennen.</p><p class="hint">Allgemeine Auskunft über die Behördennummer 115.</p>`)
-  );
-  // Merkblatt
   const m = card("", `<button type="button" id="printBtn">Merkblatt drucken oder als PDF speichern</button>
     <p class="hint">Fasst alles auf dieser Seite für den Termin beim Bezirksamt zusammen. Im Druckfenster „Als PDF speichern“ wählen.</p>`, "noprint");
   m.querySelector("#printBtn").addEventListener("click", () => {
     $("printHead").textContent = `Merkblatt Baurecht Hamburg · ${placeName} · erstellt am ${new Date().toLocaleDateString("de-DE")}`;
-    document.querySelectorAll("#results details").forEach(x => x.open = true);
-    window.print();
+    openDetails(); window.print();
   });
-  r.appendChild(m);
+  r.append(card("Ihr Ansprechpartner", d
+    ? `<p><b>${esc(d.amt)}</b></p>
+       <dl class="contact"><dt>Adresse</dt><dd>${esc(d.adr)}</dd><dt>Telefon</dt><dd><a href="tel:${esc(d.tel.replace(/[^\d+]/g, ""))}">${esc(d.tel)}</a></dd><dt>E-Mail</dt><dd><a href="mailto:${esc(d.mail)}">${esc(d.mail)}</a></dd></dl>
+       <p class="hint">Hier gibt es Bauberatung und verbindliche Auskunft. Zentral erreichbar ist die Stadt auch über die Behördennummer 115.</p>`
+    : `<p>Zuständig ist die Bauprüfabteilung Ihres Bezirksamts. Den Bezirk konnte die App hier nicht sicher erkennen.</p><p class="hint">Allgemeine Auskunft über die Behördennummer 115.</p>`), m);
 }
-
 // Trifft eine Geometrie das Grundstück? (Näherung ohne Geometrie-Bibliothek)
 function touches(geom, pg, ext) {
   if (!geom) return true;
   if (!pg) return geom.intersectsExtent(ext);
   if (!ol.extent.intersects(geom.getExtent(), ext)) return false;
   if (pg.getLinearRing(0).getCoordinates().some(p => geom.intersectsCoordinate(p)) || geom.intersectsCoordinate(pg.getInteriorPoint().getCoordinates())) return true;
-  // kleinere Objekte (Denkmal-Punkt, Gebäude) innerhalb des Grundstücks
-  const f = geom.getFlatCoordinates(), st = geom.getStride();
+  const f = geom.getFlatCoordinates(), st = geom.getStride(); // kleinere Objekte innerhalb des Grundstücks
   for (let k = 0; k < f.length; k += st) if (pg.intersectsCoordinate([f[k], f[k + 1]])) return true;
   return false;
 }
-
-async function runChecks(coord, plot) {
-  const pg = plot?.geometry?.getType?.() === "Polygon" ? plot.geometry : plot?.geometry?.getType?.() === "MultiPolygon" ? plot.geometry.getPolygon(0) : null;
+const shortName = n => { n = String(n).replace(/^Verordnung über (die )?/i, "").split(/ vom | \(|;/)[0].trim(); return n.length > 70 ? n.slice(0, 67) + " …" : n; };
+async function runChecks(coord, plot, id) {
+  const ty = plot?.geometry?.getType?.(), pg = ty === "Polygon" ? plot.geometry : ty === "MultiPolygon" ? plot.geometry.getPolygon(0) : null;
   await Promise.all(CHECKS.map(async k => {
-    const buf = k.buffer || 0;
-    const base = pg ? pg.getExtent() : [coord[0] - 1, coord[1] - 1, coord[0] + 1, coord[1] + 1];
-    const ext = ol.extent.buffer(base, buf);
+    const buf = k.buffer || 0, ext = ol.extent.buffer(pg ? pg.getExtent() : [coord[0] - 1, coord[1] - 1, coord[0] + 1, coord[1] + 1], buf);
     const t = await getText(wfsUrlBbox(k.url, k.type, ext, 50), "Prüfung " + k.label);
-    const li = document.querySelector(`#checksList li[data-id="${CSS.escape(k.id)}"]`);
-    if (!li) return;
-    if (t == null) { li.className = "unk"; li.innerHTML = `<b>${esc(k.label)}</b>: <span class="hint">Dienst nicht erreichbar, bitte selbst beim Bezirksamt erfragen.</span>`; return; }
+    const el = qs(`#checksList li[data-id="${CSS.escape(k.id)}"]`);
+    if (!el || id !== queryId) return;
+    const set = (cls, html) => { el.className = cls; el.innerHTML = `<b>${esc(k.label)}</b>: ${html}`; };
+    if (t == null) return set("unk", `<span class="hint">Dienst nicht erreichbar, bitte selbst beim Bezirksamt erfragen.</span>`);
     const hits = readGml(t).filter(f => buf > 0 || touches(f.geometry, pg, ext));
-    if (!hits.length) { li.className = "ok"; li.innerHTML = `<b>${esc(k.label)}</b>: ${esc(k.none)}`; return; }
-    // lange Verordnungstitel kürzen
-    const short = n => { n = String(n).replace(/^Verordnung über (die )?/i, "").split(/ vom | \(|;/)[0].trim(); return n.length > 70 ? n.slice(0, 67) + " …" : n; };
-    const names = [...new Set(hits.map(f => (k.nameAttrs || []).map(a => f.props[a]).find(Boolean)).filter(Boolean).map(short))].slice(0, 3);
-    li.className = "hit";
-    li.innerHTML = `<b>${esc(k.label)}</b>: ${esc(k.hit)}${names.length ? ` <span class="hint">(${esc(names.join(", "))})</span>` : ""}`;
+    if (!hits.length) return set("ok", esc(k.none));
+    const names = [...new Set(hits.map(f => (k.nameAttrs || []).map(a => f.props[a]).find(Boolean)).filter(Boolean).map(shortName))].slice(0, 3);
+    set("hit", esc(k.hit) + (names.length ? ` <span class="hint">(${esc(names.join(", "))})</span>` : ""));
   }));
   // Zusammenfassung: Treffer oben, unauffällige Prüfungen eingeklappt
-  const list = $("checksList"), fold = $("checksOk"); if (!list || !fold) return;
+  const list = $("checksList"), fold = $("checksOk"); if (!list || !fold || id !== queryId) return;
   const oks = [...list.querySelectorAll("li.ok")], nHit = list.querySelectorAll("li.hit").length, nUnk = list.querySelectorAll("li.unk").length;
-  oks.forEach(li => fold.querySelector("ul").appendChild(li));
+  fold.querySelector("ul").append(...oks);
   fold.hidden = !oks.length;
   fold.querySelector("summary").textContent = `${oks.length} Prüfungen ohne Befund anzeigen`;
   list.hidden = !list.children.length;
@@ -1566,7 +1365,7 @@ async function runChecks(coord, plot) {
     (oks.length ? `<span class="s-ok">${oks.length} ohne Befund</span>` : "") + (nUnk ? `<span class="s-unk">${nUnk} nicht prüfbar</span>` : "");
 }
 
-// Symbole für die Kartenüberschriften (Linien-Icons, 24er Raster)
+// ---------- Karten (Abschnitte) mit Symbolen ----------
 const ICO = {
   alert: '<path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17h.01"/>',
   home: '<path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/>',
@@ -1585,14 +1384,13 @@ const TITLE_ICO = {"Bitte beachten": "alert", "Ihr Grundstück": "home", "Was da
   "Gilt außerdem in ganz Hamburg": "city", "Ihr Ansprechpartner": "phone", "Kein Bebauungsplan gefunden": "search"};
 const icon = n => `<span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICO[n] || ICO.info}</svg></span>`;
 function card(title, html, cls = "") { const s = document.createElement("section"); s.className = "card " + cls; s.innerHTML = (title ? `<h2>${icon(TITLE_ICO[title])}${esc(title)}</h2>` : "") + html; return s; }
-function showBusy(msg) { $("results").innerHTML = ""; $("results").appendChild(card("Bitte warten", `<p class="hint">${esc(msg)}</p>`)); }
-function showMessage(msg) { $("results").innerHTML = ""; $("results").appendChild(card("Hinweis", `<p class="hint">${esc(msg)}</p>`)); }
+function showCard(title, msg) { $("results").innerHTML = ""; $("results").append(card(title, `<p class="hint">${esc(msg)}</p>`)); }
 
-// Beim Drucken (auch Strg+P) alle eingeklappten Abschnitte öffnen
-window.addEventListener("beforeprint", () => document.querySelectorAll("#results details").forEach(x => x.open = true));
+const openDetails = () => document.querySelectorAll("#results details").forEach(x => x.open = true);
+window.addEventListener("beforeprint", openDetails); // auch bei Strg+P alles aufklappen
 map.on("singleclick", ev => { if (!draw) { curPlace = null; queryAt(ev.coordinate, "Punkt in der Karte"); } });
 try { $("xplanUrl").value = localStorage.getItem("xplanUrl") || ""; } catch {}
-$("xplanUrl").addEventListener("change", e => { try { localStorage.setItem("xplanUrl", e.target.value); } catch {} });
+on("xplanUrl", "change", e => { try { localStorage.setItem("xplanUrl", e.target.value); } catch {} });
 </script>
 </body>
 </html>
