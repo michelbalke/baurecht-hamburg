@@ -970,6 +970,12 @@ function fitPlot(duration = 600) {
 }
 const relayout = () => requestAnimationFrame(() => { map.updateSize(); fitPlot(0); });
 function setMapMain(v) { body.toggle("mapmain", v); if (!v) { stopMeasure(); $("mapctl").classList.remove("open"); } relayout(); }
+// Handy, neue Suche: erst die große Karte mit Zoom aufs Grundstück, Infos klein oben rechts
+function showMapBig() {
+  if (!isPhone()) return;
+  document.activeElement?.blur(); // Tastatur schließen
+  body.add("has-result", "mapmain"); $("mapctl").classList.remove("open"); qs(".side").scrollTop = 0; map.updateSize();
+}
 function toggleDrawer(v) { $("drawer").classList.toggle("open", v); $("backdrop").hidden = !v; $("menuBtn").setAttribute("aria-expanded", v); }
 on("pipMap", "click", () => setMapMain(true));
 on("pipInfo", "click", () => setMapMain(false));
@@ -1016,16 +1022,15 @@ async function gazetteer(q) {
 }
 on("searchForm", "submit", async e => {
   e.preventDefault();
-  if (body.contains("mapmain")) setMapMain(false);
   const q = $("q").value.trim();
   if (!q) return;
   const c = parseCoordinates(q);
-  if (c) { curPlace = null; view.animate({center: c, resolution: 0.8}); return queryAt(c, "Koordinate " + q); }
+  if (c) { curPlace = null; showMapBig(); view.animate({center: c, resolution: 0.8, duration: 800}); return queryAt(c, "Koordinate " + q); }
   showCard("Bitte warten", "Adresse wird gesucht …");
   const id = ++queryId, hit = await gazetteer(q);
   if (id !== queryId) return;
-  if (!hit) return showCard("Hinweis", "Adresse nicht gefunden. Bitte Straße und Hausnummer prüfen (z. B. „Bramfelder Chaussee 300“) oder direkt in die Karte tippen.");
-  view.animate({center: hit.coord, resolution: 0.8});
+  if (!hit) { if (body.contains("mapmain")) setMapMain(false); return showCard("Hinweis", "Adresse nicht gefunden. Bitte Straße und Hausnummer prüfen (z. B. „Bramfelder Chaussee 300“) oder direkt in die Karte tippen."); }
+  showMapBig(); view.animate({center: hit.coord, resolution: 0.8, duration: 800});
   addRecent(q);
   curPlace = hit;
   queryAt(hit.coord, hit.name);
@@ -1077,7 +1082,7 @@ const linkBtns = p => `<div class="linkbtns">${pdfLinks(p).map(l => `<a class="b
 const li = a => a.map(x => `<li>${esc(x)}</li>`).join("");
 function renderResult(coord, placeName, plans, plot) {
   const r = $("results"); r.innerHTML = "";
-  if (!body.contains("has-result")) { body.add("has-result"); if (isPhone()) relayout(); }
+  if (!body.contains("has-result")) { if (isPhone()) { showMapBig(); fitPlot(); } else body.add("has-result"); }
   const found = findSummary(plans), valid = plans.filter(p => p.status === "festgestellt");
   const main = found?.plan || valid[0] || plans[0], sum = found?.sum || null, flst = plotNumber(plot);
   cur = {sum, zone: sum ? (sum.zones.find(z => flst && z.flst.includes(flst)) || null) : null};
