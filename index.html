@@ -376,7 +376,7 @@
 * { box-sizing: border-box; }
 html, body { height: 100%; margin: 0; }
 body { background: var(--bg); color: var(--fg); font: 14.5px/1.5 var(--sans); -webkit-font-smoothing: antialiased; }
-p, .hint, .legal, dl.kv, dl.rules { margin: 0; }
+p, .hint, .legal, dl.rules { margin: 0; }
 a { color: var(--accent); }
 .app { display: grid; grid-template-columns: minmax(340px, 460px) 1fr; height: 100%; }
 .side { background: var(--bg); border-right: 1px solid var(--line); overflow-y: auto; display: flex; flex-direction: column; gap: 14px; min-width: 0; padding: 0 16px 20px; }
@@ -426,9 +426,7 @@ section.warn h2 .ico { background: rgba(166,91,0,.12); color: var(--warn); }
 .pill.none { background: var(--accent-soft); color: var(--accent); }
 .pill.none::before { display: none; }
 .meta span:not(.pill) { font-size: 12.5px; color: var(--muted); background: var(--panel); border: 1px solid var(--line); border-radius: 99px; padding: 2px 9px; }
-dl.kv { display: grid; grid-template-columns: max-content 1fr; gap: 3px 10px; font-size: 13px; }
-dl.kv dt, .contact dt { color: var(--muted); }
-dl.kv dd { margin: 0; overflow-wrap: anywhere; }
+.contact dt { color: var(--muted); }
 .contact { display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; align-items: baseline; }
 .contact dt { font-size: 12.5px; }
 .contact dd { margin: 0; }
@@ -537,10 +535,10 @@ details.okfold .checks { margin-top: 6px; }
   body.has-result .pipcatch { display: block; }
   /* Karte angetippt: Karte groß, Infos als Bild-im-Bild */
   body.has-result.mapmain .mapwrap { inset: 0; width: auto; height: auto; border-radius: 0; border: 0; box-shadow: none; z-index: 1; }
-  body.has-result.mapmain .mapwrap > :not(#map):not(.pipcatch):not(.mapctl):not(.zoomhint), body.has-result.mapmain .mapwrap > .mapctl.open { display: flex !important; }
+  body.has-result.mapmain .mapwrap > :not(#map):not(.pipcatch):not(.mapctl):not(.zoomhint), body.has-result.mapmain .mapwrap > .mapctl.open:not(#map) { display: flex !important; }
   body.has-result.mapmain .mapwrap > .pipcatch, body.has-result.mapmain .side > header, body.has-result.mapmain .side > form, body.has-result.mapmain .side > .recent { display: none; }
   body.has-result.mapmain .layerbtn { right: auto; left: 56px; }
-  body.has-result.mapmain .mapctl { right: auto; left: 12px; }
+  body.has-result.mapmain .mapctl { right: auto; left: 56px; }
   body.has-result.mapmain .side { inset: auto; top: 10px; right: 10px; width: 92vw; height: 70vw; zoom: .46; z-index: 20; overflow: hidden; border-radius: 26px; border: 4px solid var(--panel); box-shadow: 0 16px 48px rgba(16,32,56,.4); pointer-events: none; }
   body.has-result.mapmain #results > :first-child { margin: 12px 0 0; }
   body.has-result.mapmain .infocatch { display: block; }
@@ -548,7 +546,7 @@ details.okfold .checks { margin-top: 6px; }
 
 .printonly { display: none; }
 @media print {
-  .mapwrap, form.search, .recent, .side > .tools, .side > details, .side header .sub, #results > details, .noprint, #zoomhint, button, #mArea2 { display: none !important; }
+  .mapwrap, form.search, .recent, .side > .tools, .side > details, .side header .sub, .noprint, #zoomhint, button, #mArea2 { display: none !important; }
   .side > header { background: none !important; color: #000 !important; padding: 0 0 8px !important; margin: 0 !important; }
   .side > header .logo, .ghostbtn::before, details.more > summary { display: none; }
   .ghostbtn { border: 0 !important; padding: 0 !important; display: block; }
@@ -602,8 +600,6 @@ details.okfold .checks { margin-top: 6px; }
     </div>
     <details>
       <summary>Einstellungen und Diagnose</summary>
-      <p class="hint">XPlanung-WFS für detaillierte Festsetzungen (optional):</p>
-      <input type="url" id="xplanUrl" placeholder="https://…/wfs">
       <ul class="status" id="diag"></ul>
     </details>
     <p class="legal">Fachdaten: Freie und Hansestadt Hamburg (LGV und Bezirksämter), Datenlizenz Deutschland Namensnennung 2.0. Grundkarte: © basemap.de / BKG, Datenquellen © GeoBasis-DE. Alle Angaben ohne Gewähr. Rechtsverbindlich ist nur der festgestellte Plan mit Verordnung; für eine verbindliche Auskunft das Bezirksamt fragen.</p>
@@ -618,8 +614,6 @@ details.okfold .checks { margin-top: 6px; }
         <label><input type="radio" name="bg" value="farbe" checked>Farbe</label>
       </div>
       <label class="row"><input type="checkbox" id="tBounds" checked> B-Plan-Grenzen</label>
-      <label class="row"><input type="checkbox" id="tDrawing"> Planzeichnung</label>
-      <input type="range" id="opDrawing" min="0.2" max="1" step="0.1" value="0.7" aria-label="Deckkraft der Planzeichnung" hidden>
       <div class="legend">
         <span><i class="lg-plan"></i>Bebauungsplan</span>
         <span><i class="lg-sel"></i>ausgewählter Plan</span>
@@ -869,7 +863,6 @@ const CFG = {
   gazetteer: HH + "HH_WFS_GAGES?service=WFS&request=GetFeature&version=2.0.0",
   bplanWfs: HH + "HH_WFS_Bebauungsplaene",
   bplanTypes: [{type: "app:hh_hh_festgestellt", label: "festgestellt"}, {type: "app:prosin_imverfahren", label: "im Verfahren"}],
-  bplanWms: HH + "HH_WMS_Bebauungsplaene",
   alkisWfs: [HH + "WFS_HH_ALKIS_vereinfacht", HH + "HH_WFS_ALKIS_vereinfacht"], // Objektart wird aus GetCapabilities gelesen
   boundsMaxRes: 6 // B-Plan-Grenzen erst ab dieser Auflösung (m/Pixel) laden
 };
@@ -941,7 +934,6 @@ const vec = (source, style, o) => new ol.layer.Vector({source, style, ...o});
 
 const bgLayers = ["grau", "farbe"].map(n => new ol.layer.Tile({visible: n === "farbe", properties: {bg: n},
   source: new ol.source.XYZ({url: CFG.basemap(n), maxZoom: 18, crossOrigin: "anonymous", attributions: "© basemap.de / BKG"})}));
-const drawingLayer = new ol.layer.Image({visible: false, opacity: 0.7, minZoom: 0}); // Planzeichnungen (WMS)
 // Alle B-Plan-Grenzen im Kartenausschnitt, dünn und mit Namen
 const boundsSrc = new ol.source.Vector({format: new ol.format.WFS(), strategy: ol.loadingstrategy.bbox, url: ext => wfsUrlBbox(CFG.bplanWfs, CFG.bplanTypes[0].type, ext, 500)});
 boundsSrc.on("featuresloaderror", () => diag("✗ B-Plan-Grenzen konnten nicht geladen werden", "fail"));
@@ -958,7 +950,7 @@ const plotLayer = vec(plotSrc, (f, res) => [St({stroke: Sk("rgba(255,255,255,0.9
       backgroundFill: Fl("rgba(255,255,255,0.92)"), backgroundStroke: Sk(css("--plot"), 1.5), padding: [3, 7, 3, 7], overflow: true})})] : [])], {zIndex: 10});
 const measureLayer = vec(measureSrc, () => St({stroke: Sk(css("--accent"), 2, [6, 4]), fill: Fl("rgba(31,79,191,0.12)")}));
 const markerLayer = vec(markerSrc, St({image: new ol.style.Circle({radius: 7, fill: Fl("#c2272d"), stroke: Sk("#fff", 2)})}));
-const map = new ol.Map({target: "map", layers: [...bgLayers, drawingLayer, boundsLayer, selLayer, plotLayer, measureLayer, markerLayer],
+const map = new ol.Map({target: "map", layers: [...bgLayers, boundsLayer, selLayer, plotLayer, measureLayer, markerLayer],
   view: new ol.View({projection: UTM, center: [565500, 5934000], resolution: 40, maxResolution: 300, minResolution: 0.1}),
   controls: ol.control.defaults.defaults({attributionOptions: {collapsible: true}}).extend([new ol.control.ScaleLine({units: "metric"})])});
 const view = map.getView();
@@ -968,20 +960,7 @@ view.on("change:resolution", updateZoomHint); updateZoomHint();
 // ---------- Kartensteuerung, Menü, Bild-im-Bild (Handy) ----------
 document.querySelectorAll("input[name=bg]").forEach(r => r.addEventListener("change", () => bgLayers.forEach(l => l.setVisible(l.get("bg") === qs("input[name=bg]:checked").value))));
 on("tBounds", "change", e => { boundsLayer.setVisible(e.target.checked); updateZoomHint(); });
-on("tDrawing", "change", e => { drawingLayer.setVisible(e.target.checked); $("opDrawing").hidden = !e.target.checked; if (e.target.checked) initDrawing(); });
-on("opDrawing", "input", e => drawingLayer.setOpacity(+e.target.value));
 on("layerBtn", "click", e => e.currentTarget.setAttribute("aria-expanded", $("mapctl").classList.toggle("open")));
-let drawingReady = false;
-async function initDrawing() { // Layer der Planzeichnungen aus GetCapabilities
-  if (drawingReady) return; drawingReady = true;
-  const t = await getText(CFG.bplanWms + "?SERVICE=WMS&REQUEST=GetCapabilities&VERSION=1.3.0", "Planzeichnungen (WMS)");
-  if (!t) return;
-  try {
-    const names = [];
-    (function walk(l) { if (!l) return; if (l.Name && !(l.Layer || []).length) names.push(l.Name); (l.Layer || []).forEach(walk); })(new ol.format.WMSCapabilities().read(t).Capability.Layer);
-    drawingLayer.setSource(new ol.source.ImageWMS({url: CFG.bplanWms, projection: UTM, params: {LAYERS: names.join(","), FORMAT: "image/png", TRANSPARENT: true, VERSION: "1.3.0"}}));
-  } catch { diag("✗ Planzeichnungen: Antwort nicht lesbar", "fail"); }
-}
 const isPhone = () => matchMedia("(max-width: 760px)").matches;
 function fitPlot(duration = 600) {
   const f = plotSrc.getFeatures()[0]; if (!f) return;
@@ -1076,19 +1055,19 @@ async function queryAt(coord, placeName) {
   markerSrc.addFeature(new ol.Feature(new ol.geom.Point(coord)));
   showCard("Bitte warten", "Bebauungsplan wird gesucht …");
   lastMass = {};
-  const [plans, plot, xplan] = await Promise.all([
+  const [plans, plot] = await Promise.all([
     Promise.all(CFG.bplanTypes.map(async t => {
       const txt = await getText(wfsUrl(CFG.bplanWfs, t.type, coord), "Bebauungspläne " + t.label);
       return txt ? readGml(txt).map(f => ({...f, status: t.label})) : [];
     })).then(a => a.flat()),
-    queryPlot(coord), queryXplan(coord)]);
+    queryPlot(coord)]);
   if (id !== queryId) return;
   for (const p of plans) if (p.geometry) selSrc.addFeature(new ol.Feature(p.geometry));
   if (plot?.geometry) {
     plotSrc.addFeature(new ol.Feature({geometry: plot.geometry, label: "Ihr Grundstück" + (plot.area ? "\n" + fmt(plot.area) + " m²" : "")}));
     fitPlot(); // automatisch auf das Grundstück zoomen
   }
-  for (const p of [...plans, ...xplan, ...(plot ? [plot] : [])].map(f => f.props))
+  for (const p of [...plans, ...(plot ? [plot] : [])].map(f => f.props))
     for (const [k, v] of Object.entries(p)) { const key = k.toLowerCase(); if (MASS[key] && !lastMass[key]) lastMass[key] = v; }
   if (plot?.area) plotArea = Math.round(plot.area);
   renderResult(coord, placeName, plans, plot);
@@ -1137,7 +1116,6 @@ function renderResult(coord, placeName, plans, plot) {
     }
   }
   appendExtras(r, coord, plot, sum, placeName);
-  r.append(rawDetails(coord, plans));
   updateCalc();
 }
 
@@ -1186,16 +1164,8 @@ const generalCard = () => typeof HAMBURG_ALLGEMEIN === "undefined" ? "" : card("
 const calcCard = () => card("Was darf ich bauen?", `<div class="calc"><label for="plotArea">Grundstücksfläche</label><input type="number" id="plotArea" min="0" step="1" value="${plotArea ?? ""}"> m²</div>
   <div class="tools"><button type="button" class="ghost" id="mArea2">Grundstück in der Karte umfahren</button></div>
   <div id="calcOut" class="big"></div><p class="hint" id="calcNote"></p>`);
-function rawDetails(coord, plans) {
-  const ll = ol.proj.transform(coord, UTM, "EPSG:4326"), d = document.createElement("details");
-  d.innerHTML = `<summary>Technische Angaben</summary>
-    <dl class="kv"><dt>UTM 32 (E/N)</dt><dd>${fmt(coord[0], 1)} / ${fmt(coord[1], 1)}</dd><dt>WGS84</dt><dd>${ll[1].toFixed(6)}, ${ll[0].toFixed(6)}</dd></dl>
-    ${plans.map(p => `<p class="hint" style="margin-top:8px"><b>${esc(planName(p.props) || p.type)}</b></p><dl class="kv">${Object.entries(p.props).map(([k, v]) =>
-      `<dt>${esc(k)}</dt><dd>${isUrl(v) ? `<a href="${esc(v)}" target="_blank" rel="noopener">Link</a>` : esc(v)}</dd>`).join("")}</dl>`).join("")}`;
-  return d;
-}
 
-// ---------- Flurstück (ALKIS) und XPlanung ----------
+// ---------- Flurstück (ALKIS) ----------
 let alkisSvc = null;
 async function findAlkis() { // erreichbaren Dienst und Namen der Objektart „Flurstück“ einmal suchen
   if (alkisSvc) return alkisSvc;
@@ -1219,14 +1189,6 @@ async function queryPlot(coord) {
   f.area = amtl > 0 ? amtl : (f.geometry && f.geometry.getArea ? f.geometry.getArea() : null);
   f.areaAmtlich = amtl > 0;
   return f;
-}
-async function queryXplan(coord) {
-  const base = $("xplanUrl").value.trim();
-  if (!base) return [];
-  return (await Promise.all(["xplan:BP_BaugebietsTeilFlaeche", "xplan:BP_UeberbaubareGrundstuecksFlaeche"].map(async ty => {
-    const t = await getText(wfsUrl(base, ty, coord), "XPlanung " + ty);
-    return t ? readGml(t) : [];
-  }))).flat();
 }
 
 // ---------- Messen ----------
@@ -1389,8 +1351,6 @@ function showCard(title, msg) { $("results").innerHTML = ""; $("results").append
 const openDetails = () => document.querySelectorAll("#results details").forEach(x => x.open = true);
 window.addEventListener("beforeprint", openDetails); // auch bei Strg+P alles aufklappen
 map.on("singleclick", ev => { if (!draw) { curPlace = null; queryAt(ev.coordinate, "Punkt in der Karte"); } });
-try { $("xplanUrl").value = localStorage.getItem("xplanUrl") || ""; } catch {}
-on("xplanUrl", "change", e => { try { localStorage.setItem("xplanUrl", e.target.value); } catch {} });
 </script>
 </body>
 </html>
