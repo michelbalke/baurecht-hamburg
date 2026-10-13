@@ -655,7 +655,29 @@ h2 .ico { width: 28px; height: 28px; border-radius: 50%; background: var(--gl-st
   body { background: #fff !important; color: #000 !important; }
   section.card { break-inside: avoid; border-color: #999; box-shadow: none; margin-bottom: 10px; }
   #calcOut div:first-child { background: #eee !important; } #calcOut div:first-child b, #calcOut div:first-child span { color: #000 !important; }
-  a[href^="http"]::after { content: " (" attr(href) ")"; font-size: 10px; word-break: break-all; }
+  a[href^="http"]::after { content: " (" attr(href) ")"; font-size: 7pt; color: #444; word-break: break-all; }
+  /* kompaktes Merkblatt: höchstens drei Seiten */
+  :root, :root:not([data-theme="light"]) { --fg: #000 !important; --muted: #444 !important; --line: #bbb !important; --panel: #fff !important; --bg: #fff !important; --accent: #1f4fa3 !important; --plan: #c8102e !important; --warn: #a65b00 !important; --ok: #17804a !important; color-scheme: light; }
+  @page { size: A4; margin: 12mm 13mm; }
+  body { font-size: 9.5pt; line-height: 1.38; }
+  .side { padding: 0 !important; }
+  #results { display: block !important; gap: 0 !important; background: none !important; border: 0 !important; }
+  #results > section.card, #results > section.hero, #results > section.warn { background: none !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; box-shadow: none !important; border: 0 !important; border-bottom: .5pt solid #bbb !important; border-radius: 0 !important; padding: 0 0 7pt !important; margin: 0 0 7pt !important; gap: 4pt; break-inside: auto; }
+  #results > section.hero { border-left: 3pt solid #c8102e !important; padding-left: 8pt !important; }
+  #results > section.warn { border-left: 3pt solid #a65b00 !important; padding-left: 8pt !important; }
+  .plan-name { font-size: 18pt !important; } h2 { font-size: 11pt !important; } h2 .ico { display: none; }
+  .hint, .meta span:not(.pill) { font-size: 8pt; } .pill { padding: 0; background: none !important; }
+  .meta span:not(.pill) { border: 0; padding: 0 6pt 0 0; background: none; box-shadow: none !important; }
+  .big { grid-template-columns: repeat(5, 1fr); gap: 0 !important; border: .5pt solid #bbb !important; }
+  .big div { padding: 3pt 5pt !important; background: none !important; box-shadow: inset -.5pt 0 0 #bbb !important; }
+  .big b { font-size: 11pt !important; } .big span { font-size: 7.5pt; }
+  dl.rules { column-count: 2; column-gap: 8mm; } dl.rules dt { break-after: avoid; } dl.rules dd { break-inside: avoid; margin-bottom: 4pt; }
+  .checks li { padding: 1pt 0 1pt 16pt !important; background: none !important; font-size: 8.5pt; }
+  .general, details.okfold, #results details:not(.more), #zoneSel, label[for="zoneSel"], .calc input + span + button { display: none !important; }
+  .legal { font-size: 7pt; color: #444; }
+  .side > header { box-shadow: none !important; border-radius: 0 !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+  h2 { break-after: avoid; } #results > section.card:not(:has(dl.rules)) { break-inside: avoid; }
+  .checks li::before { left: 0 !important; top: 2pt !important; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 </style>
@@ -1262,7 +1284,7 @@ function renderGlance() {
     ${m.fromDefault ? `<p class="hint">* ${esc(cur.sum.grzDefaultsNote)}</p>` : ""}`;
 }
 const generalCard = () => typeof HAMBURG_ALLGEMEIN === "undefined" ? "" : card("Gilt außerdem in ganz Hamburg", `<details class="more"><summary>Abstände, Bäume, Stellplätze, Solardach, Genehmigung</summary><dl class="rules">${HAMBURG_ALLGEMEIN.map(x => `<dt>${esc(x.t)}</dt><dd>${esc(x.d)} <span class="hint">(${esc(x.src)})</span></dd>`).join("")}</dl>
-  </details><p class="hint">Allgemeine Hinweise ohne Gewähr. Was für Ihr Grundstück gilt, sagt verbindlich das Bezirksamt.</p>`);
+  </details><p class="hint">Allgemeine Hinweise ohne Gewähr. Was für Ihr Grundstück gilt, sagt verbindlich das Bezirksamt.</p>`, "general");
 const calcCard = () => card("Was darf ich bauen?", `<div class="calc"><label for="plotArea">Grundstücksfläche</label><input type="number" id="plotArea" min="0" step="1" value="${plotArea ?? ""}"> m²</div>
   <div class="tools"><button type="button" class="ghost" id="mArea2">Grundstück in der Karte umfahren</button></div>
   <div id="calcOut" class="big"></div><p class="hint" id="calcNote"></p>`);
