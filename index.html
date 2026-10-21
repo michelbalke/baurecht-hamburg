@@ -667,7 +667,11 @@ h2 .ico { width: 28px; height: 28px; border-radius: 50%; background: var(--gl-st
   #calcOut div:first-child { background: #eee !important; } #calcOut div:first-child b, #calcOut div:first-child span { color: #000 !important; }
   a[href^="http"]::after { content: " (" attr(href) ")"; font-size: 7pt; color: #444; word-break: break-all; }
   /* kompaktes Merkblatt: höchstens drei Seiten */
-  :root, :root:not([data-theme="light"]) { --fg: #000 !important; --muted: #444 !important; --line: #bbb !important; --panel: #fff !important; --bg: #fff !important; --accent: #1f4fa3 !important; --plan: #c8102e !important; --warn: #a65b00 !important; --ok: #17804a !important; color-scheme: light; }
+  :root, :root:not([data-theme="light"]) { --fg: #000 !important; --muted: #444 !important; --line: #bbb !important; --panel: #fff !important; --bg: #fff !important; --accent: #1f4fa3 !important; --plan: #c8102e !important; --warn: #a65b00 !important; --ok: #17804a !important; color-scheme: light;
+    /* Glas und Pastelltöne auch im Dunkelmodus hell drucken, sonst graue/schwarze Balken */
+    --gl: transparent !important; --gl-strong: transparent !important; --gl-shine: none !important; --gl-edge: 0 0 0 transparent !important; --gl-shadow: 0 0 0 transparent !important;
+    --accent-soft: #e6ecf6 !important; --ok-soft: #e7f6ee !important; --warn-soft: #fff5e6 !important; --plan-soft: #fbeaec !important; }
+  a.ghostbtn, input, select { background: none !important; box-shadow: none !important; }
   @page { size: A4; margin: 12mm 13mm; }
   body { font-size: 9.5pt; line-height: 1.38; }
   .side { padding: 0 !important; }
