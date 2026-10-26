@@ -701,7 +701,7 @@ h2 .ico { width: 28px; height: 28px; border-radius: 50%; background: var(--gl-st
 }
 
 /* ---------- Kurzfassung / erweiterte Informationen ---------- */
-@media screen { #results.short .ext { display: none !important; } }
+@media screen { #results.short .ext, #results.short .exttoggle.top { display: none !important; } }
 .exttoggle { display: flex; justify-content: center; padding: 2px 0 6px; }
 .exttoggle button { padding: 11px 20px; font-size: 14px; font-weight: 600; }
 #results.short .meta + .meta { margin-top: 6px; }
@@ -714,7 +714,7 @@ h2 .ico { width: 28px; height: 28px; border-radius: 50%; background: var(--gl-st
 .mbar p { margin: 0; font-size: 13.5px; font-weight: 550; flex: 1 1 200px; }
 .mbar button { border-radius: 99px; }
 #mDone { border: 0; background: linear-gradient(180deg, rgba(255,255,255,.35), rgba(255,255,255,0) 55%), var(--accent); }
-body.measuring .zoomhint, body.measuring .mapwrap > .tools { display: none !important; }
+body.measuring .zoomhint, body.measuring .mapwrap > .tools, body.measuring .btn3d { display: none !important; }
 body.measuring #map { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
 .lpring { position: absolute; z-index: 8; width: 64px; height: 64px; margin: -32px 0 0 -32px; border-radius: 50%; pointer-events: none; opacity: 0; }
 .lpring.grow { opacity: 1; border: 3px solid var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); animation: lpgrow .45s linear forwards; }
@@ -723,12 +723,15 @@ body.measuring #map { -webkit-touch-callout: none; -webkit-user-select: none; us
 @keyframes lpdone { from { transform: scale(.35); opacity: 1; background: var(--accent); } to { transform: scale(1.3); opacity: 0; } }
 
 /* ---------- 3D-Ansicht: ein runder Modelltisch aus Luftbild und Stadtmodell ---------- */
-.btn3d { position: absolute; z-index: 6; top: 88px; left: 12px; width: 32px; height: 32px; padding: 0; border: 0; border-radius: 50%; justify-content: center; font: 700 12.5px/1 var(--sans); letter-spacing: .02em;
+.btn3d { position: absolute; z-index: 6; top: 90px; left: 12px; height: 46px; padding: 0 16px 0 12px; border: 0; border-radius: 99px; justify-content: center; gap: 7px; font: 700 16px/1 var(--sans); letter-spacing: .01em;
   color: var(--fg); background: var(--gl-shine), var(--gl); -webkit-backdrop-filter: var(--gl-blur); backdrop-filter: var(--gl-blur); box-shadow: var(--gl-edge), var(--gl-shadow); }
 .view3d { display: none; position: absolute; inset: 0; z-index: 8; overflow: hidden; touch-action: none;
   background: radial-gradient(120% 70% at 50% 100%, #f6f1e6 0%, #dfe9f3 45%, #b9cfe6 100%); }
 body.is3d .app .mapwrap > #view3d.view3d { display: block !important; } /* schlägt die Bild-im-Bild-Regel fürs Handy */
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .view3d { background: radial-gradient(120% 70% at 50% 100%, #2a3140 0%, #161d29 55%, #0b1018 100%); } }
+.btn3d svg { width: 22px; height: 22px; }
+.v3cesium { position: absolute; inset: 0; }
+.v3cesium .cesium-widget, .v3cesium .cesium-viewer { width: 100%; height: 100%; }
 .view3d canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; cursor: grab; }
 .view3d canvas:active { cursor: grabbing; }
 .view3d button { border: 0; color: var(--fg); background: var(--gl-shine), var(--gl-strong); -webkit-backdrop-filter: var(--gl-blur); backdrop-filter: var(--gl-blur); box-shadow: var(--gl-edge), var(--gl-shadow); }
@@ -752,8 +755,8 @@ body.is3d .app .mapwrap > #view3d.view3d { display: block !important; } /* schl�
 .v3info > .v3hint:first-child { margin: 0; }
 .v3credit { position: absolute; z-index: 1; right: 10px; bottom: calc(6px + env(safe-area-inset-bottom, 0px)); margin: 0; padding: 2px 10px; border-radius: 99px; font-size: 10.5px; color: var(--fg); background: var(--gl-strong); -webkit-backdrop-filter: var(--gl-blur); backdrop-filter: var(--gl-blur); }
 @media (max-width: 760px) {
-  .btn3d { top: calc(88px + env(safe-area-inset-top, 0px)); width: 34px; height: 34px; }
-  body.has-result.mapmain .btn3d { top: calc(132px + env(safe-area-inset-top, 0px)); left: 12px; }
+  .btn3d { top: calc(90px + env(safe-area-inset-top, 0px)); height: 50px; font-size: 17px; padding: 0 18px 0 14px; }
+  body.has-result.mapmain .btn3d { top: auto; bottom: calc(104px + env(safe-area-inset-bottom, 0px)); left: auto; right: 12px; }
   .mapwrap > .tools { gap: 6px; }
   .mapwrap > .tools button { flex: 1 1 0; min-width: 0; flex-direction: column; gap: 3px; min-height: 56px; padding: 7px 4px !important; font-size: 12.5px !important; font-weight: 600; justify-content: center; line-height: 1.15; text-align: center; }
   .mapwrap > .tools button svg { width: 21px; height: 21px; }
@@ -838,7 +841,7 @@ body.is3d .app .mapwrap > #view3d.view3d { display: block !important; } /* schl�
       <button type="button" class="ghost" id="mUndo">Punkt zurück</button>
       <button type="button" id="mDone">Fertig</button>
     </div>
-    <button type="button" class="btn3d" id="btn3d" aria-label="3D-Ansicht öffnen" title="Gebäude in 3D ansehen">3D</button>
+    <button type="button" class="btn3d" id="btn3d" aria-label="3D-Ansicht öffnen" title="Gebäude in 3D ansehen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 3 7v10l9 5 9-5V7z"/><path d="m3 7 9 5 9-5M12 12v10"/></svg>3D</button>
     <div class="lpring" id="lpRing" aria-hidden="true"></div>
     <div class="view3d" id="view3d">
       <button type="button" class="v3back" id="v3close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z"/><path d="M9 3v15M15 6v15"/></svg>Zurück zur Karte</button>
@@ -849,7 +852,7 @@ body.is3d .app .mapwrap > #view3d.view3d { display: block !important; } /* schl�
       </div>
       <p class="v3status" id="v3status" hidden></p>
       <div class="v3info" id="v3info"></div>
-      <p class="v3credit">3D-Gebäude (LoD2) und Luftbild: FHH, LGV<span>. Ziehen dreht, zwei Finger zoomen und verschieben.</span></p>
+      <p class="v3credit">3D-Stadtmodell, Gelände und Luftbild: FHH, LGV<span>. Ziehen dreht, zwei Finger zoomen und verschieben.</span></p>
     </div>
   </div>
 </div>
@@ -1083,12 +1086,16 @@ const CHECKS = [
    none: "Kein Flusshochwasser-Risikogebiet.", src: "Hochwasserrisikomanagement 3. Zyklus 2025 (wfs_hwrm_3_zyklus), Datenlizenz Deutschland 2.0"},
 ];
 </script>
-<script>// 3D-Ansicht: Hamburger 3D-Gebäudemodell (LoD2, 3D Tiles) mit Luftbild als Boden, ohne fremde 3D-Bibliothek.
+<script>// 3D-Ansicht wie im 3D-Projektplaner der Stadt: CesiumJS vom Geoportal Hamburg mit Geländemodell, texturiertem
+// 3D-Gebäudemodell (LoD3) und Luftbild. Gebäudeangaben (Höhe, Geschosse, Adresse) kommen aus dem LoD2-Modell.
+// Lässt sich Cesium nicht laden, zeichnet ein eigener kleiner WebGL-Viewer das LoD2-Modell.
 // Daten: Freie und Hansestadt Hamburg, LGV (Datenlizenz Deutschland Namensnennung 2.0).
 "use strict";
 const View3D = (() => {
   const LOD2 = "https://www.daten-hamburg.de/gdi3d/datasource-data/LoD2/15/";
-  const DOP = "https://geodienste.hamburg.de/wms_dop_zeitreihe_belaubt?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&LAYERS=dop_zeitreihe_belaubt&STYLES=&CRS=EPSG:25832&FORMAT=image/jpeg";
+  const DOP_WMS = "https://geodienste.hamburg.de/wms_dop_zeitreihe_belaubt", DOP_LAYER = "dop_zeitreihe_belaubt";
+  const DOP = `${DOP_WMS}?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&LAYERS=${DOP_LAYER}&STYLES=&CRS=EPSG:25832&FORMAT=image/jpeg`;
+  const GDI3D = "https://www.daten-hamburg.de/gdi3d/datasource-data/", CESIUM = "https://geoportal-hamburg.de/mastercode/cesium/latest/"; // wie im 3D-Projektplaner
   const R = 170; // Radius des Ausschnitts in Metern
   const COL = {house: [0.93, 0.94, 0.96], plot: [1.0, 0.74, 0.1], sel: [0.16, 0.5, 1.0]};
 
@@ -1151,7 +1158,7 @@ const View3D = (() => {
       }
       parts.push({P, N: Nn, bid, idx});
     }
-    return {parts, attrs: bt.attributes || [], n: bt.attributes?.length || (ft.BATCH_LENGTH || 0)};
+    return {parts, attrs: bt.attributes || [], ids: bt.id || [], n: bt.attributes?.length || (ft.BATCH_LENGTH || 0)};
   }
 
   // ---------- kleine Hilfen ----------
@@ -1197,11 +1204,8 @@ const View3D = (() => {
   // opt: {el, center: [x, y] (UTM 32), plot: [[x, y], ...][] , plan: [[x, y], ...][], onInfo(html), onStatus(text)}
   async function open(opt) {
     close();
-    const canvas = document.createElement("canvas");
-    opt.el.prepend(canvas);
-    const gl = canvas.getContext("webgl", {antialias: true, alpha: true});
-    if (!gl || !gl.getExtension("OES_element_index_uint")) { opt.onStatus("Ihr Gerät kann keine 3D-Grafik (WebGL) anzeigen."); return; }
-    const me = st = {canvas, gl, opt, yaw: -0.35, pitch: 0.62, dist: 140, target: [0, 0, 0], sel: -1, dirty: true, raf: 0, ptr: new Map()};
+    const me = st = {opt, yaw: -0.35, pitch: 0.62, dist: 140, target: [0, 0, 0], sel: -1, dirty: true, raf: 0, ptr: new Map()};
+    const cesiumReady = loadCesium(); // lädt parallel zu den Gebäudeangaben
     const [lon, lat] = toLonLat(opt.center), frame = enuFrame(lon, lat);
     const loc = xy => { const [a, b] = toLonLat(xy); return frame.pt(ecef(a, b, 0)); };
     const plotL = (opt.plot || []).map(r => r.map(loc)), planL = (opt.plan || []).map(r => r.map(loc));
@@ -1227,7 +1231,7 @@ const View3D = (() => {
         if (!i.n) return -1;
         const cx = i.sx / i.n, cy = i.sy / i.n;
         if (Math.hypot(cx, cy) > R - 4) return -1;
-        B.push({attrs: t.attrs[b] || {}, minZ: i.minZ, maxZ: i.maxZ, cx, cy, onPlot: plotL.some(r => inPoly(cx, cy, r))});
+        B.push({id: t.ids[b], attrs: t.attrs[b] || {}, minZ: i.minZ, maxZ: i.maxZ, cx, cy, onPlot: plotL.some(r => inPoly(cx, cy, r))});
         return B.length - 1;
       });
       const base = pos.length / 3, remap = new Int32Array(cnt).fill(-1);
@@ -1243,6 +1247,20 @@ const View3D = (() => {
     const plotB = B.filter(b => b.onPlot);
     const ext = plotL.flat().reduce((m, [x, y]) => Math.max(m, Math.hypot(x, y)), 0);
     me.dist = Math.min(340, Math.max(110, ext * 4, ...plotB.map(b => (b.maxZ - gz) * 7)));
+    me.home = me.sel = plotB.length ? B.indexOf(plotB.reduce((a, b) => b.maxZ - b.minZ > a.maxZ - a.minZ ? b : a)) : -1; // größtes Gebäude auf dem Grundstück
+    me.byId = new Map(B.map((b, i) => [b.id, i]));
+
+    if (await cesiumReady && st === me) {
+      try { await openCesium(me, lon, lat, opt.plot || [], opt.plan || []); return; }
+      catch (e) { console.warn("Cesium", e); me.viewer?.destroy(); me.box?.remove(); me.viewer = me.box = null; }
+    }
+    if (st !== me) return;
+    // Ersatz: eigener Viewer mit dem LoD2-Modell
+    const canvas = document.createElement("canvas");
+    opt.el.prepend(canvas);
+    const gl = canvas.getContext("webgl", {antialias: true, alpha: true});
+    if (!gl || !gl.getExtension("OES_element_index_uint")) { opt.onStatus("Ihr Gerät kann keine 3D-Grafik (WebGL) anzeigen."); return; }
+    me.canvas = canvas; me.gl = gl;
 
     // Puffer: Gebäude
     me.nVert = owner.length;
@@ -1273,9 +1291,79 @@ const View3D = (() => {
     bindInput(me);
     me.ro = new ResizeObserver(() => redraw()); me.ro.observe(canvas);
     if (B.length) opt.onStatus("");
-    me.home = me.sel = plotB.length ? B.indexOf(plotB.reduce((a, b) => b.maxZ - b.minZ > a.maxZ - a.minZ ? b : a)) : -1; // größtes Gebäude auf dem Grundstück
     showInfo(me, true);
     redraw();
+  }
+  // ---------- Cesium (wie im 3D-Projektplaner) ----------
+  let cesiumP = null;
+  function loadCesium() {
+    if (window.Cesium) return Promise.resolve(true);
+    if (location.protocol === "file:") return Promise.resolve(false); // Cesium-Hilfsprozesse laufen nur, wenn die Seite von einem Server kommt
+    return cesiumP ||= new Promise(res => {
+      window.CESIUM_BASE_URL = CESIUM;
+      const l = document.createElement("link"); l.rel = "stylesheet"; l.href = CESIUM + "Widgets/widgets.css"; document.head.append(l);
+      const sc = document.createElement("script"); sc.src = CESIUM + "Cesium.js";
+      sc.onload = () => res(!!window.Cesium); sc.onerror = () => res(false);
+      document.head.append(sc);
+      setTimeout(() => res(!!window.Cesium), 30000);
+    });
+  }
+  async function openCesium(me, lon, lat, plot, plan) {
+    const C = Cesium, opt = me.opt, phone = matchMedia("(max-width: 760px)").matches;
+    const box = me.box = document.createElement("div"), credits = document.createElement("div");
+    box.className = "v3cesium"; opt.el.prepend(box);
+    let terrainProvider;
+    try { terrainProvider = await C.CesiumTerrainProvider.fromUrl(GDI3D + "Gelaende"); } catch { terrainProvider = new C.EllipsoidTerrainProvider(); }
+    if (st !== me) return;
+    const viewer = me.viewer = new C.Viewer(box, {
+      baseLayer: new C.ImageryLayer(new C.WebMapServiceImageryProvider({url: DOP_WMS, layers: DOP_LAYER, parameters: {format: "image/jpeg", transparent: false}, tilingScheme: new C.WebMercatorTilingScheme(), maximumLevel: 21})),
+      terrainProvider, animation: false, timeline: false, baseLayerPicker: false, geocoder: false, homeButton: false, sceneModePicker: false, navigationHelpButton: false,
+      fullscreenButton: false, infoBox: false, selectionIndicator: false, creditContainer: credits, requestRenderMode: true, maximumRenderTimeChange: Infinity});
+    const scene = viewer.scene;
+    scene.globe.depthTestAgainstTerrain = true;
+    viewer.clock.currentTime = C.JulianDate.fromIso8601("2026-06-21T11:00:00Z"); viewer.clock.shouldAnimate = false; // immer helles Mittagslicht
+    scene.fog.enabled = true; scene.fog.density = 0.0002;
+    const ts = me.tileset = await C.Cesium3DTileset.fromUrl(GDI3D + "LoD3_tex20cm/tileset.json", {preferLeaves: true, maximumScreenSpaceError: phone ? 16 : 8});
+    if (st !== me) return;
+    ts.colorBlendMode = C.Cesium3DTileColorBlendMode.MIX; ts.colorBlendAmount = 0.85; // Markierung hell, Fassade bleibt erkennbar
+    scene.primitives.add(ts);
+    restyle(me);
+    ts.initialTilesLoaded.addEventListener(() => { if (st === me) opt.onStatus(""); });
+    setTimeout(() => { if (st === me) opt.onStatus(""); }, 20000);
+    // Grundstück gelb, Plangrenze rot, beides auf dem Gelände
+    const deg = r => C.Cartesian3.fromDegreesArray(r.flatMap(p => toLonLat(p)));
+    for (const r of plan) viewer.entities.add({polyline: {positions: deg(r), width: 3, clampToGround: true, material: C.Color.fromCssColorString("#c8102e")}});
+    for (const r of plot) {
+      viewer.entities.add({polygon: {hierarchy: deg(r), material: C.Color.fromCssColorString("#ffbe1a").withAlpha(0.28), classificationType: C.ClassificationType.TERRAIN}});
+      viewer.entities.add({polyline: {positions: deg(r), width: 5, clampToGround: true, material: C.Color.fromCssColorString("#ffbe1a")}});
+    }
+    // Blick schräg auf das Grundstück
+    let h = me.gz;
+    try { const [c] = await C.sampleTerrainMostDetailed(terrainProvider, [C.Cartographic.fromDegrees(lon, lat)]); if (isFinite(c.height)) h = c.height; } catch { /* Sockelhöhe aus LoD2 */ }
+    me.lon = lon; me.lat = lat; me.h = h;
+    viewer.camera.lookAt(C.Cartesian3.fromDegrees(lon, lat, h + 4), new C.HeadingPitchRange(me.yaw, -me.pitch, me.dist));
+    viewer.camera.lookAtTransform(C.Matrix4.IDENTITY);
+    // Antippen: Gebäudeangaben aus dem LoD2-Modell (gleiche ALKIS-Kennung)
+    me.handler = new C.ScreenSpaceEventHandler(scene.canvas);
+    me.handler.setInputAction(e => {
+      const f = scene.pick(e.position), id = f instanceof C.Cesium3DTileFeature ? f.getProperty("id") : null;
+      let i = id != null ? me.byId.get(id) : undefined;
+      if (id != null && i === undefined) { // nicht im LoD2-Ausschnitt: Angaben aus dem LoD3-Modell
+        const a = f.getProperty("attributes") || {};
+        me.B.push({id, attrs: {Gebaeudefunktion: a.Gebaeudefunktion}, minZ: 0, maxZ: 0, onPlot: false}); i = me.B.length - 1; me.byId.set(id, i);
+      }
+      me.sel = i ?? me.home; restyle(me); showInfo(me, false); scene.requestRender();
+    }, C.ScreenSpaceEventType.LEFT_CLICK);
+    showInfo(me, true);
+    scene.requestRender();
+  }
+  function restyle(me) {
+    if (!me.tileset) return;
+    const q = id => `\${id} === '${String(id).replace(/'/g, "")}'`;
+    const cond = [...me.B.filter(b => b.onPlot).map(b => [q(b.id), "color('#ffe14d')"])];
+    const s = me.B[me.sel]; if (s && !s.onPlot) cond.push([q(s.id), "color('#6aa8ff')"]);
+    cond.push(["true", "color('white')"]);
+    me.tileset.style = new Cesium.Cesium3DTileStyle({color: {conditions: cond}});
   }
   function colors(me) {
     const out = new Float32Array(me.owner.length * 3);
@@ -1289,7 +1377,7 @@ const View3D = (() => {
     if (!b) return me.opt.onInfo(me.B.some(x => x.onPlot) ? "" : `<p class="v3hint">Tippen Sie auf ein Gebäude, um Höhe und Geschosse zu sehen.</p>`);
     const a = b.attrs, h = a.measuredHeight || b.maxZ - b.minZ;
     const adr = a.Adresse || (a.Address?.Street ? `${a.Address.Street} ${a.Address.HouseNumber || ""}` : "");
-    const rows = [["Höhe", `${fmt(h)} m`], ["Geschosse", a.storeysAboveGround != null ? String(a.storeysAboveGround) : ""], ["Dach", a.Dachform || ""], ["Nutzung", a.Gebaeudefunktion || ""]].filter(r => r[1]);
+    const rows = [["Höhe", h > 0 ? `${fmt(h)} m` : ""], ["Geschosse", a.storeysAboveGround != null ? String(a.storeysAboveGround) : ""], ["Dach", a.Dachform || ""], ["Nutzung", a.Gebaeudefunktion || ""]].filter(r => r[1]);
     me.opt.onInfo(`<p class="v3title">${b.onPlot ? "Auf Ihrem Grundstück" : "Nachbargebäude"}${adr ? `<span>${esc(adr)}</span>` : ""}</p>
       <dl>${rows.map(([t, d]) => `<div><dt>${t}</dt><dd>${esc(d)}</dd></div>`).join("")}</dl>${initial ? `<p class="v3hint">Weitere Gebäude antippen zum Vergleichen.</p>` : ""}`);
   }
@@ -1394,12 +1482,22 @@ const View3D = (() => {
     c.addEventListener("wheel", e => { e.preventDefault(); me.dist *= Math.exp(e.deltaY * 0.0012); clampP(); redraw(); }, {passive: false});
   }
   function turn(dyaw, dpitch) { const me = st; if (!me) return; me.yaw += dyaw; me.pitch = Math.min(1.45, Math.max(0.12, me.pitch + dpitch)); redraw(); }
-  function north() { const me = st; if (!me) return; me.yaw = 0; me.pitch = 1.2; me.target = [0, 0, me.gz + 4]; redraw(); }
-  function zoom(f) { const me = st; if (!me) return; me.dist = Math.min(600, Math.max(12, me.dist * f)); redraw(); }
+  function north() {
+    const me = st; if (!me) return;
+    if (me.viewer) return me.viewer.camera.flyTo({destination: Cesium.Cartesian3.fromDegrees(me.lon, me.lat, me.h + 260), orientation: {heading: 0, pitch: -Math.PI / 2, roll: 0}, duration: 0.8});
+    me.yaw = 0; me.pitch = 1.2; me.target = [0, 0, me.gz + 4]; redraw();
+  }
+  function zoom(f) {
+    const me = st; if (!me) return;
+    if (me.viewer) { const cam = me.viewer.camera, d = Math.max(cam.positionCartographic.height - me.h, 20); f < 1 ? cam.zoomIn(d * (1 - f)) : cam.zoomOut(d * (f - 1)); me.viewer.scene.requestRender(); return; }
+    me.dist = Math.min(600, Math.max(12, me.dist * f)); redraw();
+  }
   function close() {
     const me = st; if (!me) return;
     st = null; cancelAnimationFrame(me.raf); me.ro?.disconnect();
-    me.gl.getExtension("WEBGL_lose_context")?.loseContext(); me.canvas.remove();
+    if (me.viewer) { me.handler?.destroy(); me.viewer.destroy(); }
+    me.box?.remove();
+    me.gl?.getExtension("WEBGL_lose_context")?.loseContext(); me.canvas?.remove();
   }
   return {open, close, turn, north, zoom, isOpen: () => !!st};
 })();
@@ -2000,14 +2098,17 @@ function appendExtras(r, coord, plot, sum, placeName) {
 }
 // Kurzfassung (Stichworte) oder erweiterte Informationen; gedruckt wird immer alles
 let extended = false;
+// Erweitert = die vollständige Info-Seite wie in der Version vor der Kurzfassung
 function extToggle() {
-  const r = $("results"), d = document.createElement("div"), b = document.createElement("button"), set = () => {
+  const r = $("results"), mk = top => { const d = document.createElement("div"), b = document.createElement("button"); d.className = "exttoggle noprint" + (top ? " top" : ""); b.type = "button"; b.className = "ghost"; d.append(b); return d; };
+  const bottom = mk(false), top = mk(true), set = () => {
     r.classList.toggle("short", !extended);
-    b.textContent = extended ? "Weniger anzeigen" : "Erweiterte Informationen anzeigen"; b.setAttribute("aria-expanded", extended);
+    bottom.firstChild.textContent = extended ? "Zurück zur Kurzfassung" : "Erweiterte Informationen anzeigen"; top.firstChild.textContent = "Zurück zur Kurzfassung";
+    bottom.firstChild.setAttribute("aria-expanded", extended);
   };
-  d.className = "exttoggle noprint"; b.type = "button"; b.className = "ghost"; d.append(b); set();
-  b.addEventListener("click", () => { extended = !extended; set(); if (extended) r.querySelector("section.ext:not(.warn)")?.scrollIntoView({behavior: "smooth", block: "start"}); });
-  return d;
+  for (const d of [bottom, top]) d.firstChild.addEventListener("click", () => { extended = !extended; set(); qs(".side").scrollTo({top: 0, behavior: "smooth"}); });
+  r.firstElementChild ? r.firstElementChild.after(top) : r.append(top); set(); // unter dem Kopf, damit die kleine Karte (Handy) nichts verdeckt
+  return bottom;
 }
 // Trifft eine Geometrie das Grundstück? (Näherung ohne Geometrie-Bibliothek)
 function touches(geom, pg, ext) {
