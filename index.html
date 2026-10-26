@@ -639,7 +639,9 @@ h2 .ico { width: 28px; height: 28px; border-radius: 50%; background: var(--gl-st
   body.dragging .mapwrap, body.dragging .side, body.dragging .infocatch { transition: none !important; }
   /* Karte angetippt: Karte groß, Infos als Bild-im-Bild */
   body.has-result.mapmain .mapwrap { inset: 0; width: auto; height: auto; border-radius: 0; border: 0; box-shadow: none; z-index: 1; }
-  body.has-result.mapmain .mapwrap > :not(#map):not(.pipcatch):not(.mapctl):not(.zoomhint):not(.view3d):not(.lpring):not([hidden]), body.has-result.mapmain .mapwrap > .mapctl.open:not(#map) { display: flex !important; }
+  body.has-result.mapmain .mapwrap > :not(#map):not(.pipcatch):not(.mapctl):not(.zoomhint):not(.view3d):not(.lpring):not(.compass):not(.btn3d):not(.mtip):not([hidden]), body.has-result.mapmain .mapwrap > .mapctl.open:not(#map) { display: flex !important; }
+  /* Kompass nur gedreht, 3D-Knopf nicht beim Messen */
+  body.has-result.mapmain .mapwrap > #compass.compass.turned, body.has-result.mapmain:not(.measuring) .mapwrap > #btn3d.btn3d { display: flex !important; }
   body.has-result.mapmain .mapwrap > .pipcatch, body.has-result.mapmain .side > header, body.has-result.mapmain .side > form, body.has-result.mapmain .side > .recent { display: none; }
   body.has-result.mapmain .layerbtn { right: auto; left: 56px; }
   /* Haus-Symbol auch in der großen Karte: oben links, Zoom rückt darunter */
@@ -715,6 +717,13 @@ h2 .ico { width: 28px; height: 28px; border-radius: 50%; background: var(--gl-st
 #mDone { border: 0; background: linear-gradient(180deg, rgba(255,255,255,.35), rgba(255,255,255,0) 55%), var(--accent); }
 body.measuring .zoomhint, body.measuring .mapwrap > .tools, body.measuring .btn3d { display: none !important; }
 body.measuring #map { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+body.has-result.mapmain .app .mapwrap > #lpRing.lpring, .app .mapwrap > #lpRing.lpring { display: block !important; } /* schlägt die Bild-im-Bild-Regel fürs Handy */
+.mtip { display: none; position: absolute; z-index: 7; left: 50%; top: 12px; transform: translateX(-50%); margin: 0; align-items: center; gap: 8px; max-width: calc(100% - 140px);
+  padding: 8px 14px 8px 10px; border-radius: 99px; font-size: 14px; font-weight: 600; line-height: 1.25; white-space: nowrap; color: #fff; background: var(--accent-fill); box-shadow: 0 4px 14px rgba(0,0,0,.18); }
+.mtip svg { width: 20px; height: 20px; flex: none; }
+body.measuring .app .mapwrap > #mTip.mtip { display: flex !important; }
+body.measuring .zoomhint, body.measuring .layerbtn { visibility: hidden; }
+@media (max-width: 760px) { body.measuring .app .mapwrap > #mTip.mtip { top: auto; bottom: calc(150px + env(safe-area-inset-bottom, 0px)); max-width: calc(100% - 32px); } }
 .lpring { position: absolute; z-index: 8; width: 64px; height: 64px; margin: -32px 0 0 -32px; border-radius: 50%; pointer-events: none; opacity: 0; }
 .lpring.grow { opacity: 1; border: 3px solid var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); animation: lpgrow .45s linear forwards; }
 .lpring.done { opacity: 0; border: 3px solid var(--accent); animation: lpdone .35s ease-out; }
@@ -759,7 +768,7 @@ body.is3d .app .mapwrap > #view3d.view3d { display: block !important; } /* schl�
   .mapwrap > .tools { gap: 6px; }
   .mapwrap > .tools button { flex: 1 1 0; min-width: 0; flex-direction: column; gap: 3px; min-height: 56px; padding: 7px 4px !important; font-size: 12.5px !important; font-weight: 600; justify-content: center; line-height: 1.15; text-align: center; }
   .mapwrap > .tools button svg { width: 21px; height: 21px; }
-  .mapwrap > .tools button.on { background: var(--accent) !important; color: #fff; }
+  .mapwrap > .tools button.on { background: var(--accent-fill) !important; color: #fff; }
   .mbar { bottom: calc(26px + env(safe-area-inset-bottom, 0px)); width: calc(100% - 16px); padding: 10px; border-radius: 24px; }
   .mbar p { flex-basis: 100%; text-align: center; padding: 0 4px 2px; }
   .mbar button { flex: 1; min-height: 46px; justify-content: center; font-size: 15px !important; }
@@ -778,9 +787,9 @@ body.is3d .app .mapwrap > #view3d.view3d { display: block !important; } /* schl�
 /* ---------- MoinPlan: Apple-Formensprache. Systemschrift, graue Gruppenfläche, weiße Karten, farbige Symbolkacheln, kein Verlauf ---------- */
 :root { --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif; --display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif;
   --bg: #f2f2f7; --panel: #fff; --fg: #000; --muted: rgba(60,60,67,.6); --line: rgba(60,60,67,.16); --fill: rgba(118,118,128,.12);
-  --accent: #007aff; --accent-soft: rgba(0,122,255,.11); --ok: #248a3d; --ok-soft: rgba(52,199,89,.14); --warn: #c93400; --warn-soft: rgba(255,149,0,.14);
+  --accent: #0062cc; --accent-soft: rgba(0,98,204,.1); --ok: #187030; --ok-soft: rgba(52,199,89,.14); --warn: #c93400; --warn-soft: rgba(255,149,0,.14);
   --gl: rgba(255,255,255,.78); --gl-strong: rgba(255,255,255,.9); --gl-shine: linear-gradient(transparent, transparent); --gl-edge: 0 0 0 .5px rgba(0,0,0,.08);
-  --gl-shadow: 0 4px 16px rgba(0,0,0,.1); --gl-blur: blur(20px) saturate(1.8); --radius: 12px; }
+  --gl-shadow: 0 4px 16px rgba(0,0,0,.1); --gl-blur: blur(20px) saturate(1.8); --radius: 12px; --accent-fill: #0062cc; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #000; --panel: #1c1c1e; --fg: #fff; --muted: rgba(235,235,245,.6); --line: rgba(84,84,88,.55); --fill: rgba(118,118,128,.24);
   --accent: #0a84ff; --accent-soft: rgba(10,132,255,.18); --ok: #30d158; --ok-soft: rgba(48,209,88,.16); --warn: #ff9f0a; --warn-soft: rgba(255,159,10,.16);
   --gl: rgba(30,30,32,.72); --gl-strong: rgba(44,44,46,.88); --gl-edge: 0 0 0 .5px rgba(255,255,255,.1); --gl-shadow: 0 4px 16px rgba(0,0,0,.5); } }
@@ -796,7 +805,7 @@ body { font: 15px/1.45 var(--sans); letter-spacing: -.01em; }
 form.search { background: var(--panel); border-radius: 14px; box-shadow: 0 0 0 .5px var(--line), 0 6px 20px rgba(0,0,0,.08); -webkit-backdrop-filter: none; backdrop-filter: none; padding: 6px; }
 form.search:focus-within { box-shadow: 0 0 0 2px var(--accent), 0 6px 20px rgba(0,0,0,.08); }
 form.search input { font-size: 17px; }
-form.search button[type=submit], #printBtn, #mDone { background: var(--accent) !important; box-shadow: none !important; border-radius: 10px; font-weight: 600; }
+form.search button[type=submit], #printBtn, #mDone { background: var(--accent-fill) !important; box-shadow: none !important; border-radius: 10px; font-weight: 600; }
 /* Karten: weiß auf Grau, ohne Glas und Schatten */
 #results > section.card, #results > section.hero, #results > section.warn { background: var(--panel) !important; -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: none !important; border-radius: 14px !important; padding: 16px !important; }
 #results > section.hero { box-shadow: inset 4px 0 0 var(--plan) !important; }
@@ -804,13 +813,13 @@ form.search button[type=submit], #printBtn, #mDone { background: var(--accent) !
 h2 { font: 600 17px/1.25 var(--display); letter-spacing: -.02em; }
 h2 .ico { width: 29px; height: 29px; border-radius: 7px; box-shadow: none; color: #fff; background: #8e8e93; }
 h2 .ico svg { width: 17px; height: 17px; }
-.ico-alert { background: #ff9500 !important; } .ico-home { background: #007aff !important; } .ico-ruler { background: #34c759 !important; } .ico-shield { background: #5856d6 !important; }
+.ico-alert { background: #ff9500 !important; } .ico-home { background: #0a7aff !important; } .ico-ruler { background: #34c759 !important; } .ico-shield { background: #5856d6 !important; }
 .ico-file { background: #ff3b30 !important; } .ico-book { background: #ff9f0a !important; } .ico-minus { background: #8e8e93 !important; } .ico-city { background: #30b0c7 !important; }
 .ico-phone { background: #34c759 !important; } .ico-search { background: #8e8e93 !important; }
 .big { gap: 8px; }
 .big div { background: var(--bg) !important; box-shadow: none !important; border-radius: 12px; }
 .big b { font: 700 22px/1.1 var(--display); letter-spacing: .005em; }
-#calcOut div:first-child { background: var(--accent) !important; }
+#calcOut div:first-child { background: var(--accent-fill) !important; }
 #calcOut div:first-child b, #calcOut div:first-child span { color: #fff; }
 button.ghost, .recent button, a.ghostbtn, .meta span:not(.pill) { background: var(--accent-soft) !important; color: var(--accent); box-shadow: none !important; border-radius: 10px; }
 .meta span:not(.pill) { background: var(--fill) !important; color: var(--fg); }
@@ -854,6 +863,11 @@ form.search input { background: transparent !important; }
   body.has-result.mapmain .compass { top: calc(158px + env(safe-area-inset-top, 0px)); }
   body.has-result.mapmain .btn3d { top: auto; bottom: calc(104px + env(safe-area-inset-bottom, 0px)); right: 12px; left: auto; height: 50px; border-radius: 14px; }
   body.measuring .compass { display: none !important; }
+}
+dl.contact a { display: inline-block; padding: 8px 0; }
+@media (max-width: 760px) {
+  body:not(.has-result) .mapwrap > .tools { display: none; } /* Messen erst mit Grundstück */
+  body.has-result .plan-name { font-size: 24px; -webkit-hyphens: manual; hyphens: manual; }
 }
 @media print { .compass { display: none !important; } }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
@@ -925,6 +939,7 @@ form.search input { background: transparent !important; }
     <button type="button" class="compass" id="compass" aria-label="Nach Norden ausrichten" title="Nach Norden ausrichten"><svg viewBox="0 0 44 44" aria-hidden="true"><g class="needle"><text x="22" y="10.5" text-anchor="middle">N</text><path d="M22 12 27 22H17z" fill="#ff3b30"/><path d="M22 34 17 22h10z" fill="currentColor" opacity=".38"/></g></svg></button>
     <button type="button" class="btn3d" id="btn3d" aria-label="3D-Ansicht öffnen" title="Gebäude in 3D ansehen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 3 7v10l9 5 9-5V7z"/><path d="m3 7 9 5 9-5M12 12v10"/></svg>3D</button>
     <div class="lpring" id="lpRing" aria-hidden="true"></div>
+    <p class="mtip" id="mTip" role="status"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="8" stroke-dasharray="3 3"/></svg><span></span></p>
     <div class="view3d" id="view3d">
       <button type="button" class="v3back" id="v3close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z"/><path d="M9 3v15M15 6v15"/></svg>Zurück zur Karte</button>
       <div class="v3nav">
@@ -1719,7 +1734,7 @@ function showMapBig() {
   if (body.contains("mapmain")) return;
   vt(() => { body.add("has-result", "mapmain"); $("mapctl").classList.remove("open"); qs(".side").scrollTop = 0; map.updateSize(); fitPlot(); });
 }
-function toggleDrawer(v) { $("drawer").classList.toggle("open", v); $("backdrop").hidden = !v; $("menuBtn").setAttribute("aria-expanded", v); }
+function toggleDrawer(v) { $("drawer").classList.toggle("open", v); $("drawer").inert = !v; $("backdrop").hidden = !v; $("menuBtn").setAttribute("aria-expanded", v); }
 const vt = fn => document.startViewTransition && !matchMedia("(prefers-reduced-motion: reduce)").matches ? document.startViewTransition(fn) : fn();
 on("pipMap", "click", () => { if (!wasDragged()) vt(() => setMapMain(true)); });
 on("pipInfo", "click", () => { if (!wasDragged()) vt(() => setMapMain(false)); });
@@ -1772,6 +1787,7 @@ addEventListener("resize", () => { if (innerWidth !== lastW) { lastW = innerWidt
   const f = t.getBoundingClientRect().left / 100; t.remove();
   if (f > 0.3 && f < 0.7) document.documentElement.style.setProperty("--ipz", ".46");
 }
+$("drawer").inert = true;
 on("menuBtn", "click", () => toggleDrawer(true));
 on("drawerClose", "click", () => toggleDrawer(false));
 on("backdrop", "click", () => toggleDrawer(false));
@@ -2004,6 +2020,7 @@ function showTip(tip, g) {
 }
 function measureBar(kind) {
   body.toggle("measuring", !!kind); $("mBar").hidden = !kind;
+  if (kind) qs("#mTip span").textContent = coarse() ? "Gedrückt halten setzt einen Punkt" : "Klicken setzt einen Punkt, Doppelklick beendet";
   if (kind) $("mHint").textContent = coarse() ? "Finger kurz gedrückt halten, bis der Punkt einrastet." : "Klicken setzt Punkte, Doppelklick beendet.";
   $("mLine").classList.toggle("on", kind === "LineString");
   $("mArea").classList.toggle("on", kind === "Polygon");
@@ -2063,9 +2080,18 @@ function tmDone() {
   }
   stopMeasure();
 }
+// Haptik: Android über vibrate, iPhone (ab iOS 18) über einen versteckten Schalter, dessen Umschalten Safari fühlbar macht.
+// Safari erlaubt das nur direkt nach einer Berührung, deshalb zusätzlich beim Loslassen.
+const hapticSwitch = (() => {
+  const l = document.createElement("label"), i = document.createElement("input");
+  i.type = "checkbox"; i.setAttribute("switch", ""); i.tabIndex = -1; l.append(i); l.setAttribute("aria-hidden", "true");
+  l.style.cssText = "position:fixed;left:-100px;top:0;width:1px;height:1px;opacity:0;pointer-events:none;overflow:hidden";
+  document.body.append(l); return l;
+})();
+const haptic = () => { if (navigator.vibrate) navigator.vibrate(18); else hapticSwitch.click(); };
 // gedrückt halten erkennen (nur Finger), Ring zeigt den Fortschritt
 {
-  const vp = map.getViewport(), ring = $("lpRing"); let lp = null;
+  const vp = map.getViewport(), ring = $("lpRing"); let lp = null, setAtUp = false;
   const cancel = () => { if (lp) { clearTimeout(lp.timer); lp = null; ring.className = "lpring"; } };
   vp.addEventListener("pointerdown", e => {
     cancel();
@@ -2076,19 +2102,20 @@ function tmDone() {
     lp = {x, y, timer: setTimeout(() => {
       const vr = vp.getBoundingClientRect();
       tmAdd(map.getCoordinateFromPixel([x - vr.left, y - vr.top]));
-      navigator.vibrate?.(18);
+      if (navigator.vibrate) navigator.vibrate(18); else setAtUp = true; // iPhone: Rückmeldung beim Loslassen
       ring.className = "lpring done"; lp = null;
     }, 450)};
   });
   vp.addEventListener("pointermove", e => { if (lp && (!e.isPrimary || Math.hypot(e.clientX - lp.x, e.clientY - lp.y) > 10)) cancel(); });
   ["pointerup", "pointercancel"].forEach(t => vp.addEventListener(t, () => { if (lp) cancel(); }));
+  vp.addEventListener("touchend", () => { if (setAtUp) { setAtUp = false; hapticSwitch.click(); } }); // iPhone: Berührung ist jetzt gültig
   vp.addEventListener("contextmenu", e => { if (tm) e.preventDefault(); });
 }
 on("mLine", "click", () => startMeasure("LineString"));
 on("mArea", "click", () => startMeasure("Polygon"));
 on("mClear", "click", () => { stopMeasure(); measureSrc.clear(); tips.forEach(t => map.removeOverlay(t)); tips.length = 0; });
 on("mUndo", "click", () => { if (tm) { tm.coords.pop(); tmUpdate(); } else if (draw) draw.removeLastPoint(); });
-on("mDone", "click", () => { if (tm) return tmDone(); if (draw) draw.finishDrawing(); stopMeasure(); });
+on("mDone", "click", () => { haptic(); if (tm) return tmDone(); if (draw) draw.finishDrawing(); stopMeasure(); });
 // „Grundfläche in der Karte messen“ aus den Infos: zur Karte und gleich mit dem Messen beginnen
 function measureFromInfo() {
   if (isPhone() && !body.contains("mapmain")) { vt(() => setMapMain(true)); setTimeout(() => { fitPlot(); startMeasure("Polygon", true); }, 60); }
