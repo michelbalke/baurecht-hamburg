@@ -640,7 +640,7 @@ h2 .ico { width: 28px; height: 28px; border-radius: 50%; background: var(--gl-st
   body.dragging .mapwrap, body.dragging .side, body.dragging .infocatch { transition: none !important; }
   /* Karte angetippt: Karte groß, Infos als Bild-im-Bild */
   body.has-result.mapmain .mapwrap { inset: 0; width: auto; height: auto; border-radius: 0; border: 0; box-shadow: none; z-index: 1; }
-  body.has-result.mapmain .mapwrap > :not(#map):not(.pipcatch):not(.mapctl):not(.zoomhint), body.has-result.mapmain .mapwrap > .mapctl.open:not(#map) { display: flex !important; }
+  body.has-result.mapmain .mapwrap > :not(#map):not(.pipcatch):not(.mapctl):not(.zoomhint):not(.view3d):not(.lpring):not([hidden]), body.has-result.mapmain .mapwrap > .mapctl.open:not(#map) { display: flex !important; }
   body.has-result.mapmain .mapwrap > .pipcatch, body.has-result.mapmain .side > header, body.has-result.mapmain .side > form, body.has-result.mapmain .side > .recent { display: none; }
   body.has-result.mapmain .layerbtn { right: auto; left: 56px; }
   /* Haus-Symbol auch in der großen Karte: oben links, Zoom rückt darunter */
@@ -699,6 +699,79 @@ h2 .ico { width: 28px; height: 28px; border-radius: 50%; background: var(--gl-st
   h2 { break-after: avoid; } #results > section.card:not(:has(dl.rules)) { break-inside: avoid; }
   .checks li::before { left: 0 !important; top: 2pt !important; }
 }
+
+/* ---------- Kurzfassung / erweiterte Informationen ---------- */
+@media screen { #results.short .ext { display: none !important; } }
+.exttoggle { display: flex; justify-content: center; padding: 2px 0 6px; }
+.exttoggle button { padding: 11px 20px; font-size: 14px; font-weight: 600; }
+#results.short .meta + .meta { margin-top: 6px; }
+
+/* ---------- Messen: große Knöpfe, Hinweisleiste, Haltering ---------- */
+.tools button svg { width: 17px; height: 17px; flex: none; }
+.mbar { position: absolute; z-index: 7; left: 50%; bottom: 34px; transform: translateX(-50%); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: center;
+  width: max-content; max-width: calc(100% - 24px); padding: 8px 8px 8px 16px; border-radius: 26px; background: var(--gl-shine), var(--gl-strong); -webkit-backdrop-filter: var(--gl-blur); backdrop-filter: var(--gl-blur); box-shadow: var(--gl-edge), var(--gl-shadow); }
+.mbar[hidden] { display: none !important; }
+.mbar p { margin: 0; font-size: 13.5px; font-weight: 550; flex: 1 1 200px; }
+.mbar button { border-radius: 99px; }
+#mDone { border: 0; background: linear-gradient(180deg, rgba(255,255,255,.35), rgba(255,255,255,0) 55%), var(--accent); }
+body.measuring .zoomhint, body.measuring .mapwrap > .tools { display: none !important; }
+body.measuring #map { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+.lpring { position: absolute; z-index: 8; width: 64px; height: 64px; margin: -32px 0 0 -32px; border-radius: 50%; pointer-events: none; opacity: 0; }
+.lpring.grow { opacity: 1; border: 3px solid var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); animation: lpgrow .45s linear forwards; }
+.lpring.done { opacity: 0; border: 3px solid var(--accent); animation: lpdone .35s ease-out; }
+@keyframes lpgrow { from { transform: scale(1.6); opacity: .2; } to { transform: scale(.35); opacity: 1; } }
+@keyframes lpdone { from { transform: scale(.35); opacity: 1; background: var(--accent); } to { transform: scale(1.3); opacity: 0; } }
+
+/* ---------- 3D-Ansicht: ein runder Modelltisch aus Luftbild und Stadtmodell ---------- */
+.btn3d { position: absolute; z-index: 6; top: 88px; left: 12px; width: 32px; height: 32px; padding: 0; border: 0; border-radius: 50%; justify-content: center; font: 700 12.5px/1 var(--sans); letter-spacing: .02em;
+  color: var(--fg); background: var(--gl-shine), var(--gl); -webkit-backdrop-filter: var(--gl-blur); backdrop-filter: var(--gl-blur); box-shadow: var(--gl-edge), var(--gl-shadow); }
+.view3d { display: none; position: absolute; inset: 0; z-index: 8; overflow: hidden; touch-action: none;
+  background: radial-gradient(120% 70% at 50% 100%, #f6f1e6 0%, #dfe9f3 45%, #b9cfe6 100%); }
+body.is3d .app .mapwrap > #view3d.view3d { display: block !important; } /* schlägt die Bild-im-Bild-Regel fürs Handy */
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .view3d { background: radial-gradient(120% 70% at 50% 100%, #2a3140 0%, #161d29 55%, #0b1018 100%); } }
+.view3d canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; cursor: grab; }
+.view3d canvas:active { cursor: grabbing; }
+.view3d button { border: 0; color: var(--fg); background: var(--gl-shine), var(--gl-strong); -webkit-backdrop-filter: var(--gl-blur); backdrop-filter: var(--gl-blur); box-shadow: var(--gl-edge), var(--gl-shadow); }
+.v3back { position: absolute; z-index: 2; top: calc(12px + env(safe-area-inset-top, 0px)); left: 12px; border-radius: 99px; padding: 9px 15px 9px 12px; font-size: 14px; }
+.v3back svg { width: 18px; height: 18px; }
+.v3nav { position: absolute; z-index: 2; top: calc(12px + env(safe-area-inset-top, 0px)); right: 12px; display: flex; flex-direction: column; gap: 8px; }
+.v3nav button { width: 40px; height: 40px; padding: 0; border-radius: 50%; justify-content: center; font: 600 19px/1 var(--sans); }
+.v3nav #v3north { font-size: 13px; font-weight: 700; }
+.v3status { position: absolute; z-index: 2; left: 50%; top: 45%; transform: translate(-50%, -50%); margin: 0; padding: 10px 18px; border-radius: 99px; font-weight: 600; text-align: center; max-width: calc(100% - 40px);
+  background: var(--gl-shine), var(--gl-strong); -webkit-backdrop-filter: var(--gl-blur); backdrop-filter: var(--gl-blur); box-shadow: var(--gl-edge), var(--gl-shadow); }
+.v3info { position: absolute; z-index: 2; left: 12px; bottom: calc(30px + env(safe-area-inset-bottom, 0px)); width: min(300px, calc(100% - 24px)); padding: 14px 16px; border-radius: 22px;
+  background: var(--gl-shine), var(--gl-strong); -webkit-backdrop-filter: var(--gl-blur); backdrop-filter: var(--gl-blur); box-shadow: var(--gl-edge), var(--gl-shadow); }
+.v3info:empty, .v3info[hidden] { display: none; }
+.v3title { margin: 0 0 8px; font: 650 16px/1.2 var(--display); }
+.v3title span { display: block; font: 500 13px/1.3 var(--sans); color: var(--muted); margin-top: 2px; }
+.v3info dl { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 14px; margin: 0; }
+.v3info dt { font-size: 11.5px; color: var(--muted); }
+.v3info dd { margin: 0; font-weight: 600; font-size: 14px; }
+.v3info div:first-child dd { font: 700 22px/1.05 var(--display); }
+.v3hint { margin: 8px 0 0; font-size: 12.5px; color: var(--muted); }
+.v3info > .v3hint:first-child { margin: 0; }
+.v3credit { position: absolute; z-index: 1; right: 10px; bottom: calc(6px + env(safe-area-inset-bottom, 0px)); margin: 0; padding: 2px 10px; border-radius: 99px; font-size: 10.5px; color: var(--fg); background: var(--gl-strong); -webkit-backdrop-filter: var(--gl-blur); backdrop-filter: var(--gl-blur); }
+@media (max-width: 760px) {
+  .btn3d { top: calc(88px + env(safe-area-inset-top, 0px)); width: 34px; height: 34px; }
+  body.has-result.mapmain .btn3d { top: calc(132px + env(safe-area-inset-top, 0px)); left: 12px; }
+  .mapwrap > .tools { gap: 6px; }
+  .mapwrap > .tools button { flex: 1 1 0; min-width: 0; flex-direction: column; gap: 3px; min-height: 56px; padding: 7px 4px !important; font-size: 12.5px !important; font-weight: 600; justify-content: center; line-height: 1.15; text-align: center; }
+  .mapwrap > .tools button svg { width: 21px; height: 21px; }
+  .mapwrap > .tools button.on { background: var(--accent) !important; color: #fff; }
+  .mbar { bottom: calc(26px + env(safe-area-inset-bottom, 0px)); width: calc(100% - 16px); padding: 10px; border-radius: 24px; }
+  .mbar p { flex-basis: 100%; text-align: center; padding: 0 4px 2px; }
+  .mbar button { flex: 1; min-height: 46px; justify-content: center; font-size: 15px !important; }
+  .v3info { bottom: calc(26px + env(safe-area-inset-bottom, 0px)); }
+  .v3credit { left: 12px; right: auto; top: calc(60px + env(safe-area-inset-top, 0px)); bottom: auto; }
+  .v3credit span { display: none; }
+  body.is3d .infocatch, body.is3d.has-result.mapmain .side { display: none !important; } /* 3D braucht den ganzen Bildschirm */
+  .v3info { padding: 12px 14px; }
+  .v3info dl { grid-template-columns: repeat(3, auto); gap: 4px 12px; }
+  .v3info dl div:nth-child(4) { grid-column: 1 / -1; }
+  .v3info div:first-child dd { font-size: 18px; }
+  .v3info dd { font-size: 13px; }
+}
+@media print { .view3d, .btn3d, .mbar, .lpring, .exttoggle { display: none !important; } }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 </style>
 </head>
@@ -734,9 +807,9 @@ h2 .ico { width: 28px; height: 28px; border-radius: 50%; background: var(--gl-st
       </section>
     </div>
     <div class="tools">
-      <button type="button" class="ghost" id="mLine">Strecke messen</button>
-      <button type="button" class="ghost" id="mArea">Fläche messen</button>
-      <button type="button" class="ghost" id="mClear">Messung löschen</button>
+      <button type="button" class="ghost" id="mLine"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="5" cy="19" r="2"/><circle cx="19" cy="5" r="2"/><path d="m6.5 17.5 11-11"/></svg>Strecke messen</button>
+      <button type="button" class="ghost" id="mArea"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8 12 3l8 6-3 11H7z"/></svg>Fläche messen</button>
+      <button type="button" class="ghost" id="mClear"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>Messung löschen</button>
     </div>
     <ul class="status" id="diag" hidden></ul>
     <p class="legal">Fachdaten: Freie und Hansestadt Hamburg (LGV und Bezirksämter), Datenlizenz Deutschland Namensnennung 2.0. Grundkarte: © basemap.de / BKG, Datenquellen © GeoBasis-DE. Alle Angaben ohne Gewähr. Rechtsverbindlich ist nur der festgestellte Plan mit Verordnung; für eine verbindliche Auskunft das Bezirksamt fragen.</p>
@@ -760,6 +833,24 @@ h2 .ico { width: 28px; height: 28px; border-radius: 50%; background: var(--gl-st
       </div>
     </div>
     <div class="zoomhint" id="zoomhint">Weiter hineinzoomen, um B-Plan-Grenzen zu sehen</div>
+    <div class="mbar" id="mBar" hidden>
+      <p id="mHint"></p>
+      <button type="button" class="ghost" id="mUndo">Punkt zurück</button>
+      <button type="button" id="mDone">Fertig</button>
+    </div>
+    <button type="button" class="btn3d" id="btn3d" aria-label="3D-Ansicht öffnen" title="Gebäude in 3D ansehen">3D</button>
+    <div class="lpring" id="lpRing" aria-hidden="true"></div>
+    <div class="view3d" id="view3d">
+      <button type="button" class="v3back" id="v3close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z"/><path d="M9 3v15M15 6v15"/></svg>Zurück zur Karte</button>
+      <div class="v3nav">
+        <button type="button" id="v3in" aria-label="Näher heran">+</button>
+        <button type="button" id="v3out" aria-label="Weiter weg">−</button>
+        <button type="button" id="v3north" aria-label="Von oben, Norden oben" title="Von oben, Norden oben">N</button>
+      </div>
+      <p class="v3status" id="v3status" hidden></p>
+      <div class="v3info" id="v3info"></div>
+      <p class="v3credit">3D-Gebäude (LoD2) und Luftbild: FHH, LGV<span>. Ziehen dreht, zwei Finger zoomen und verschieben.</span></p>
+    </div>
   </div>
 </div>
 
@@ -992,6 +1083,327 @@ const CHECKS = [
    none: "Kein Flusshochwasser-Risikogebiet.", src: "Hochwasserrisikomanagement 3. Zyklus 2025 (wfs_hwrm_3_zyklus), Datenlizenz Deutschland 2.0"},
 ];
 </script>
+<script>// 3D-Ansicht: Hamburger 3D-Gebäudemodell (LoD2, 3D Tiles) mit Luftbild als Boden, ohne fremde 3D-Bibliothek.
+// Daten: Freie und Hansestadt Hamburg, LGV (Datenlizenz Deutschland Namensnennung 2.0).
+"use strict";
+const View3D = (() => {
+  const LOD2 = "https://www.daten-hamburg.de/gdi3d/datasource-data/LoD2/15/";
+  const DOP = "https://geodienste.hamburg.de/wms_dop_zeitreihe_belaubt?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&LAYERS=dop_zeitreihe_belaubt&STYLES=&CRS=EPSG:25832&FORMAT=image/jpeg";
+  const R = 170; // Radius des Ausschnitts in Metern
+  const COL = {house: [0.93, 0.94, 0.96], plot: [1.0, 0.74, 0.1], sel: [0.16, 0.5, 1.0]};
+
+  // ---------- Geodäsie: WGS84, ECEF und lokales Ost-Nord-Oben-System ----------
+  const A = 6378137, E2 = 6.69437999014e-3, rad = Math.PI / 180;
+  function ecef(lon, lat, h) {
+    const l = lon * rad, p = lat * rad, N = A / Math.sqrt(1 - E2 * Math.sin(p) ** 2);
+    return [(N + h) * Math.cos(p) * Math.cos(l), (N + h) * Math.cos(p) * Math.sin(l), (N * (1 - E2) + h) * Math.sin(p)];
+  }
+  function enuFrame(lon, lat) {
+    const l = lon * rad, p = lat * rad, sl = Math.sin(l), cl = Math.cos(l), sp = Math.sin(p), cp = Math.cos(p);
+    const c = ecef(lon, lat, 0), e = [-sl, cl, 0], n = [-sp * cl, -sp * sl, cp], u = [cp * cl, cp * sl, sp];
+    return {
+      pt: P => { const d = [P[0] - c[0], P[1] - c[1], P[2] - c[2]]; return [e[0] * d[0] + e[1] * d[1], n[0] * d[0] + n[1] * d[1] + n[2] * d[2], u[0] * d[0] + u[1] * d[1] + u[2] * d[2]]; },
+      dir: d => [e[0] * d[0] + e[1] * d[1], n[0] * d[0] + n[1] * d[1] + n[2] * d[2], u[0] * d[0] + u[1] * d[1] + u[2] * d[2]]
+    };
+  }
+  const toLonLat = xy => proj4("EPSG:25832", "EPSG:4326", xy);
+
+  // ---------- 3D-Kachel (b3dm mit glTF 2.0) lesen ----------
+  function readB3dm(buf, frame) {
+    const dv = new DataView(buf), td = new TextDecoder();
+    if (td.decode(new Uint8Array(buf, 0, 4)) !== "b3dm") return null;
+    const [ftj, ftb, btj, btb] = [12, 16, 20, 24].map(o => dv.getUint32(o, true));
+    const ft = JSON.parse(td.decode(new Uint8Array(buf, 28, ftj)));
+    const bt = btj ? JSON.parse(td.decode(new Uint8Array(buf, 28 + ftj + ftb, btj))) : {};
+    const g = 28 + ftj + ftb + btj + btb, jl = dv.getUint32(g + 12, true), gl = JSON.parse(td.decode(new Uint8Array(buf, g + 20, jl)));
+    const bin = g + 20 + jl + 8, rtc = ft.RTC_CENTER || [0, 0, 0];
+    const acc = i => {
+      const a = gl.accessors[i], v = gl.bufferViews[a.bufferView], n = {VEC3: 3, SCALAR: 1}[a.type], off = bin + (v.byteOffset || 0) + (a.byteOffset || 0);
+      const size = {5126: 4, 5125: 4, 5123: 2, 5121: 1}[a.componentType], stride = v.byteStride || n * size, out = new Float64Array(a.count * n);
+      const get = {5126: o => dv.getFloat32(o, true), 5125: o => dv.getUint32(o, true), 5123: o => dv.getUint16(o, true), 5121: o => dv.getUint8(o)}[a.componentType];
+      for (let k = 0; k < a.count; k++) for (let j = 0; j < n; j++) out[k * n + j] = get(off + k * stride + j * size);
+      return out;
+    };
+    const mul = (a, b) => { const o = new Array(16); for (let c = 0; c < 4; c++) for (let r = 0; r < 4; r++) { let s = 0; for (let k = 0; k < 4; k++) s += a[k * 4 + r] * b[c * 4 + k]; o[c * 4 + r] = s; } return o; };
+    const prims = [];
+    const visit = (ni, parent) => {
+      const nd = gl.nodes[ni], m = mul(parent, nd.matrix || [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
+      if (nd.mesh != null) for (const p of gl.meshes[nd.mesh].primitives) if ((p.mode ?? 4) === 4 && p.attributes.POSITION != null) prims.push({p, m});
+      (nd.children || []).forEach(c => visit(c, m));
+    };
+    (gl.scenes[gl.scene || 0].nodes).forEach(n => visit(n, [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]));
+    const parts = [];
+    for (const {p, m} of prims) {
+      const pos = acc(p.attributes.POSITION), nor = p.attributes.NORMAL != null ? acc(p.attributes.NORMAL) : null;
+      const bid = p.attributes._BATCHID != null ? acc(p.attributes._BATCHID) : new Float64Array(pos.length / 3);
+      const idx = p.indices != null ? acc(p.indices) : Float64Array.from({length: pos.length / 3}, (_, i) => i);
+      const cnt = pos.length / 3, P = new Float64Array(cnt * 3), Nn = new Float32Array(cnt * 3);
+      for (let k = 0; k < cnt; k++) {
+        const x = pos[k * 3], y = pos[k * 3 + 1], z = pos[k * 3 + 2];
+        const q = [m[0] * x + m[4] * y + m[8] * z + m[12], m[1] * x + m[5] * y + m[9] * z + m[13], m[2] * x + m[6] * y + m[10] * z + m[14]];
+        const l = frame.pt([rtc[0] + q[0], rtc[1] - q[2], rtc[2] + q[1]]); // glTF: y oben -> z oben
+        P.set(l, k * 3);
+        if (nor) {
+          const a = nor[k * 3], b = nor[k * 3 + 1], c = nor[k * 3 + 2];
+          const r = [m[0] * a + m[4] * b + m[8] * c, m[1] * a + m[5] * b + m[9] * c, m[2] * a + m[6] * b + m[10] * c];
+          Nn.set(frame.dir([r[0], -r[2], r[1]]), k * 3);
+        } else Nn.set([0, 0, 1], k * 3);
+      }
+      parts.push({P, N: Nn, bid, idx});
+    }
+    return {parts, attrs: bt.attributes || [], n: bt.attributes?.length || (ft.BATCH_LENGTH || 0)};
+  }
+
+  // ---------- kleine Hilfen ----------
+  const inPoly = (x, y, ring) => { let c = false; for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) { const [xi, yi] = ring[i], [xj, yj] = ring[j]; if ((yi > y) !== (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) c = !c; } return c; };
+  const tileOf = (lon, lat) => [Math.floor((lon + 180) / 360 * 65536), Math.floor((90 - lat) / 180 * 32768)];
+  function ribbon(pts, w, z, out, col) { // Linienzug als flaches Band auf dem Boden (WebGL-Linien sind nur 1 Pixel breit)
+    for (let i = 0; i + 1 < pts.length; i++) {
+      const [x0, y0] = pts[i], [x1, y1] = pts[i + 1], dx = x1 - x0, dy = y1 - y0, L = Math.hypot(dx, dy) || 1, nx = -dy / L * w / 2, ny = dx / L * w / 2;
+      const q = [[x0 + nx, y0 + ny], [x0 - nx, y0 - ny], [x1 - nx, y1 - ny], [x1 + nx, y1 + ny]];
+      for (const k of [0, 1, 2, 0, 2, 3]) out.push(q[k][0], q[k][1], z, ...col);
+    }
+  }
+  // 4x4-Matrizen (Spalten zuerst)
+  function perspective(fov, asp, n, f) { const t = 1 / Math.tan(fov / 2); return [t / asp, 0, 0, 0, 0, t, 0, 0, 0, 0, (f + n) / (n - f), -1, 0, 0, 2 * f * n / (n - f), 0]; }
+  function lookAt(e, c, u) {
+    const sub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]], nrm = a => { const l = Math.hypot(...a) || 1; return a.map(v => v / l); };
+    const cr = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]], dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+    const z = nrm(sub(e, c)), x = nrm(cr(u, z)), y = cr(z, x);
+    return [x[0], y[0], z[0], 0, x[1], y[1], z[1], 0, x[2], y[2], z[2], 0, -dot(x, e), -dot(y, e), -dot(z, e), 1];
+  }
+  const mmul = (a, b) => { const o = new Array(16); for (let c = 0; c < 4; c++) for (let r = 0; r < 4; r++) { let s = 0; for (let k = 0; k < 4; k++) s += a[k * 4 + r] * b[c * 4 + k]; o[c * 4 + r] = s; } return o; };
+
+  // ---------- WebGL ----------
+  const VS = `attribute vec3 p; attribute vec3 n; attribute vec3 c; uniform mat4 mvp; uniform vec3 sun; uniform float lit; varying vec3 vc; varying vec2 vxy;
+    void main() { gl_Position = mvp * vec4(p, 1.0); vxy = p.xy; float d = max(dot(normalize(n), sun), 0.0); float sky = 0.5 + 0.5 * n.z;
+      vc = mix(c, c * (0.5 + 0.2 * sky + 0.5 * d), lit); }`;
+  const FS = `precision mediump float; varying vec3 vc; varying vec2 vxy; uniform float rad; void main() { if (length(vxy) > rad) discard; gl_FragColor = vec4(vc, 1.0); }`;
+  const GVS = `attribute vec3 p; attribute vec2 uv; uniform mat4 mvp; varying vec2 vuv; varying vec2 vxy; void main() { gl_Position = mvp * vec4(p, 1.0); vuv = uv; vxy = p.xy; }`;
+  const GFS = `precision mediump float; varying vec2 vuv; varying vec2 vxy; uniform sampler2D tex; uniform float has; uniform float rad; uniform vec3 base;
+    void main() { float r = length(vxy); if (r > rad) discard; vec3 c = has > 0.5 ? texture2D(tex, vuv).rgb : base; c *= 1.0 - 0.35 * smoothstep(rad * 0.82, rad, r); gl_FragColor = vec4(c, 1.0); }`;
+  const PFS = `precision mediump float; varying vec3 vc; varying vec2 vxy; uniform float rad; void main() { if (length(vxy) > rad) discard; gl_FragColor = vec4(vc, 1.0); }`;
+
+  let st = null; // Zustand der offenen Ansicht
+  function prog(gl, vs, fs) {
+    const p = gl.createProgram();
+    for (const [t, s] of [[gl.VERTEX_SHADER, vs], [gl.FRAGMENT_SHADER, fs]]) { const sh = gl.createShader(t); gl.shaderSource(sh, s); gl.compileShader(sh); gl.attachShader(p, sh); }
+    gl.linkProgram(p); return p;
+  }
+  function buf(gl, data, type = gl.ARRAY_BUFFER, usage = gl.STATIC_DRAW) { const b = gl.createBuffer(); gl.bindBuffer(type, b); gl.bufferData(type, data, usage); return b; }
+  function attrib(gl, p, name, b, size, stride = 0, off = 0) { const l = gl.getAttribLocation(p, name); if (l < 0) return; gl.bindBuffer(gl.ARRAY_BUFFER, b); gl.enableVertexAttribArray(l); gl.vertexAttribPointer(l, size, gl.FLOAT, false, stride, off); }
+
+  // ---------- öffnen ----------
+  // opt: {el, center: [x, y] (UTM 32), plot: [[x, y], ...][] , plan: [[x, y], ...][], onInfo(html), onStatus(text)}
+  async function open(opt) {
+    close();
+    const canvas = document.createElement("canvas");
+    opt.el.prepend(canvas);
+    const gl = canvas.getContext("webgl", {antialias: true, alpha: true});
+    if (!gl || !gl.getExtension("OES_element_index_uint")) { opt.onStatus("Ihr Gerät kann keine 3D-Grafik (WebGL) anzeigen."); return; }
+    const me = st = {canvas, gl, opt, yaw: -0.35, pitch: 0.62, dist: 140, target: [0, 0, 0], sel: -1, dirty: true, raf: 0, ptr: new Map()};
+    const [lon, lat] = toLonLat(opt.center), frame = enuFrame(lon, lat);
+    const loc = xy => { const [a, b] = toLonLat(xy); return frame.pt(ecef(a, b, 0)); };
+    const plotL = (opt.plot || []).map(r => r.map(loc)), planL = (opt.plan || []).map(r => r.map(loc));
+
+    // Kacheln im Umkreis laden
+    const t0 = tileOf(...toLonLat([opt.center[0] - R, opt.center[1] + R])), t1 = tileOf(...toLonLat([opt.center[0] + R, opt.center[1] - R]));
+    const urls = [];
+    for (let x = t0[0]; x <= t1[0]; x++) for (let y = t0[1]; y <= t1[1]; y++) urls.push(`${LOD2}${x}/${y}.b3dm`);
+    let done = 0;
+    opt.onStatus(`3D-Modell wird geladen …`);
+    const tiles = (await Promise.all(urls.map(u => fetch(u).then(r => r.ok ? r.arrayBuffer() : null).catch(() => null)
+      .then(b => { done++; if (st === me) opt.onStatus(`3D-Modell wird geladen … ${Math.round(done / urls.length * 100)} %`); return b && readB3dm(b, frame); })))).filter(Boolean);
+    if (st !== me) return;
+
+    // Gebäude sammeln: nur im Umkreis, Gebäude auf dem Grundstück markieren
+    const B = []; // je Gebäude: {attrs, minZ, maxZ, onPlot, verts: []}
+    const pos = [], nor = [], owner = [], ind = [];
+    for (const t of tiles) for (const part of t.parts) {
+      const nb = Math.max(t.n, 1 + Math.max(...part.bid)), info = Array.from({length: nb}, () => ({sx: 0, sy: 0, n: 0, minZ: 1e9, maxZ: -1e9}));
+      const cnt = part.P.length / 3;
+      for (let k = 0; k < cnt; k++) { const i = info[part.bid[k]], z = part.P[k * 3 + 2]; i.sx += part.P[k * 3]; i.sy += part.P[k * 3 + 1]; i.n++; i.minZ = Math.min(i.minZ, z); i.maxZ = Math.max(i.maxZ, z); }
+      const map = info.map((i, b) => {
+        if (!i.n) return -1;
+        const cx = i.sx / i.n, cy = i.sy / i.n;
+        if (Math.hypot(cx, cy) > R - 4) return -1;
+        B.push({attrs: t.attrs[b] || {}, minZ: i.minZ, maxZ: i.maxZ, cx, cy, onPlot: plotL.some(r => inPoly(cx, cy, r))});
+        return B.length - 1;
+      });
+      const base = pos.length / 3, remap = new Int32Array(cnt).fill(-1);
+      let nv = 0;
+      for (let k = 0; k < cnt; k++) { const b = map[part.bid[k]]; if (b < 0) continue; remap[k] = base + nv++; pos.push(part.P[k * 3], part.P[k * 3 + 1], part.P[k * 3 + 2]); nor.push(part.N[k * 3], part.N[k * 3 + 1], part.N[k * 3 + 2]); owner.push(b); }
+      for (let k = 0; k < part.idx.length; k += 3) { const a = remap[part.idx[k]], b = remap[part.idx[k + 1]], c = remap[part.idx[k + 2]]; if (a >= 0 && b >= 0 && c >= 0) ind.push(a, b, c); }
+    }
+    if (!B.length) { opt.onStatus("Für diese Stelle gibt es im 3D-Modell der Stadt keine Gebäude."); }
+    // Bodenhöhe: typische Sockelhöhe der Gebäude in der Nähe
+    const bases = B.filter(b => Math.hypot(b.cx, b.cy) < 90).map(b => b.minZ).sort((a, b) => a - b);
+    const gz = bases.length ? bases[Math.floor(bases.length * 0.3)] - 0.05 : 0;
+    me.B = B; me.owner = owner; me.gz = gz; me.target = [0, 0, gz + 4];
+    const plotB = B.filter(b => b.onPlot);
+    const ext = plotL.flat().reduce((m, [x, y]) => Math.max(m, Math.hypot(x, y)), 0);
+    me.dist = Math.min(340, Math.max(110, ext * 4, ...plotB.map(b => (b.maxZ - gz) * 7)));
+
+    // Puffer: Gebäude
+    me.nVert = owner.length;
+    me.pb = buf(gl, new Float32Array(pos)); me.nb = buf(gl, new Float32Array(nor));
+    me.cb = buf(gl, colors(me), gl.ARRAY_BUFFER, gl.DYNAMIC_DRAW);
+    me.idb = buf(gl, new Float32Array(owner.flatMap(b => [((b + 1) & 255) / 255, (((b + 1) >> 8) & 255) / 255, (((b + 1) >> 16) & 255) / 255])));
+    me.ib = buf(gl, new Uint32Array(ind), gl.ELEMENT_ARRAY_BUFFER); me.nInd = ind.length;
+    // Linien: Grundstück (gelb) und Plangrenze (rot)
+    const lines = [];
+    for (const r of planL) ribbon(r, 0.7, gz + 0.12, lines, [0.78, 0.06, 0.18]);
+    for (const r of plotL) ribbon(r, 0.9, gz + 0.18, lines, COL.plot);
+    me.lb = buf(gl, new Float32Array(lines.length ? lines : [0, 0, 0, 0, 0, 0])); me.nLine = lines.length / 6;
+    // Boden: Raster in UTM, damit das Luftbild genau passt
+    const g = [], S = 16, [cx, cy] = opt.center;
+    for (let i = 0; i <= S; i++) for (let j = 0; j <= S; j++) { const u = j / S, v = i / S, l = loc([cx - R + 2 * R * u, cy + R - 2 * R * v]); g.push(l[0], l[1], gz, u, v); }
+    const gi = []; for (let i = 0; i < S; i++) for (let j = 0; j < S; j++) { const a = i * (S + 1) + j; gi.push(a, a + 1, a + S + 2, a, a + S + 2, a + S + 1); }
+    me.gb = buf(gl, new Float32Array(g)); me.gib = buf(gl, new Uint32Array(gi), gl.ELEMENT_ARRAY_BUFFER); me.nG = gi.length;
+    me.p = prog(gl, VS, FS); me.gp = prog(gl, GVS, GFS); me.pp = prog(gl, VS, PFS);
+    me.tex = null;
+    const img = new Image(); img.crossOrigin = "anonymous";
+    const px = Math.min(2048, gl.getParameter(gl.MAX_TEXTURE_SIZE), matchMedia("(max-width: 760px)").matches ? 1024 : 2048);
+    img.onload = () => { if (st !== me) return; me.tex = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, me.tex); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, img);
+      gl.generateMipmap(gl.TEXTURE_2D); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      const an = gl.getExtension("EXT_texture_filter_anisotropic"); if (an) gl.texParameterf(gl.TEXTURE_2D, an.TEXTURE_MAX_ANISOTROPY_EXT, 8);
+      redraw(); };
+    img.src = `${DOP}&BBOX=${cx - R},${cy - R},${cx + R},${cy + R}&WIDTH=${px}&HEIGHT=${px}`;
+
+    bindInput(me);
+    me.ro = new ResizeObserver(() => redraw()); me.ro.observe(canvas);
+    if (B.length) opt.onStatus("");
+    me.home = me.sel = plotB.length ? B.indexOf(plotB.reduce((a, b) => b.maxZ - b.minZ > a.maxZ - a.minZ ? b : a)) : -1; // größtes Gebäude auf dem Grundstück
+    showInfo(me, true);
+    redraw();
+  }
+  function colors(me) {
+    const out = new Float32Array(me.owner.length * 3);
+    me.owner.forEach((b, k) => out.set(me.B[b].onPlot ? COL.plot : b === me.sel ? COL.sel : COL.house, k * 3));
+    return out;
+  }
+  const fmt = (n, d = 1) => Number(n).toLocaleString("de-DE", {maximumFractionDigits: d});
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
+  function showInfo(me, initial) {
+    const b = me.B[me.sel];
+    if (!b) return me.opt.onInfo(me.B.some(x => x.onPlot) ? "" : `<p class="v3hint">Tippen Sie auf ein Gebäude, um Höhe und Geschosse zu sehen.</p>`);
+    const a = b.attrs, h = a.measuredHeight || b.maxZ - b.minZ;
+    const adr = a.Adresse || (a.Address?.Street ? `${a.Address.Street} ${a.Address.HouseNumber || ""}` : "");
+    const rows = [["Höhe", `${fmt(h)} m`], ["Geschosse", a.storeysAboveGround != null ? String(a.storeysAboveGround) : ""], ["Dach", a.Dachform || ""], ["Nutzung", a.Gebaeudefunktion || ""]].filter(r => r[1]);
+    me.opt.onInfo(`<p class="v3title">${b.onPlot ? "Auf Ihrem Grundstück" : "Nachbargebäude"}${adr ? `<span>${esc(adr)}</span>` : ""}</p>
+      <dl>${rows.map(([t, d]) => `<div><dt>${t}</dt><dd>${esc(d)}</dd></div>`).join("")}</dl>${initial ? `<p class="v3hint">Weitere Gebäude antippen zum Vergleichen.</p>` : ""}`);
+  }
+
+  // ---------- zeichnen ----------
+  function matrices(me) {
+    const c = me.canvas, w = c.clientWidth, h = c.clientHeight, dpr = Math.min(devicePixelRatio || 1, 2);
+    if (c.width !== Math.round(w * dpr) || c.height !== Math.round(h * dpr)) { c.width = Math.round(w * dpr); c.height = Math.round(h * dpr); }
+    const cp = Math.cos(me.pitch), t = me.target;
+    const eye = [t[0] - Math.sin(me.yaw) * cp * me.dist, t[1] - Math.cos(me.yaw) * cp * me.dist, t[2] + Math.sin(me.pitch) * me.dist];
+    return mmul(perspective(0.8, w / Math.max(h, 1), Math.max(0.5, me.dist / 60), me.dist * 8 + 800), lookAt(eye, t, [0, 0, 1]));
+  }
+  const reset = gl => { for (let i = 0; i < 8; i++) gl.disableVertexAttribArray(i); }; // nicht benutzte Attribute dürfen nicht aktiv bleiben
+  function draw(me, pick) {
+    const gl = me.gl, mvp = matrices(me);
+    gl.viewport(0, 0, me.canvas.width, me.canvas.height);
+    gl.enable(gl.DEPTH_TEST); gl.enable(gl.CULL_FACE); gl.cullFace(gl.BACK);
+    gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    if (!pick) { // Boden
+      gl.disable(gl.CULL_FACE);
+      reset(gl); gl.useProgram(me.gp);
+      gl.uniformMatrix4fv(gl.getUniformLocation(me.gp, "mvp"), false, mvp);
+      gl.uniform1f(gl.getUniformLocation(me.gp, "rad"), R); gl.uniform1f(gl.getUniformLocation(me.gp, "has"), me.tex ? 1 : 0);
+      gl.uniform3fv(gl.getUniformLocation(me.gp, "base"), [0.78, 0.8, 0.76]);
+      if (me.tex) { gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, me.tex); gl.uniform1i(gl.getUniformLocation(me.gp, "tex"), 0); }
+      attrib(gl, me.gp, "p", me.gb, 3, 20, 0); attrib(gl, me.gp, "uv", me.gb, 2, 20, 12);
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, me.gib); gl.drawElements(gl.TRIANGLES, me.nG, gl.UNSIGNED_INT, 0);
+      // Linien
+      reset(gl); gl.useProgram(me.pp);
+      gl.uniformMatrix4fv(gl.getUniformLocation(me.pp, "mvp"), false, mvp); gl.uniform1f(gl.getUniformLocation(me.pp, "rad"), R); gl.uniform1f(gl.getUniformLocation(me.pp, "lit"), 0);
+      gl.uniform3fv(gl.getUniformLocation(me.pp, "sun"), [0, 0, 1]);
+      attrib(gl, me.pp, "p", me.lb, 3, 24, 0); attrib(gl, me.pp, "c", me.lb, 3, 24, 12);
+      const nl = gl.getAttribLocation(me.pp, "n"); if (nl >= 0) { gl.disableVertexAttribArray(nl); gl.vertexAttrib3f(nl, 0, 0, 1); }
+      gl.drawArrays(gl.TRIANGLES, 0, me.nLine);
+      gl.enable(gl.CULL_FACE);
+    }
+    if (!me.nInd) return;
+    reset(gl); gl.useProgram(me.p);
+    gl.uniformMatrix4fv(gl.getUniformLocation(me.p, "mvp"), false, mvp); gl.uniform1f(gl.getUniformLocation(me.p, "rad"), R + 60);
+    gl.uniform3fv(gl.getUniformLocation(me.p, "sun"), [0.45, -0.55, 0.7]); gl.uniform1f(gl.getUniformLocation(me.p, "lit"), pick ? 0 : 1);
+    attrib(gl, me.p, "p", me.pb, 3); attrib(gl, me.p, "n", me.nb, 3); attrib(gl, me.p, "c", pick ? me.idb : me.cb, 3);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, me.ib);
+    gl.disable(gl.CULL_FACE); // manche Dachflächen sind nur einseitig
+    gl.drawElements(gl.TRIANGLES, me.nInd, gl.UNSIGNED_INT, 0);
+  }
+  function redraw() { const me = st; if (!me || me.raf) return; me.raf = requestAnimationFrame(() => { me.raf = 0; if (st === me && me.p) draw(me, false); }); }
+  function pickAt(me, x, y) {
+    const gl = me.gl, c = me.canvas, dpr = c.width / c.clientWidth;
+    const fb = gl.createFramebuffer(), tex = gl.createTexture(), rb = gl.createRenderbuffer();
+    gl.bindTexture(gl.TEXTURE_2D, tex); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, c.width, c.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+    gl.bindRenderbuffer(gl.RENDERBUFFER, rb); gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, c.width, c.height);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0); gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, rb);
+    draw(me, true);
+    const px = new Uint8Array(4); gl.readPixels(Math.round(x * dpr), Math.round(c.height - y * dpr), 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null); gl.deleteFramebuffer(fb); gl.deleteTexture(tex); gl.deleteRenderbuffer(rb);
+    return px[3] ? px[0] + (px[1] << 8) + (px[2] << 16) - 1 : -1;
+  }
+
+  // ---------- Bedienung: ziehen = drehen, zwei Finger = zoomen/verschieben/drehen, Mausrad = zoomen ----------
+  function bindInput(me) {
+    const c = me.canvas, P = me.ptr;
+    let last = null, down = null;
+    const clampP = () => { me.pitch = Math.min(1.45, Math.max(0.12, me.pitch)); me.dist = Math.min(600, Math.max(12, me.dist)); };
+    const pan = (dx, dy) => {
+      const s = me.dist * 0.0016, sy = Math.sin(me.yaw), cy = Math.cos(me.yaw);
+      const k = Math.max(Math.sin(me.pitch), 0.3); // flacher Blick: Vor/Zurück stärker
+      me.target[0] += (-dx * cy + dy * sy / k) * s;
+      me.target[1] += (dx * sy + dy * cy / k) * s;
+      const l = Math.hypot(me.target[0], me.target[1]); if (l > R) { me.target[0] *= R / l; me.target[1] *= R / l; }
+    };
+    const two = () => { const [a, b] = [...P.values()]; return {d: Math.hypot(a.x - b.x, a.y - b.y), m: [(a.x + b.x) / 2, (a.y + b.y) / 2], ang: Math.atan2(b.y - a.y, b.x - a.x)}; };
+    c.addEventListener("pointerdown", e => {
+      c.setPointerCapture(e.pointerId); P.set(e.pointerId, {x: e.clientX, y: e.clientY});
+      down = P.size === 1 ? {x: e.clientX, y: e.clientY, t: Date.now(), btn: e.button, moved: false} : null;
+      last = P.size === 2 ? two() : null;
+    });
+    c.addEventListener("pointermove", e => {
+      const p = P.get(e.pointerId); if (!p) return;
+      const dx = e.clientX - p.x, dy = e.clientY - p.y; p.x = e.clientX; p.y = e.clientY;
+      if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) > 6) down.moved = true;
+      if (P.size === 1) {
+        if (down && (down.btn === 2 || e.shiftKey)) pan(dx, dy);
+        else { me.yaw += dx * 0.008; me.pitch += dy * 0.006; }
+      } else if (P.size === 2 && last) {
+        const n = two(); me.dist *= last.d / Math.max(n.d, 1); pan(n.m[0] - last.m[0], n.m[1] - last.m[1]); me.yaw -= n.ang - last.ang; last = n;
+      }
+      clampP(); redraw();
+    });
+    const up = e => {
+      if (!P.has(e.pointerId)) return;
+      P.delete(e.pointerId);
+      if (down && !down.moved && P.size === 0 && Date.now() - down.t < 500) {
+        const r = c.getBoundingClientRect(), b = pickAt(me, e.clientX - r.left, e.clientY - r.top);
+        me.sel = b < 0 ? me.home : b; me.gl.bindBuffer(me.gl.ARRAY_BUFFER, me.cb); me.gl.bufferSubData(me.gl.ARRAY_BUFFER, 0, colors(me)); showInfo(me, false);
+      }
+      down = null; last = P.size === 2 ? two() : null;
+      redraw();
+    };
+    c.addEventListener("pointerup", up); c.addEventListener("pointercancel", up);
+    c.addEventListener("contextmenu", e => e.preventDefault());
+    c.addEventListener("wheel", e => { e.preventDefault(); me.dist *= Math.exp(e.deltaY * 0.0012); clampP(); redraw(); }, {passive: false});
+  }
+  function turn(dyaw, dpitch) { const me = st; if (!me) return; me.yaw += dyaw; me.pitch = Math.min(1.45, Math.max(0.12, me.pitch + dpitch)); redraw(); }
+  function north() { const me = st; if (!me) return; me.yaw = 0; me.pitch = 1.2; me.target = [0, 0, me.gz + 4]; redraw(); }
+  function zoom(f) { const me = st; if (!me) return; me.dist = Math.min(600, Math.max(12, me.dist * f)); redraw(); }
+  function close() {
+    const me = st; if (!me) return;
+    st = null; cancelAnimationFrame(me.raf); me.ro?.disconnect();
+    me.gl.getExtension("WEBGL_lose_context")?.loseContext(); me.canvas.remove();
+  }
+  return {open, close, turn, north, zoom, isOpen: () => !!st};
+})();
+</script>
 <script>
 "use strict";
 // ---------- Konfiguration ----------
@@ -1086,7 +1498,9 @@ const plotLayer = vec(plotSrc, (f, res) => [St({stroke: Sk("rgba(255,255,255,0.9
   ...(res < 2.5 && !pipSmall() ? [St({geometry: g => { const e = g.getGeometry().getExtent(); return new ol.geom.Point([(e[0] + e[2]) / 2, e[3]]); },
     text: new ol.style.Text({text: (f.get("label") || "").replace("\n", " · "), font: "650 13px " + css("--sans"), offsetY: -16, fill: Fl("#1a1300"),
       backgroundFill: Fl("rgba(255,255,255,0.92)"), backgroundStroke: Sk(css("--plot"), 1.5), padding: [3, 7, 3, 7], overflow: true})})] : [])], {zIndex: 10});
-const measureLayer = vec(measureSrc, () => St({stroke: Sk(css("--accent"), 2, [6, 4]), fill: Fl("rgba(31,79,191,0.12)")}));
+const measureLayer = vec(measureSrc, () => [St({stroke: Sk(css("--accent"), 2, [6, 4]), fill: Fl("rgba(31,79,191,0.12)")}),
+  St({geometry: f => { const g = f.getGeometry(); return new ol.geom.MultiPoint(g instanceof ol.geom.Polygon ? g.getCoordinates()[0] : g.getCoordinates()); },
+    image: new ol.style.Circle({radius: 4, fill: Fl("#fff"), stroke: Sk(css("--accent"), 2)})})], {zIndex: 11});
 const markerLayer = vec(markerSrc, St({image: new ol.style.Circle({radius: 7, fill: Fl("#c2272d"), stroke: Sk("#fff", 2)})}));
 const map = new ol.Map({target: "map", layers: [...bgLayers, boundsLayer, selLayer, plotLayer, measureLayer, markerLayer],
   view: new ol.View({projection: UTM, center: [565500, 5934000], resolution: 40, maxResolution: 300, minResolution: 0.1}),
@@ -1108,7 +1522,7 @@ function fitPlot(duration = 600) {
   view.fit(ol.extent.buffer(f.getGeometry().getExtent(), small ? 4 : 15), {padding: Array(4).fill(small ? 8 : 60), minResolution: 0.25, duration});
 }
 const relayout = () => requestAnimationFrame(() => { map.updateSize(); plotLayer.changed(); fitPlot(0); });
-function setMapMain(v) { body.toggle("mapmain", v); if (!v) { stopMeasure(); $("mapctl").classList.remove("open"); } pipFollow(); relayout(); }
+function setMapMain(v) { body.toggle("mapmain", v); if (!v) { stopMeasure(); close3d(); $("mapctl").classList.remove("open"); } pipFollow(); relayout(); }
 // Handy, neue Suche: erst die große Karte mit Zoom aufs Grundstück, Infos klein oben rechts
 function showMapBig() {
   if (!isPhone()) return;
@@ -1184,7 +1598,7 @@ if (isPhone()) { // Rechtliches ins Menü (Kopie bleibt fürs Merkblatt), Messwe
 const startResults = $("results").innerHTML, startView = {center: view.getCenter(), resolution: view.getResolution()};
 on("homeMapBtn", "click", () => $("homeBtn").click());
 on("homeBtn", "click", () => {
-  $("mClear").click(); toggleDrawer(false); $("mapctl").classList.remove("open"); body.remove("has-result", "mapmain"); clearMap(); pipReset(); plotArea = null;
+  $("mClear").click(); close3d(); toggleDrawer(false); $("mapctl").classList.remove("open"); body.remove("has-result", "mapmain"); clearMap(); pipReset(); plotArea = null;
   queryId++; $("results").innerHTML = startResults; $("q").value = ""; curPlace = null; cur = {sum: null, zone: null}; qs(".side").scrollTop = 0;
   requestAnimationFrame(() => { map.updateSize(); view.cancelAnimations(); view.animate({...startView, duration: 500}); });
 });
@@ -1247,8 +1661,8 @@ function plotNumber(plot) { // Flurstücksnummer (Zähler) aus den ALKIS-Attribu
   return /^\d{14}/.test(kz) ? parseInt(kz.slice(9, 14), 10) : null;
 }
 async function queryAt(coord, placeName) {
-  const id = ++queryId;
-  clearMap(); plotArea = null; // Fläche des vorigen Grundstücks nicht übernehmen
+  const id = ++queryId, was3d = View3D.isOpen();
+  close3d(); clearMap(); plotArea = null; // Fläche des vorigen Grundstücks nicht übernehmen
   markerSrc.addFeature(new ol.Feature(new ol.geom.Point(coord)));
   showCard("Bitte warten", "Bebauungsplan wird gesucht …");
   lastMass = {};
@@ -1268,6 +1682,7 @@ async function queryAt(coord, placeName) {
     for (const [k, v] of Object.entries(p)) { const key = k.toLowerCase(); if (MASS[key] && !lastMass[key]) lastMass[key] = v; }
   if (plot?.area) plotArea = Math.round(plot.area);
   renderResult(coord, placeName, plans, plot);
+  if (was3d) open3d();
 }
 
 const linkBtns = p => `<div class="linkbtns">${pdfLinks(p).map(l => `<a class="btn ghostbtn" href="${esc(l.u)}" target="_blank" rel="noopener">${esc(l.label)} ansehen</a>`).join("")}</div>`;
@@ -1292,20 +1707,20 @@ function renderResult(coord, placeName, plans, plot) {
     if (kind && !sum) warns.push(kind.hint);
     if (valid.length > 1) warns.unshift("An dieser Stelle gelten mehrere Bebauungspläne: " + valid.map(p => planName(p.props)).filter(Boolean).join(", ") + ". Meist geht der neuere vor.");
     if (!gilt) warns.unshift("Dieser Plan ist noch nicht beschlossen. Er kann sich noch ändern.");
-    if (warns.length) r.append(card("Bitte beachten", `<ul class="warn-list">${li(warns)}</ul>`, "warn"));
+    if (warns.length) r.append(card("Bitte beachten", `<ul class="warn-list">${li(warns)}</ul>`, "warn ext"));
     if (sum) {
       const zc = card("Ihr Grundstück", `<label class="hint" for="zoneSel">${cur.zone ? "Erkannt über die Flurstücksnummer. Falls falsch, bitte auswählen:" : "Bitte wählen Sie die Lage Ihres Grundstücks:"}</label>
         <select id="zoneSel"><option value="">– Lage wählen –</option>${sum.zones.map(z => `<option value="${esc(z.id)}" ${cur.zone === z ? "selected" : ""}>${esc(z.lage)}</option>`).join("")}</select>
         <div id="glance"></div>`);
       zc.querySelector("#zoneSel").addEventListener("change", e => { cur.zone = sum.zones.find(z => z.id === e.target.value) || null; renderGlance(); updateCalc(); });
       const rl = x => `<dt>${esc(x.t)}</dt><dd>${esc(x.d)}</dd>`, src = document.createElement("div");
-      src.className = "srcline";
+      src.className = "srcline ext";
       src.innerHTML = `<p class="legal">Kurzfassung aus: ${esc(sum.sources)} ${esc(sum.zonesNote)} Verbindlich ist nur der Originalplan.</p>
         <details><summary>Fundstellen</summary><ul class="plain legal">${li([...sum.warnings.map(w => w.text.split(".")[0] + ": " + w.src), ...sum.zones.filter(z => z.src).map(z => z.lage + ": " + z.src), ...sum.rules.map(x => x.t + ": " + x.src)])}</ul></details>`;
-      r.append(zc, calcCard(), pdfLinks(main).length ? card("Originalplan", `<p class="hint">Verbindlich ist nur der Originalplan. Hier können Sie ihn selbst ansehen:</p>${linkBtns(main)}`) : "",
+      r.append(zc, calcCard(), pdfLinks(main).length ? card("Originalplan", `<p class="hint ext">Verbindlich ist nur der Originalplan. Hier können Sie ihn selbst ansehen:</p>${linkBtns(main)}`) : "",
         card("Das sollten Sie wissen", `<dl class="rules">${sum.rules.slice(0, 4).map(rl).join("")}</dl>
-          ${sum.rules.length > 4 ? `<details class="more"><summary>Alle ${sum.rules.length} Regeln anzeigen</summary><dl class="rules">${sum.rules.slice(4).map(rl).join("")}</dl></details>` : ""}`),
-        card("Nicht in diesem Plan geregelt", `<ul class="plain">${li(sum.notRegulated)}</ul>`), generalCard(), src);
+          ${sum.rules.length > 4 ? `<details class="more"><summary>Alle ${sum.rules.length} Regeln anzeigen</summary><dl class="rules">${sum.rules.slice(4).map(rl).join("")}</dl></details>` : ""}`, "ext"),
+        card("Nicht in diesem Plan geregelt", `<ul class="plain">${li(sum.notRegulated)}</ul>`, "ext"), generalCard(), src);
       renderGlance();
     } else {
       r.append(card("Kurzfassung", `<p>Für diesen Plan gibt es noch keine Kurzfassung in der App.</p>
@@ -1352,14 +1767,14 @@ function renderGlance() {
     [z.gr && fmt(z.gr) + " m²", "Grundfläche max."], [z.dach, "Dach"], [z.wohnungen && String(z.wohnungen), "Wohnungen je Haus max."], ...zahl(m.grz, "GRZ (Anteil bebaubar)"), ...zahl(m.gfz, "GFZ (Geschossfläche)")];
   const shy = t => esc(t).replace(/([a-zäöüß]{4})(häuser|geschosse|bauweise)/gi, "$1&shy;$2");
   g.innerHTML = `<div class="big">${tiles.filter(([b]) => b && b !== "–").map(t => tile(t, shy)).join("")}</div>
-    <ul class="facts">${[n && ["Nutzung", n.split(": ").slice(1).join(": ") || n], z.extra && ["Besonderheit", z.extra], z.gruen && ["Begrünung", z.gruen],
+    <ul class="facts ext">${[n && ["Nutzung", n.split(": ").slice(1).join(": ") || n], z.extra && ["Besonderheit", z.extra], z.gruen && ["Begrünung", z.gruen],
       z.noGarage && ["Garagen", "Auf diesem Grundstück sind keine eingeschossigen Garagen erlaubt."]].filter(Boolean).map(([t, d]) => `<li><b>${esc(t)}</b>${esc(d)}</li>`).join("")}</ul>
-    ${m.fromDefault ? `<p class="hint">* ${esc(cur.sum.grzDefaultsNote)}</p>` : ""}`;
+    ${m.fromDefault ? `<p class="hint ext">* ${esc(cur.sum.grzDefaultsNote)}</p>` : ""}`;
 }
 const generalCard = () => typeof HAMBURG_ALLGEMEIN === "undefined" ? "" : card("Gilt außerdem in ganz Hamburg", `<details class="more"><summary>Abstände, Bäume, Stellplätze, Solardach, Genehmigung</summary><dl class="rules">${HAMBURG_ALLGEMEIN.map(x => `<dt>${esc(x.t)}</dt><dd>${esc(x.d)} <span class="hint">(${esc(x.src)})</span></dd>`).join("")}</dl>
-  </details><p class="hint">Allgemeine Hinweise ohne Gewähr. Was für Ihr Grundstück gilt, sagt verbindlich das Bezirksamt.</p>`, "general");
+  </details><p class="hint">Allgemeine Hinweise ohne Gewähr. Was für Ihr Grundstück gilt, sagt verbindlich das Bezirksamt.</p>`, "general ext");
 const calcCard = () => card("Was darf ich bauen?", `<div class="calc"><label for="plotArea">Grundstücksfläche</label><input type="number" id="plotArea" min="0" step="1" value="${plotArea ?? ""}"> m²</div>
-  <div class="tools"><button type="button" class="ghost" id="mArea2">Grundstück in der Karte umfahren</button></div>
+  <div class="tools"><button type="button" class="ghost" id="mArea2">Grundfläche in der Karte messen</button></div>
   <div id="calcOut" class="big"></div><p class="hint" id="calcNote"></p>`);
 
 // ---------- Flurstück (ALKIS) ----------
@@ -1389,28 +1804,125 @@ async function queryPlot(coord) {
 }
 
 // ---------- Messen ----------
-let draw = null; const tips = [];
-function startMeasure(kind) {
-  if (draw) map.removeInteraction(draw);
+// Maus: Klicken setzt Punkte, Doppelklick beendet. Finger: kurz gedrückt halten setzt einen Punkt, der an Grundstücksecken einrastet.
+let draw = null, snaps = [], tm = null; const tips = [];
+const coarse = () => matchMedia("(pointer: coarse)").matches;
+function addTip() { const el = document.createElement("div"), tip = new ol.Overlay({element: el, offset: [10, -10], positioning: "bottom-left"}); el.className = "tip"; map.addOverlay(tip); tips.push(tip); return tip; }
+function showTip(tip, g) {
+  const poly = g instanceof ol.geom.Polygon;
+  tip.getElement().textContent = poly ? fmt(g.getArea(), 1) + " m²" : fmt(g.getLength(), 2) + " m";
+  tip.setPosition(poly ? g.getInteriorPoint().getCoordinates() : g.getLastCoordinate());
+}
+function measureBar(kind) {
+  body.toggle("measuring", !!kind); $("mBar").hidden = !kind;
+  if (kind) $("mHint").textContent = coarse() ? "Finger kurz gedrückt halten, bis der Punkt einrastet." : "Klicken setzt Punkte, Doppelklick beendet.";
   $("mLine").classList.toggle("on", kind === "LineString");
   $("mArea").classList.toggle("on", kind === "Polygon");
+}
+function startMeasure(kind, fromInfo = false) {
+  stopMeasure(); close3d();
+  measureBar(kind);
+  if (coarse()) { tm = {kind, coords: [], feature: null, tip: null, fromInfo}; return; }
   draw = new ol.interaction.Draw({source: measureSrc, type: kind});
-  draw.on("drawstart", ev => {
-    const el = document.createElement("div"), tip = new ol.Overlay({element: el, offset: [10, -10], positioning: "bottom-left"});
-    el.className = "tip"; map.addOverlay(tip); tips.push(tip);
-    ev.feature.getGeometry().on("change", ({target: g}) => {
-      const poly = g instanceof ol.geom.Polygon;
-      el.textContent = poly ? fmt(g.getArea(), 1) + " m²" : fmt(g.getLength(), 2) + " m";
-      tip.setPosition(poly ? g.getInteriorPoint().getCoordinates() : g.getLastCoordinate());
-    });
-  });
+  draw.on("drawstart", ev => { const tip = addTip(); ev.feature.getGeometry().on("change", ({target: g}) => showTip(tip, g)); });
   draw.on("drawend", ev => { const g = ev.feature.getGeometry(); if (g instanceof ol.geom.Polygon) setPlotArea(Math.round(g.getArea())); });
   map.addInteraction(draw);
+  snaps = [plotSrc, measureSrc].map(source => new ol.interaction.Snap({source, pixelTolerance: 12})); // einrasten an Grundstücksecken und -kanten
+  snaps.forEach(i => map.addInteraction(i));
 }
-const stopMeasure = () => { if (draw) map.removeInteraction(draw); draw = null; $("mLine").classList.remove("on"); $("mArea").classList.remove("on"); };
+function stopMeasure() {
+  if (draw) map.removeInteraction(draw); snaps.forEach(i => map.removeInteraction(i));
+  if (tm && tm.feature && tm.coords.length < (tm.kind === "Polygon" ? 3 : 2)) { measureSrc.removeFeature(tm.feature); map.removeOverlay(tm.tip); }
+  draw = null; snaps = []; tm = null; measureBar(null);
+}
+// Einrasten: Ecken des Grundstücks und eigener Messpunkte, sonst die Grundstückskante
+function snapTo(c) {
+  const px = map.getPixelFromCoordinate(c), dist = p => { const q = map.getPixelFromCoordinate(p); return Math.hypot(q[0] - px[0], q[1] - px[1]); };
+  const rings = [...plotSrc.getFeatures(), ...measureSrc.getFeatures()].flatMap(f => { const g = f.getGeometry(), t = g.getType();
+    return t === "Polygon" ? g.getCoordinates() : t === "MultiPolygon" ? g.getCoordinates().flat() : t === "LineString" ? [g.getCoordinates()] : []; });
+  const corners = [...rings.flat(), ...(tm ? tm.coords : [])];
+  let best = null, bd = 22;
+  for (const p of corners) { const d = dist(p); if (d < bd) { bd = d; best = p; } }
+  if (best) return best.slice(0, 2);
+  bd = 14;
+  for (const r of plotSrc.getFeatures().flatMap(f => { const g = f.getGeometry(); return g.getType() === "MultiPolygon" ? g.getCoordinates().flat() : g.getCoordinates(); })) {
+    const p = new ol.geom.LineString(r).getClosestPoint(c), d = dist(p); if (d < bd) { bd = d; best = p; }
+  }
+  return best || c;
+}
+function tmAdd(c) {
+  if (!tm) return;
+  c = snapTo(c);
+  if (tm.kind === "Polygon" && tm.coords.length >= 3) { const f = map.getPixelFromCoordinate(tm.coords[0]), q = map.getPixelFromCoordinate(c); if (Math.hypot(f[0] - q[0], f[1] - q[1]) < 4) return tmDone(); } // ersten Punkt erneut = fertig
+  tm.coords.push(c);
+  tmUpdate();
+}
+function tmUpdate() {
+  const n = tm.coords.length, g = tm.kind === "Polygon" && n >= 3 ? new ol.geom.Polygon([[...tm.coords, tm.coords[0]]]) : new ol.geom.LineString(n === 1 ? [tm.coords[0], tm.coords[0]] : tm.coords);
+  if (!n) { if (tm.feature) { measureSrc.removeFeature(tm.feature); map.removeOverlay(tm.tip); tm.feature = tm.tip = null; } return; }
+  if (!tm.feature) { tm.feature = new ol.Feature(g); measureSrc.addFeature(tm.feature); tm.tip = addTip(); } else tm.feature.setGeometry(g);
+  if (n > 1) showTip(tm.tip, g); else tm.tip.getElement().textContent = "";
+  $("mHint").textContent = n === 1 ? "Weiteren Punkt setzen: wieder gedrückt halten." : tm.kind === "Polygon" && n < 3 ? "Noch mindestens einen Punkt setzen." : "Weitere Punkte setzen oder „Fertig“ tippen.";
+}
+function tmDone() {
+  const t = tm; if (!t) return;
+  if (t.kind === "Polygon" && t.coords.length >= 3) setPlotArea(Math.round(t.feature.getGeometry().getArea()));
+  if (t.kind === "Polygon" && t.coords.length >= 3 && t.fromInfo && isPhone()) { // zurück zu den Infos, Ergebnis zeigen
+    tm = null; stopMeasure(); vt(() => setMapMain(false));
+    requestAnimationFrame(() => $("calcOut")?.closest("section")?.scrollIntoView({block: "center"}));
+    return;
+  }
+  stopMeasure();
+}
+// gedrückt halten erkennen (nur Finger), Ring zeigt den Fortschritt
+{
+  const vp = map.getViewport(), ring = $("lpRing"); let lp = null;
+  const cancel = () => { if (lp) { clearTimeout(lp.timer); lp = null; ring.className = "lpring"; } };
+  vp.addEventListener("pointerdown", e => {
+    cancel();
+    if (!tm || !e.isPrimary || e.pointerType === "mouse") return;
+    const r = qs(".mapwrap").getBoundingClientRect(), x = e.clientX, y = e.clientY;
+    ring.style.left = x - r.left + "px"; ring.style.top = y - r.top + "px";
+    ring.className = "lpring grow";
+    lp = {x, y, timer: setTimeout(() => {
+      const vr = vp.getBoundingClientRect();
+      tmAdd(map.getCoordinateFromPixel([x - vr.left, y - vr.top]));
+      navigator.vibrate?.(18);
+      ring.className = "lpring done"; lp = null;
+    }, 450)};
+  });
+  vp.addEventListener("pointermove", e => { if (lp && (!e.isPrimary || Math.hypot(e.clientX - lp.x, e.clientY - lp.y) > 10)) cancel(); });
+  ["pointerup", "pointercancel"].forEach(t => vp.addEventListener(t, () => { if (lp) cancel(); }));
+  vp.addEventListener("contextmenu", e => { if (tm) e.preventDefault(); });
+}
 on("mLine", "click", () => startMeasure("LineString"));
 on("mArea", "click", () => startMeasure("Polygon"));
 on("mClear", "click", () => { stopMeasure(); measureSrc.clear(); tips.forEach(t => map.removeOverlay(t)); tips.length = 0; });
+on("mUndo", "click", () => { if (tm) { tm.coords.pop(); tmUpdate(); } else if (draw) draw.removeLastPoint(); });
+on("mDone", "click", () => { if (tm) return tmDone(); if (draw) draw.finishDrawing(); stopMeasure(); });
+// „Grundfläche in der Karte messen“ aus den Infos: zur Karte und gleich mit dem Messen beginnen
+function measureFromInfo() {
+  if (isPhone() && !body.contains("mapmain")) { vt(() => setMapMain(true)); setTimeout(() => { fitPlot(); startMeasure("Polygon", true); }, 60); }
+  else { fitPlot(); startMeasure("Polygon", true); }
+}
+
+// ---------- 3D-Ansicht ----------
+const rings = g => !g ? [] : g.getType() === "Polygon" ? [g.getCoordinates()[0]] : g.getType() === "MultiPolygon" ? g.getCoordinates().map(p => p[0]) : [];
+function open3d() {
+  stopMeasure(); $("mapctl").classList.remove("open");
+  const pg = plotSrc.getFeatures()[0]?.getGeometry(), mk = markerSrc.getFeatures()[0]?.getGeometry();
+  const center = pg ? ol.extent.getCenter(pg.getExtent()) : mk ? mk.getCoordinates() : view.getCenter();
+  body.add("is3d"); $("v3info").innerHTML = "";
+  View3D.open({el: $("view3d"), center, plot: rings(pg), plan: selSrc.getFeatures().flatMap(f => rings(f.getGeometry())),
+    onInfo: h => { $("v3info").innerHTML = h; $("v3info").hidden = !h; },
+    onStatus: t => { $("v3status").textContent = t; $("v3status").hidden = !t; }});
+}
+function close3d() { if (!body.contains("is3d")) return; View3D.close(); body.remove("is3d"); }
+on("btn3d", "click", open3d);
+on("v3close", "click", close3d);
+on("v3in", "click", () => View3D.zoom(0.7));
+on("v3out", "click", () => View3D.zoom(1.4));
+on("v3north", "click", () => View3D.north());
 
 // ---------- Rechner ----------
 const ROMAN = {I: 1, II: 2, III: 3, IV: 4, V: 5, VI: 6, VII: 7, VIII: 8, IX: 9, X: 10, XI: 11, XII: 12};
@@ -1437,7 +1949,7 @@ function updateCalc() {
     : cur.sum && !z ? "Wählen Sie oben die Lage Ihres Grundstücks, dann rechnet die App." : "Für diesen Ort liegen GRZ und GFZ noch nicht vor.";
 }
 document.addEventListener("input", e => { if (e.target.id === "plotArea") updateCalc(); });
-document.addEventListener("click", e => { if (e.target.id === "mArea2") startMeasure("Polygon"); });
+document.addEventListener("click", e => { if (e.target.closest("#mArea2")) measureFromInfo(); });
 
 // ---------- Zuletzt gesucht ----------
 let recent = [];
@@ -1468,8 +1980,8 @@ function appendExtras(r, coord, plot, sum, placeName) {
   if (typeof CHECKS !== "undefined" && CHECKS.length) {
     const c = card("Weitere Prüfungen am Grundstück", `<div class="checksum" id="checkSum"><span class="s-unk">${CHECKS.length} Prüfungen laufen …</span></div>
       <ul class="checks" id="checksList">${CHECKS.map(k => `<li data-id="${esc(k.id)}"><b>${esc(k.label)}</b>: <span class="hint">wird geprüft …</span></li>`).join("")}</ul>
-      <details class="okfold" id="checksOk" hidden><summary></summary><ul class="checks"></ul></details>
-      <p class="hint">Automatischer Abgleich mit offenen Daten der Stadt Hamburg. Ohne Treffer heißt nicht, dass nichts zu beachten ist.</p>`);
+      <details class="okfold ext" id="checksOk" hidden><summary></summary><ul class="checks"></ul></details>
+      <p class="hint ext">Automatischer Abgleich mit offenen Daten der Stadt Hamburg. Ohne Treffer heißt nicht, dass nichts zu beachten ist.</p>`);
     // nach „Was darf ich bauen?“ einordnen, sonst unter Kopf und Hinweisen
     const after = $("calcOut")?.closest("section") || r.querySelector("section.warn") || r.querySelector("section.hero") || r.firstElementChild;
     r.insertBefore(c, after ? after.nextSibling : null);
@@ -1477,14 +1989,25 @@ function appendExtras(r, coord, plot, sum, placeName) {
   }
   const bz = findBezirk(plot, sum), d = bz ? BEZIRKE[bz] : null;
   const m = card("", `<button type="button" id="printBtn">Merkblatt drucken oder als PDF speichern</button>
-    <p class="hint">Fasst alles auf dieser Seite für den Termin beim Bezirksamt zusammen. Im Druckfenster „Als PDF speichern“ wählen.</p>`, "noprint");
+    <p class="hint ext">Fasst alles auf dieser Seite für den Termin beim Bezirksamt zusammen. Im Druckfenster „Als PDF speichern“ wählen.</p>`, "noprint");
   printTitle = `Merkblatt Baurecht Hamburg · ${placeName} · erstellt am ${new Date().toLocaleDateString("de-DE")}`;
   m.querySelector("#printBtn").addEventListener("click", () => window.print());
   r.append(card("Ihr Ansprechpartner", d
     ? `<p><b>${esc(d.amt)}</b></p>
        <dl class="contact"><dt>Adresse</dt><dd>${esc(d.adr)}</dd><dt>Telefon</dt><dd><a href="tel:${esc(d.tel.replace(/[^\d+]/g, ""))}">${esc(d.tel)}</a></dd><dt>E-Mail</dt><dd><a href="mailto:${esc(d.mail)}">${esc(d.mail)}</a></dd></dl>
        <p class="hint">Hier gibt es Bauberatung und verbindliche Auskunft. Zentral erreichbar ist die Stadt auch über die Behördennummer 115.</p>`
-    : `<p>Zuständig ist die Bauprüfabteilung Ihres Bezirksamts. Den Bezirk konnte die App hier nicht sicher erkennen.</p><p class="hint">Allgemeine Auskunft über die Behördennummer 115.</p>`), m);
+    : `<p>Zuständig ist die Bauprüfabteilung Ihres Bezirksamts. Den Bezirk konnte die App hier nicht sicher erkennen.</p><p class="hint">Allgemeine Auskunft über die Behördennummer 115.</p>`, "ext"), m, extToggle());
+}
+// Kurzfassung (Stichworte) oder erweiterte Informationen; gedruckt wird immer alles
+let extended = false;
+function extToggle() {
+  const r = $("results"), d = document.createElement("div"), b = document.createElement("button"), set = () => {
+    r.classList.toggle("short", !extended);
+    b.textContent = extended ? "Weniger anzeigen" : "Erweiterte Informationen anzeigen"; b.setAttribute("aria-expanded", extended);
+  };
+  d.className = "exttoggle noprint"; b.type = "button"; b.className = "ghost"; d.append(b); set();
+  b.addEventListener("click", () => { extended = !extended; set(); if (extended) r.querySelector("section.ext:not(.warn)")?.scrollIntoView({behavior: "smooth", block: "start"}); });
+  return d;
 }
 // Trifft eine Geometrie das Grundstück? (Näherung ohne Geometrie-Bibliothek)
 function touches(geom, pg, ext) {
@@ -1547,7 +2070,7 @@ let printTitle = "";
 const openDetails = () => document.querySelectorAll("#results details").forEach(x => x.open = true);
 // auch beim Drucken über das Browser-Menü (Strg+P, Teilen > Drucken): alles aufklappen, Kopfzeile setzen
 window.addEventListener("beforeprint", () => { openDetails(); $("printHead").textContent = body.contains("has-result") ? printTitle : ""; });
-map.on("singleclick", ev => { if (!draw) { curPlace = null; queryAt(ev.coordinate, "Punkt in der Karte"); } });
+map.on("singleclick", ev => { if (!draw && !tm) { curPlace = null; queryAt(ev.coordinate, "Punkt in der Karte"); } });
 </script>
 </body>
 </html>
