@@ -801,6 +801,13 @@ body { font: 15px/1.45 var(--sans); letter-spacing: -.01em; }
 .side > header .sub { font-size: 15px; color: var(--muted); }
 .side > header::after { background: var(--accent); -webkit-mask: var(--sky) center bottom / 100% auto no-repeat; mask: var(--sky) center bottom / 100% auto no-repeat; opacity: .72; filter: drop-shadow(0 6px 10px color-mix(in srgb, var(--accent) 30%, transparent)); }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .side > header::after { opacity: .85; } }
+/* Wortmarke: "Moin" hanseatisch als Serifen-Kursive in Hamburg-Rot mit Elbwelle, "Plan" kräftig in Systemschrift */
+.side > header h1 { display: flex; align-items: baseline; margin-bottom: .22em; }
+.wm-moin { position: relative; font: italic 600 1.12em/1 ui-serif, "New York", "Iowan Old Style", Georgia, "Times New Roman", serif; color: #c8102e; letter-spacing: -.01em; padding-right: .04em; }
+.wm-moin::after { content: ""; position: absolute; left: .02em; right: .08em; bottom: -.2em; height: .2em; background: currentColor; -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 6'%3E%3Cpath d='M0 3q5-3 10 0t10 0 10 0 10 0' fill='none' stroke='black' stroke-width='1.8'/%3E%3C/svg%3E") left center / .9em 100% repeat-x; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 6'%3E%3Cpath d='M0 3q5-3 10 0t10 0 10 0 10 0' fill='none' stroke='black' stroke-width='1.8'/%3E%3C/svg%3E") left center / .9em 100% repeat-x; opacity: .8; }
+.wm-plan { font-weight: 800; letter-spacing: -.02em; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .wm-moin { color: #ff5a5f; } }
+@media print { .wm-moin { color: #000; } .wm-moin::after { display: none; } }
 .side > header .logo, .menubtn { background: var(--fill) !important; box-shadow: none !important; color: var(--accent); }
 /* Suchfeld wie in iOS */
 /* Suchfeld hebt sich deutlich ab: weiß mit blauem Rand und kräftigem Schatten, im Dunkeln heller grau */
@@ -890,7 +897,7 @@ dl.contact a { display: inline-block; padding: 8px 0; }
   <aside class="side">
     <header>
       <button type="button" class="logo" id="homeBtn" aria-label="Zur Startseite" title="Zur Startseite"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M10 21v-6h4v6"/></svg></button>
-      <div><h1>MoinPlan</h1><p class="sub">Was darf ich auf meinem Grundstück bauen?</p></div>
+      <div><h1 aria-label="MoinPlan"><span class="wm-moin">Moin</span><span class="wm-plan">Plan</span></h1><p class="sub">Was darf ich auf meinem Grundstück bauen?</p></div>
       <button type="button" class="menubtn" id="menuBtn" aria-label="Menü öffnen" aria-controls="drawer" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
     </header>
     <form class="search" id="searchForm">
