@@ -797,13 +797,17 @@ body { font: 15px/1.45 var(--sans); letter-spacing: -.01em; }
 .side, :root:not([data-theme="light"]) .side { background: var(--bg) !important; }
 /* Kopf: großer Titel wie in iOS, darunter die Skyline mit Elbphilharmonie */
 .side > header { background: var(--bg) !important; -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: none !important; border-radius: 0 !important; color: var(--fg); }
-.side > header h1 { font: 700 34px/1.08 var(--display); letter-spacing: .01em; }
+.side > header h1 { font: 700 28px/1.05 var(--display); letter-spacing: .01em; }
 .side > header .sub { font-size: 15px; color: var(--muted); }
 .side > header::after { opacity: .9; background: var(--fg); -webkit-mask: var(--sky) center bottom / 100% auto no-repeat; mask: var(--sky) center bottom / 100% auto no-repeat; opacity: .22; }
 .side > header .logo, .menubtn { background: var(--fill) !important; box-shadow: none !important; color: var(--accent); }
 /* Suchfeld wie in iOS */
-form.search { background: var(--panel); border-radius: 14px; box-shadow: 0 0 0 .5px var(--line), 0 6px 20px rgba(0,0,0,.08); -webkit-backdrop-filter: none; backdrop-filter: none; padding: 6px; }
-form.search:focus-within { box-shadow: 0 0 0 2px var(--accent), 0 6px 20px rgba(0,0,0,.08); }
+/* Suchfeld hebt sich deutlich ab: weiß mit blauem Rand und kräftigem Schatten, im Dunkeln heller grau */
+form.search { background: var(--panel); border-radius: 14px; box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--accent) 55%, transparent), 0 10px 28px rgba(0,40,100,.2); -webkit-backdrop-filter: none; backdrop-filter: none; padding: 6px; }
+form.search:focus-within { box-shadow: 0 0 0 2.5px var(--accent), 0 10px 28px rgba(0,40,100,.24); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) form.search { background: #3a3a3c; box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--accent) 70%, transparent), 0 10px 28px rgba(0,0,0,.7); }
+  :root:not([data-theme="light"]) form.search:focus-within { box-shadow: 0 0 0 2.5px var(--accent), 0 10px 28px rgba(0,0,0,.7); }
+  :root:not([data-theme="light"]) form.search input::placeholder { color: rgba(235,235,245,.7); } }
 form.search input { font-size: 17px; }
 form.search button[type=submit], #printBtn, #mDone { background: var(--accent-fill) !important; box-shadow: none !important; border-radius: 10px; font-weight: 600; }
 /* Karten: weiß auf Grau, ohne Glas und Schatten */
@@ -847,15 +851,11 @@ form.search input { background: transparent !important; }
 .mapwrap > .compass:not(.turned) { display: none !important; } /* wie Apple Karten: Kompass nur, wenn die Karte gedreht ist */
 .btn3d { top: 112px; height: 44px; border-radius: 12px; padding: 0 14px 0 10px; background: var(--gl-strong); }
 @media (max-width: 760px) {
-  /* Start: Kopf mit Skyline und Suchfeld größer, Karte kleiner */
-  body:not(.has-result) .side > header { padding-bottom: 168px; }
-  body:not(.has-result) .side > header::after { height: 128px; bottom: 44px; }
-  body:not(.has-result) .side > header h1 { font-size: 36px; }
-  body:not(.has-result) .side > header .sub { display: block; font-size: 16px; }
+  /* Start: Suchfeld größer, Kopf in der ursprünglichen Größe */
   body:not(.has-result) form.search { padding: 8px; }
   body:not(.has-result) form.search input { height: 46px; font-size: 18px !important; }
   body:not(.has-result) form.search button[type=submit] { padding: 0 20px; font-size: 17px !important; }
-  .side > header h1 { font-size: 30px; }
+  .side > header h1 { font-size: 27px; }
   .compass { top: calc(166px + env(safe-area-inset-top, 0px)); }
   .btn3d { top: calc(112px + env(safe-area-inset-top, 0px)); }
   .zoomhint { top: 12px; bottom: auto; max-width: 52%; text-align: center; }
