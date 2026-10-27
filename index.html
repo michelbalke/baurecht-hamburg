@@ -623,7 +623,7 @@ h2 .ico { width: 28px; height: 28px; border-radius: 50%; background: var(--gl-st
   /* Nach der Suche: oben die Übersicht, darunter die Karte (wie auf der Startseite) */
   body.has-result .side > header { padding: calc(10px + env(safe-area-inset-top, 0px)) 16px 46px; }
   body.has-result .side > header .sub { display: none; }
-  body.has-result .side { max-height: 60dvh; }
+  body.has-result .side { max-height: 66dvh; }
   body.has-result .plan-name { font-size: 25px; -webkit-hyphens: auto; hyphens: auto; overflow-wrap: break-word; }
   /* Detailseite füllt den Bildschirm, ohne kleine Karte */
   body.detail .side { position: absolute; inset: 0; z-index: 20; max-height: none; border: 0; }
@@ -666,7 +666,7 @@ h2 .ico { width: 28px; height: 28px; border-radius: 50%; background: var(--gl-st
   .plan-name { font-size: 18pt !important; } h2 { font-size: 11pt !important; } h2 .ico { display: none; }
   .hint, .meta span:not(.pill) { font-size: 8pt; } .pill { padding: 0; background: none !important; }
   .meta span:not(.pill) { border: 0; padding: 0 6pt 0 0; background: none; box-shadow: none !important; }
-  .big { grid-template-columns: repeat(5, 1fr); gap: 0 !important; border: .5pt solid #bbb !important; }
+  .big { grid-template-columns: repeat(5, 1fr) !important; gap: 0 !important; border: .5pt solid #bbb !important; }
   .big div { padding: 3pt 5pt !important; background: none !important; box-shadow: inset -.5pt 0 0 #bbb !important; }
   .big b { font-size: 11pt !important; } .big span { font-size: 7.5pt; }
   dl.rules { column-count: 2; column-gap: 8mm; } dl.rules dt { break-after: avoid; } dl.rules dd { break-inside: avoid; margin-bottom: 4pt; }
@@ -838,9 +838,9 @@ form.search input { background: transparent !important; }
 .btn3d { top: 112px; height: 44px; border-radius: 12px; padding: 0 14px 0 10px; background: var(--gl-strong); }
 @media (max-width: 760px) {
   /* Start: Suchfeld größer, Kopf in der ursprünglichen Größe */
-  body:not(.has-result) form.search { padding: 8px; }
-  body:not(.has-result) form.search input { height: 46px; font-size: 18px !important; }
-  body:not(.has-result) form.search button[type=submit] { padding: 0 20px; font-size: 17px !important; }
+  body:not(.has-result) form.search { padding: 5px; }
+  body:not(.has-result) form.search input { height: 40px; font-size: 17px !important; }
+  body:not(.has-result) form.search button[type=submit] { padding: 0 16px; font-size: 16px !important; }
   .side > header h1 { font-size: 27px; }
   .compass { top: calc(166px + env(safe-area-inset-top, 0px)); }
   .btn3d { top: calc(112px + env(safe-area-inset-top, 0px)); }
@@ -886,7 +886,6 @@ body.has-result .side > .lead { display: none; }
   body.has-result .ov-build .big div { padding: 5px 9px; }
   body.has-result .ov-build .big b { font-size: 15.5px; }
   body.has-result .side { gap: 8px; }
-  .ov-build .big div:nth-child(n+3) { display: none; }
   /* Suchleiste im Kopf */
   body.has-result .side > header { gap: 8px; }
   body.has-result .side > header .logo { display: none; }
@@ -935,6 +934,7 @@ body:not(.has-result) .btn3d { display: none !important; }
 .ov-build .big b { font-size: 16.5px; }
 .ov-build .big span { font-size: 11.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .ov-build { gap: 6px; } .ov-build > .ov-more { font-size: 14px; }
 .ov-build #calcOut div:first-child, .ov-build .big div:first-child { background: var(--accent-fill) !important; } .ov-build .big div:first-child b, .ov-build .big div:first-child span { color: #fff; }
+.big { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); } .big b { hyphens: manual; }
 .backbar { display: flex; padding: 0 0 2px; }
 .backbar button { font-size: 14.5px; padding: 8px 14px; }
 .checks li.flash { animation: flash 1.6s ease; }
@@ -972,7 +972,7 @@ body:not(.has-result) .btn3d { display: none !important; }
     </header>
     <form class="search" id="searchForm">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-      <input type="text" id="q" placeholder="Adresse, z. B. Rathausmarkt 1" aria-label="Adresse oder Koordinate" autocomplete="off">
+      <input type="text" id="q" placeholder="z. B. Rathausmarkt 1" aria-label="Adresse oder Koordinate" autocomplete="off">
       <button type="submit">Suchen</button>
     </form>
     <div class="recent" id="recent" hidden></div>
@@ -1799,7 +1799,7 @@ const startResults = $("results").innerHTML;
 function placeSearch() {
   const f = $("searchForm"), h = qs(".side > header"), inHead = isPhone() && body.contains("has-result");
   if (inHead && f.parentNode !== h) h.insertBefore(f, $("menuBtn")); else if (!inHead && f.parentNode === h) h.after(f);
-  $("q").placeholder = inHead ? "Erneute Suche" : "Adresse, z. B. Rathausmarkt 1";
+  $("q").placeholder = inHead ? "Erneute Suche" : "z. B. Rathausmarkt 1";
   if (inHead) $("q").value = "";
 }
 addEventListener("resize", placeSearch);
