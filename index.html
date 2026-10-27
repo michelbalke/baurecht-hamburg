@@ -623,7 +623,7 @@ h2 .ico { width: 28px; height: 28px; border-radius: 50%; background: var(--gl-st
   /* Nach der Suche: oben die Übersicht, darunter die Karte (wie auf der Startseite) */
   body.has-result .side > header { padding: calc(10px + env(safe-area-inset-top, 0px)) 16px 46px; }
   body.has-result .side > header .sub { display: none; }
-  body.has-result .side { max-height: 68dvh; }
+  body.has-result .side { max-height: 72dvh; }
   body.has-result .plan-name { font-size: 25px; -webkit-hyphens: auto; hyphens: auto; overflow-wrap: break-word; }
   /* Detailseite füllt den Bildschirm, ohne kleine Karte */
   body.detail .side { position: absolute; inset: 0; z-index: 20; max-height: none; border: 0; }
@@ -886,6 +886,19 @@ body:not(.has-result) .btn3d { display: none !important; }
 .ov-box:not(.ok):not(.hit):not(.unk) .ov-val::before { display: none; }
 .ov-box.ok .ov-val { color: var(--ok); } .ov-box.hit .ov-val { color: var(--warn); }
 .ov-box .ov-more { font-size: 12.5px; margin-top: 2px; }
+.ov-row { flex-direction: row; align-items: center; gap: 10px; padding: 12px 16px; }
+.ov-row .ov-label { font-size: 15px; color: var(--fg); font-weight: 600; }
+.ov-row .ov-val { margin: 0; font-size: 17px; }
+.ov-row .ov-more { margin: 0; font-size: 20px; color: var(--muted); }
+.ov-build { all: unset; box-sizing: border-box; cursor: pointer; display: flex; flex-direction: column; gap: 8px; background: color-mix(in srgb, var(--panel) 88%, transparent); border-radius: 14px; padding: 12px 14px; color: var(--fg); -webkit-tap-highlight-color: transparent; }
+.ov-build:empty { display: none; }
+.ov-build:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.ov-build > .ov-label { font-size: 15px; color: var(--fg); font-weight: 600; flex: none; }
+.ov-build .big { grid-template-columns: repeat(2, 1fr); }
+.ov-build .big div { padding: 6px 10px; gap: 0; }
+.ov-build .big b { font-size: 16.5px; }
+.ov-build .big span { font-size: 11.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .ov-build { gap: 6px; } .ov-build > .ov-more { font-size: 14px; }
+.ov-build #calcOut div:first-child, .ov-build .big div:first-child { background: var(--accent-fill) !important; } .ov-build .big div:first-child b, .ov-build .big div:first-child span { color: #fff; }
 .backbar { display: flex; padding: 0 0 2px; }
 .backbar button { font-size: 14.5px; padding: 8px 14px; }
 .checks li.flash { animation: flash 1.6s ease; }
@@ -1726,7 +1739,7 @@ function toggleDrawer(v) { $("drawer").classList.toggle("open", v); $("drawer").
 const vt = fn => document.startViewTransition && !matchMedia("(prefers-reduced-motion: reduce)").matches ? document.startViewTransition(fn) : fn();
 // Detailseite (bisherige Infoseite) öffnen, auf Wunsch gleich an einer Prüfung
 function openDetail(checkId) {
-  const li = checkId ? qs(`#results li[data-id="${CSS.escape(checkId)}"]`) : null, fold = li?.closest("details");
+  const li = checkId === "calc" ? $("calcOut")?.closest("section") : checkId ? qs(`#results li[data-id="${CSS.escape(checkId)}"]`) : null, fold = li?.closest("details");
   vt(() => {
     body.add("detail"); qs(".side").scrollTop = 0; if (!li) return;
     if (fold) fold.open = true;
@@ -1889,20 +1902,30 @@ function renderResult(coord, placeName, plans, plot) {
   updateCalc();
   if (first) relayout(); // Kopf wird kleiner, Karte größer
 }
-// Erste Ergebnisseite: nur Planname und drei Ja/Nein-Kästchen, alles Weitere auf der Detailseite
-const OV_CHECKS = [["denkmal", "Denkmal&shy;schutz"], ["erhaltung", "Städtebauliche Erhaltungs&shy;verordnung"], ["soziale", "Soziale Erhaltungs&shy;verordnung"]];
+// Erste Ergebnisseite: Planname, Denkmalschutz ja/nein und gleich, was gebaut werden darf; alles Weitere auf der Detailseite
 function renderOverview(main, sum, placeName) {
   const gilt = main?.status === "festgestellt", name = main ? sum?.name || planTitle(planName(main.props)) || "Bebauungsplan" : "Kein Bebauungsplan";
   $("overview").innerHTML = `<button type="button" class="ov-plan" data-go="">
       <span class="pill ${main ? (gilt ? "" : "draft") : "none"}">${main ? (gilt ? "Bebauungsplan gilt" : "Bebauungsplan im Verfahren") : "§ 34 BauGB: Einfügen in die Umgebung"}</span>
       <span class="ov-name">${esc(name).replace(/(Baustufen|Teilbebauungs|Durchführungs|Bebauungs)(plan)/, "$1&shy;$2")}</span>
-      <span class="ov-place">${esc(placeName)}</span>
       <span class="ov-more">Weitere Infos zur Bebaubarkeit ›</span></button>
-    <div class="ov-grid">${typeof CHECKS === "undefined" ? "" : OV_CHECKS.map(([id, t]) => `<button type="button" class="ov-box" data-go="${id}"><span class="ov-label">${t}</span><b class="ov-val">wird geprüft …</b><span class="ov-more">Details ›</span></button>`).join("")}</div>`;
+    ${typeof CHECKS === "undefined" ? "" : `<button type="button" class="ov-box ov-row" data-go="denkmal"><span class="ov-label">Denkmalschutz</span><b class="ov-val">wird geprüft …</b><span class="ov-more">›</span></button>`}
+    <button type="button" class="ov-build" data-go="calc" id="ovBuild"></button>`;
+  cur.hasPlan = !!main;
+}
+// „Was darf ich bauen?“ in der Übersicht: dieselben Werte wie im Rechner der Detailseite, dazu die Eckdaten der Lage
+function renderOvBuild(tiles) {
+  const el = $("ovBuild"); if (!el) return;
+  const z = cur.zone, n = z && NUTZUNG[z.art];
+  const t = [...tiles.slice(0, 2), ...(z ? [[vgText(z), "Vollgeschosse"], [z.bauweise, "Bauweise"], [z.art, n?.split(":")[0] || "Nutzung"]] : [])]
+    .concat(z ? [] : Object.entries(lastMass).map(([k, v]) => [v, MASS[k]])).filter(([b]) => b && b !== "–").slice(0, 4);
+  const msg = !cur.hasPlan ? "Hier gilt kein Bebauungsplan. Gebaut werden darf, was sich in die Umgebung einfügt: ähnliche Höhe, Größe und Bauweise wie die Nachbarhäuser."
+    : cur.sum && !z ? "Bitte die Lage Ihres Grundstücks wählen, dann zeigt die App die Werte." : !t.length ? "Für diesen Plan liegen noch keine Werte in der App vor. Der Originalplan ist in den Details verlinkt." : "";
+  el.innerHTML = `<span class="ov-label">Was darf ich bauen?</span>${t.length ? `<span class="big">${t.map(x => tile(x)).join("")}</span>` : ""}${msg ? `<span class="ov-place">${esc(msg)}</span>` : ""}${cur.sum && !z && cur.hasPlan ? `<span class="ov-more">Lage wählen ›</span>` : ""}`;
 }
 function ovSet(id, cls) {
   const b = qs(`#overview [data-go="${id}"]`); if (!b) return;
-  b.className = "ov-box " + cls; b.querySelector(".ov-val").textContent = {hit: "Ja", ok: "Nein", unk: "Unbekannt"}[cls];
+  b.classList.remove("ok", "hit", "unk"); b.classList.add(cls); b.querySelector(".ov-val").textContent = {hit: "Ja", ok: "Nein", unk: "Unbekannt"}[cls];
 }
 
 // Hamburger Planarten am Namensanfang (BS…, TB…, D…)
@@ -2126,6 +2149,7 @@ function updateCalc() {
   if (a && gfz) tiles.push([fmt(a * gfz) + " m²", "Wohn-/Geschossfläche insgesamt"]);
   if (z?.hoehe) tiles.push([z.hoehe, "Höhe laut Plan"]);
   out.innerHTML = tiles.map(t => tile(t)).join("");
+  renderOvBuild(tiles);
   $("calcNote").textContent = !a && !z?.gr ? "Geben Sie die Grundstücksfläche ein oder umfahren Sie das Grundstück in der Karte."
     : grz || gfz || z?.gr ? "Überschlag. Das Haus muss außerdem im Baufenster liegen, und Abstände zum Nachbarn müssen eingehalten werden."
     : cur.sum && !z ? "Wählen Sie oben die Lage Ihres Grundstücks, dann rechnet die App." : "Für diesen Ort liegen GRZ und GFZ noch nicht vor.";
