@@ -892,10 +892,10 @@ body.has-result .side > .lead { display: none; }
   body.has-result .side > header .logo { display: none; }
   body.has-result .side > header > div { flex: none; cursor: pointer; }
   body.has-result .side > header h1 { font-size: 21px; }
-  .side > header form.search { flex: 1 1 0; min-width: 0; margin: 0 !important; padding: 0 !important; border-radius: 10px; background: rgba(255,255,255,.92) !important; box-shadow: 0 0 0 1px rgba(0,0,0,.18) !important; }
+  .side > header form.search { flex: 0 1 150px; min-width: 0; margin: 0 0 0 auto !important; padding: 0 !important; border-radius: 10px; background: rgba(255,255,255,.92) !important; box-shadow: 0 0 0 1px rgba(0,0,0,.18) !important; }
   .side > header form.search:focus-within { box-shadow: 0 0 0 2px #0062cc !important; }
   .side > header form.search svg { left: 9px; width: 15px; height: 15px; color: #3c3c43; }
-  .side > header form.search input { height: 36px !important; padding: 0 8px 0 28px !important; color: #000; font-size: 16px !important; }
+  .side > header form.search input { height: 32px !important; padding: 0 8px 0 28px !important; color: #000; font-size: 16px !important; }
   .side > header form.search input::placeholder { color: rgba(60,60,67,.6) !important; }
   .side > header form.search button[type=submit] { display: none; }
 }
@@ -1799,6 +1799,8 @@ const startResults = $("results").innerHTML;
 function placeSearch() {
   const f = $("searchForm"), h = qs(".side > header"), inHead = isPhone() && body.contains("has-result");
   if (inHead && f.parentNode !== h) h.insertBefore(f, $("menuBtn")); else if (!inHead && f.parentNode === h) h.after(f);
+  $("q").placeholder = inHead ? "Erneute Suche" : "Adresse, z. B. Rathausmarkt 1";
+  if (inHead) $("q").value = "";
 }
 addEventListener("resize", placeSearch);
 qs(".side > header h1").addEventListener("click", () => { if (body.contains("has-result")) $("homeBtn").click(); });
