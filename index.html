@@ -399,17 +399,33 @@ button, .btn { padding: 9px 14px; border-radius: var(--radius); border: 1px soli
   transition: transform .25s cubic-bezier(.3, 1.6, .5, 1), background .2s, box-shadow .2s; }
 button:hover, .btn:hover { filter: brightness(1.08); }
 button:active, .btn:active { transform: scale(.94); }
-button.ghost, .recent button, a.ghostbtn { background: var(--accent-soft); color: var(--accent); border-color: transparent; border-radius: 10px; }
+button.ghost, a.ghostbtn { background: var(--accent-soft); color: var(--accent); border-color: transparent; border-radius: 10px; }
 button.ghost { padding: 7px 12px; font-size: 13px; font-weight: 550; }
 button.ghost:hover { border-color: var(--accent); filter: none; }
 a.ghostbtn::before { content: ""; width: 14px; height: 14px; background: currentColor; -webkit-mask: var(--ico-file) center/contain no-repeat; mask: var(--ico-file) center/contain no-repeat; }
 button:focus-visible, input:focus-visible, a:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 input[type=text], input[type=number], select { flex: 1; min-width: 0; padding: 10px 12px; border: 1px solid transparent; border-radius: 10px; background: var(--fill); color: var(--fg); font: inherit; }
 select { flex: initial; min-width: auto; padding: 10px; width: 100%; }
-.tools, .recent, .meta, .linkbtns, .checksum { display: flex; flex-wrap: wrap; gap: 6px; }
+.tools, .meta, .linkbtns, .checksum { display: flex; flex-wrap: wrap; gap: 6px; }
 .linkbtns, .checksum { gap: 8px; }
+
+/* Suchhistorie: weißes Blatt direkt unter dem Suchfeld, erscheint nur beim Suchen (Lage setzt placeRecent) */
+.recent { position: fixed; z-index: 30; display: flex; flex-direction: column; padding: 4px 0; max-height: 60dvh; overflow-y: auto; background: #fff; color: #000; border-radius: 16px;
+  box-shadow: 0 0 0 .5px rgba(0,0,0,.1), 0 14px 36px rgba(0,0,0,.32); opacity: 0; visibility: hidden; pointer-events: none; transform: translateY(-6px) scale(.98); transform-origin: top center;
+  transition: opacity .16s ease, transform .2s var(--ease), visibility 0s .2s; }
+body.searching .recent:not(.leer) { opacity: 1; visibility: visible; pointer-events: auto; transform: none; transition: opacity .2s ease, transform .28s var(--ease); }
 .recent[hidden] { display: none; }
-.recent button { padding: 4px 11px; font-size: 12.5px; font-weight: 550; }
+.recent p { margin: 0; padding: 8px 16px 4px; font-size: 12.5px; font-weight: 600; color: rgba(60,60,67,.6); }
+.recent button { all: unset; box-sizing: border-box; position: relative; display: flex; align-items: center; gap: 12px; padding: 11px 16px; font-size: 16px; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: background .15s; }
+.recent button + button::before { content: ""; position: absolute; left: 46px; right: 0; top: 0; border-top: .5px solid rgba(60,60,67,.18); }
+.recent button:hover, .recent button:active, .recent button:focus-visible { background: #f2f2f7; }
+.recent button svg { width: 18px; height: 18px; flex: none; color: rgba(60,60,67,.5); }
+.recent button span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Desktop: Suchfeld ist dunkel, also auch das Blatt (auf dem Handy sitzt das Feld im weißen Kopf) */
+@media (min-width: 761px) { :root:not([data-theme="light"]) .recent { background: #2c2c2e; color: #fff; box-shadow: 0 0 0 .5px rgba(255,255,255,.12), 0 14px 36px rgba(0,0,0,.6); }
+  :root:not([data-theme="light"]) .recent p, :root:not([data-theme="light"]) .recent button svg { color: rgba(235,235,245,.55); }
+  :root:not([data-theme="light"]) .recent button + button::before { border-top-color: rgba(84,84,88,.6); }
+  :root:not([data-theme="light"]) .recent button:hover, :root:not([data-theme="light"]) .recent button:focus-visible { background: #3a3a3c; } }
 
 /* ---------- Kopf: weiße Leiste, Wortmarke vor der Skyline ---------- */
 .side > header { margin: 0 -16px; padding: calc(12px + env(safe-area-inset-top, 0px)) 16px 14px; background: #fff; color: #000; display: flex; gap: 12px; align-items: center;
@@ -516,6 +532,7 @@ details.okfold .checks { margin-top: 6px; }
 @media screen { body:not(.detail) #overview:not(:empty) ~ #results { display: none; } body.detail #overview { display: none; } }
 .ov-plan, .ov-box, .ov-build { all: unset; box-sizing: border-box; cursor: pointer; display: flex; flex-direction: column; gap: 3px; background: color-mix(in srgb, var(--panel) 88%, transparent); border-radius: 14px; padding: 14px 16px; color: var(--fg); -webkit-tap-highlight-color: transparent; }
 .ov-plan { box-shadow: inset 4px 0 0 var(--plan); }
+@media screen { #overview > * { animation: rise .34s var(--ease) both; } #overview > :nth-child(2) { animation-delay: .05s; } #overview > :nth-child(3) { animation-delay: .1s; } #overview > :nth-child(4) { animation-delay: .15s; } }
 .ov-plan, .ov-box { transition: transform .2s var(--ease), background .2s; }
 .ov-plan:active, .ov-box:active { transform: scale(.97); }
 .ov-plan:focus-visible, .ov-box:focus-visible, .ov-build:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -609,6 +626,9 @@ body.is3d .view3d { display: block; }
   -webkit-backdrop-filter: var(--gl-blur); backdrop-filter: var(--gl-blur); box-shadow: var(--gl-edge), var(--gl-shadow); }
 
 @keyframes fade { from { opacity: 0; } }
+@keyframes rise { from { opacity: 0; transform: translateY(8px); } }
+@keyframes kopf-start { from { opacity: 0; transform: translateY(4px); } }
+@keyframes kopf-klein { from { opacity: 0; transform: translateY(-4px); } }
 @keyframes load { from { background-position: -40% 0, 0 0; } to { background-position: 140% 0, 0 0; } }
 @keyframes flash { 0%, 40% { box-shadow: 0 0 0 3px var(--accent); } 100% { box-shadow: 0 0 0 3px transparent; } }
 @keyframes lpgrow { from { transform: scale(1.6); opacity: .2; } to { transform: scale(.35); opacity: 1; } }
@@ -620,8 +640,7 @@ body.is3d .view3d { display: block; }
   .app { height: 100dvh; grid-template-columns: 1fr; grid-template-rows: auto 1fr; position: relative; overflow: hidden; }
   .side { border-right: 0; border-bottom: 1px solid var(--line); padding-bottom: 12px; }
   .menubtn { display: grid; }
-  .recent, .side > .legal, body:not(.has-result) #results { display: none; }
-  body.searching .recent:not([hidden]) { display: flex; }
+  .side > .legal, body:not(.has-result) #results { display: none; }
   input, button, select { font-size: 16px !important; }
   .side > header h1 { font-size: 27px; }
   /* Startseite: Suchleiste als volle Zeile im Kopf unter dem Logo */
@@ -639,14 +658,19 @@ body.is3d .view3d { display: block; }
   body.has-result .side { max-height: 66dvh; gap: 8px; }
   body.has-result:not(.detail) .side { padding-bottom: 10px; }
   body.has-result .side > header { gap: 6px; }
+  /* Wechsel Start ↔ Ergebnis: Kopfinhalt blendet weich über statt zu springen */
+  body:not(.has-result) .side > header > * { animation: kopf-start .32s var(--ease) both; }
+  body.has-result .side > header > * { animation: kopf-klein .32s var(--ease) both; }
   body.has-result .side > header > div { flex: none; cursor: pointer; }
   body.has-result .side > header h1 { font-size: 20px; margin-bottom: 0; }
   body.has-result .side > header .logo, body.has-result .menubtn { width: 34px; height: 34px; }
   body.has-result .side > header .logo svg { width: 19px; height: 19px; }
-  body.has-result form.search { flex: 0 1 141px; min-width: 0; margin: 0 auto; padding: 0; border-radius: 10px; background: rgba(255,255,255,.92); box-shadow: 0 0 0 1px rgba(0,0,0,.18); }
+  /* Suchfeld füllt den Platz zwischen Wortmarke und Menü, gleiche Höhe und Füllung wie die runden Knöpfe */
+  body.has-result form.search { flex: 1 1 0; min-width: 0; margin: 0 4px; padding: 0; border-radius: 17px; background: #ececed; box-shadow: none; transition: background .2s, box-shadow .2s; }
   body.has-result form.search + .menubtn { margin-left: 0; }
-  body.has-result form.search svg { left: 8px; width: 15px; height: 15px; }
-  body.has-result form.search input { height: 32px; padding: 0 4px 0 27px; }
+  body.has-result form.search:focus-within { background: #fff; box-shadow: 0 0 0 2px #0062cc; }
+  body.has-result form.search svg { left: 11px; width: 15px; height: 15px; }
+  body.has-result form.search input { height: 34px; padding: 0 10px 0 32px; }
   body.has-result form.search button[type=submit] { display: none; }
   body.has-result .plan-name { font-size: 24px; overflow-wrap: break-word; }
   body.has-result #overview { gap: 6px; padding-top: 2px; }
@@ -1549,7 +1573,8 @@ on("menuBtn", "click", () => toggleDrawer(true));
 on("drawerClose", "click", () => toggleDrawer(false));
 on("backdrop", "click", () => toggleDrawer(false));
 addEventListener("keydown", e => { if (e.key === "Escape" && $("drawer").classList.contains("open")) toggleDrawer(false); });
-on("q", "focus", () => body.add("searching"));
+on("q", "focus", () => { renderRecent(); body.add("searching"); });
+on("q", "input", () => renderRecent($("q").value));
 on("q", "blur", () => setTimeout(() => body.remove("searching"), 250));
 if (isPhone()) { // Rechtliches ins Menü (Kopie bleibt fürs Merkblatt)
   const legal = side.querySelector(":scope > .legal");
@@ -1975,8 +2000,23 @@ function addRecent(q) {
   try { localStorage.setItem("recent", JSON.stringify(recent)); } catch {}
   renderRecent();
 }
-function renderRecent() { const box = $("recent"); box.hidden = !recent.length; box.innerHTML = recent.map(q => `<button type="button" data-q="${esc(q)}">${esc(q)}</button>`).join(""); }
-on("recent", "click", e => { const q = e.target.dataset?.q; if (q) { $("q").value = q; $("searchForm").requestSubmit(); } });
+const clockIco = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>`;
+// Beim Tippen nur passende Einträge zeigen; ohne Treffer bleibt das Blatt zu
+function renderRecent(filter = "") {
+  const box = $("recent"), f = filter.trim().toLowerCase(), list = recent.filter(q => q.toLowerCase().includes(f));
+  box.hidden = !recent.length; box.classList.toggle("leer", !list.length);
+  box.innerHTML = `<p>Zuletzt gesucht</p>` + list.map(q => `<button type="button" data-q="${esc(q)}">${clockIco}<span>${esc(q)}</span></button>`).join("");
+  placeRecent();
+}
+// Blatt hängt am body (über Karte und Kopf), deshalb Lage vom Suchfeld abnehmen: auf dem Handy volle Breite, sonst so breit wie das Feld
+function placeRecent() {
+  const f = $("searchForm").getBoundingClientRect(), box = $("recent"), phone = isPhone();
+  Object.assign(box.style, {top: f.bottom + 8 + "px", left: (phone ? 16 : f.left) + "px", width: (phone ? innerWidth - 32 : f.width) + "px"});
+}
+document.body.append($("recent"));
+addEventListener("resize", placeRecent); side.addEventListener("scroll", placeRecent, {passive: true});
+on("recent", "pointerdown", e => e.preventDefault()); // Feld behält den Fokus, Tastatur bleibt bis zur Auswahl
+on("recent", "click", e => { const q = e.target.closest("[data-q]")?.dataset.q; if (q) { $("q").value = q; $("searchForm").requestSubmit(); } });
 renderRecent();
 
 // ---------- Bezirksamt, Prüfungen am Grundstück, Merkblatt ----------
