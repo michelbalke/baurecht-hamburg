@@ -389,10 +389,9 @@ a { color: var(--accent); }
 .app { display: grid; grid-template-columns: minmax(340px, 460px) 1fr; height: 100%; }
 .side { background: var(--bg); border-right: 1px solid var(--line); overflow-y: auto; display: flex; flex-direction: column; gap: 14px; min-width: 0; padding: 0 16px 20px; view-transition-name: info; }
 .side > .legal { padding: 0 4px; }
-.mapwrap { position: relative; min-height: 0; view-transition-name: karte; }
+.mapwrap { position: relative; min-height: 0; }
 #map { position: absolute; inset: 0; }
-::view-transition-group(info), ::view-transition-group(karte) { animation-duration: .38s; animation-timing-function: var(--ease); }
-::view-transition-old(info), ::view-transition-new(info), ::view-transition-old(karte), ::view-transition-new(karte) { height: 100%; object-fit: cover; }
+::view-transition-group(info) { animation-duration: .3s; animation-timing-function: var(--ease); }
 
 /* Knöpfe und Felder */
 button, .btn { padding: 9px 14px; border-radius: var(--radius); border: 1px solid var(--accent); background: var(--accent); color: #fff; font: inherit; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;
@@ -532,7 +531,7 @@ details.okfold .checks { margin-top: 6px; }
 @media screen { body:not(.detail) #overview:not(:empty) ~ #results { display: none; } body.detail #overview { display: none; } }
 .ov-plan, .ov-box, .ov-build { all: unset; box-sizing: border-box; cursor: pointer; display: flex; flex-direction: column; gap: 3px; background: color-mix(in srgb, var(--panel) 88%, transparent); border-radius: 14px; padding: 14px 16px; color: var(--fg); -webkit-tap-highlight-color: transparent; }
 .ov-plan { box-shadow: inset 4px 0 0 var(--plan); }
-@media screen { #overview > * { animation: rise .34s var(--ease) both; } #overview > :nth-child(2) { animation-delay: .05s; } #overview > :nth-child(3) { animation-delay: .1s; } #overview > :nth-child(4) { animation-delay: .15s; } }
+@media screen { #overview.neu > * { animation: rise .34s var(--ease) both; } #overview.neu > :nth-child(2) { animation-delay: .05s; } #overview.neu > :nth-child(3) { animation-delay: .1s; } #overview.neu > :nth-child(4) { animation-delay: .15s; } }
 .ov-plan, .ov-box { transition: transform .2s var(--ease), background .2s; }
 .ov-plan:active, .ov-box:active { transform: scale(.97); }
 .ov-plan:focus-visible, .ov-box:focus-visible, .ov-build:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -626,6 +625,10 @@ body.is3d .view3d { display: block; }
   -webkit-backdrop-filter: var(--gl-blur); backdrop-filter: var(--gl-blur); box-shadow: var(--gl-edge), var(--gl-shadow); }
 
 @keyframes fade { from { opacity: 0; } }
+@keyframes seite-rein { from { transform: translateX(100%); } }
+@keyframes seite-raus { to { transform: translateX(100%); } }
+@keyframes seite-weg { to { transform: translateX(-25%); opacity: .35; } }
+@keyframes seite-her { from { transform: translateX(-25%); opacity: .35; } }
 @keyframes rise { from { opacity: 0; transform: translateY(8px); } }
 @keyframes kopf-start { from { opacity: 0; transform: translateY(4px); } }
 @keyframes kopf-klein { from { opacity: 0; transform: translateY(-4px); } }
@@ -689,6 +692,15 @@ body.is3d .view3d { display: block; }
   .ov-build .big b { font-size: 15.5px; }
   /* Detailseite füllt den Bildschirm */
   body.detail .side { position: absolute; inset: 0; z-index: 20; max-height: none; border: 0; }
+  /* Wechsel Übersicht ↔ Detailseite wie ein Seitenwechsel: Detailseite schiebt sich von rechts über die Übersicht,
+     der Kopf bleibt stehen, die Karte bleibt unten liegen (sie gehört zum ruhigen Hintergrund). */
+  .side > header { view-transition-name: kopf; }
+  ::view-transition-group(info) { animation: none; }
+  ::view-transition-old(info), ::view-transition-new(info) { mix-blend-mode: normal; animation-duration: .44s; animation-timing-function: cubic-bezier(.32, .72, 0, 1); animation-fill-mode: both; }
+  .vt-vor::view-transition-new(info) { animation-name: seite-rein; box-shadow: -12px 0 32px rgba(0,0,0,.55); }
+  .vt-vor::view-transition-old(info) { animation-name: seite-weg; }
+  .vt-zurueck::view-transition-old(info) { animation-name: seite-raus; z-index: 1; box-shadow: -12px 0 32px rgba(0,0,0,.55); }
+  .vt-zurueck::view-transition-new(info) { animation-name: seite-her; }
   /* Messen und 3D: Karte über den ganzen Bildschirm */
   body.mapfull .mapwrap, body.is3d .mapwrap { position: fixed; inset: 0; z-index: 30; background: var(--bg); }
   body.mapfull .side { visibility: hidden; }
@@ -1562,7 +1574,12 @@ function fitPlot(duration = 600) {
 }
 const relayout = () => requestAnimationFrame(() => { map.updateSize(); fitPlot(0); });
 function toggleDrawer(v) { $("drawer").classList.toggle("open", v); $("drawer").inert = !v; $("backdrop").hidden = !v; $("menuBtn").setAttribute("aria-expanded", v); }
-const vt = fn => document.startViewTransition && !matchMedia("(prefers-reduced-motion: reduce)").matches ? document.startViewTransition(fn) : fn();
+// Seitenwechsel mit View Transition; dir („vor“/„zurueck“) wählt die Richtung im CSS
+function vt(fn, dir) {
+  if (!document.startViewTransition || matchMedia("(prefers-reduced-motion: reduce)").matches) return fn();
+  const cl = document.documentElement.classList; cl.add("vt-" + dir);
+  document.startViewTransition(fn).finished.finally(() => cl.remove("vt-" + dir));
+}
 // Detailseite (bisherige Infoseite) öffnen, auf Wunsch gleich an einer Prüfung
 function openDetail(checkId) {
   const li = checkId === "calc" ? $("calcOut")?.closest("section") : checkId ? qs(`#results li[data-id="${CSS.escape(checkId)}"]`) : null, fold = li?.closest("details");
@@ -1570,9 +1587,9 @@ function openDetail(checkId) {
     body.add("detail"); side.scrollTop = 0; if (!li) return;
     if (fold) fold.open = true;
     li.scrollIntoView({block: "center"}); li.classList.add("flash"); setTimeout(() => li.classList.remove("flash"), 1600);
-  });
+  }, "vor");
 }
-function closeDetail() { vt(() => { body.remove("detail"); side.scrollTop = 0; }); relayout(); }
+function closeDetail() { vt(() => { body.remove("detail"); side.scrollTop = 0; }, "zurueck"); relayout(); }
 $("drawer").inert = true;
 on("menuBtn", "click", () => toggleDrawer(true));
 on("drawerClose", "click", () => toggleDrawer(false));
@@ -1743,6 +1760,7 @@ function renderResult(coord, placeName, plans, plot) {
 // Erste Ergebnisseite: Planname, Denkmalschutz ja/nein und gleich, was gebaut werden darf; alles Weitere auf der Detailseite
 function renderOverview(main, sum, placeName) {
   const gilt = main?.status === "festgestellt", name = main ? sum?.name || planTitle(planName(main.props)) || "Bebauungsplan" : "Kein Bebauungsplan";
+  $("overview").classList.add("neu"); setTimeout(() => $("overview").classList.remove("neu"), 800); // nur frische Ergebnisse bauen sich auf, nicht die Rückkehr aus den Details
   $("overview").innerHTML = `<button type="button" class="ov-plan" data-go="">
       <span class="pill ${main ? (gilt ? "" : "draft") : "none"}">${main ? (gilt ? "Bebauungsplan gilt" : "Bebauungsplan im Verfahren") : "§ 34 BauGB: Einfügen in die Umgebung"}</span>
       <span class="ov-name">${esc(name).replace(/(Baustufen|Teilbebauungs|Durchführungs|Bebauungs)(plan)/, "$1&shy;$2")}</span>
