@@ -417,7 +417,7 @@ body.searching .recent:not(.leer) { opacity: 1; visibility: visible; pointer-eve
 .recent[hidden] { display: none; }
 .recent p { margin: 0; padding: 8px 16px 4px; font-size: 12.5px; font-weight: 600; color: rgba(60,60,67,.6); }
 .recent button { all: unset; box-sizing: border-box; position: relative; display: flex; align-items: center; gap: 12px; padding: 11px 16px; font-size: 16px; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: background .15s; }
-.recent button + button::before { content: ""; position: absolute; left: 46px; right: 0; top: 0; border-top: .5px solid rgba(60,60,67,.18); }
+.recent button + button::before { content: ""; position: absolute; left: 46px; right: 16px; top: 0; border-top: .5px solid rgba(60,60,67,.18); }
 .recent button:hover, .recent button:active, .recent button:focus-visible { background: #f2f2f7; }
 .recent button svg { width: 18px; height: 18px; flex: none; color: rgba(60,60,67,.5); }
 .recent button span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -658,6 +658,11 @@ body.is3d .view3d { display: block; }
   body.has-result .side { max-height: 66dvh; gap: 8px; }
   body.has-result:not(.detail) .side { padding-bottom: 10px; }
   body.has-result .side > header { gap: 6px; }
+  /* Suchhistorie wächst unten aus dem weißen Kopf heraus (gleiches Weiß, nur unten gerundet) */
+  .recent { border-radius: 0 0 22px 22px; padding: 0 0 8px; max-height: 55dvh; box-shadow: 0 24px 30px -20px rgba(0,0,0,.7); transform: none; clip-path: inset(0 0 100% 0);
+    transition: clip-path .24s var(--ease), opacity .2s ease, visibility 0s .24s; }
+  body.searching .recent:not(.leer) { clip-path: inset(0 0 -40px 0); transform: none; transition: clip-path .32s var(--ease), opacity .12s ease; }
+  .recent p { margin: 0 16px; padding: 10px 0 2px; border-top: .5px solid rgba(60,60,67,.14); }
   /* Wechsel Start ↔ Ergebnis: Kopfinhalt blendet weich über statt zu springen */
   body:not(.has-result) .side > header > * { animation: kopf-start .32s var(--ease) both; }
   body.has-result .side > header > * { animation: kopf-klein .32s var(--ease) both; }
@@ -668,7 +673,7 @@ body.is3d .view3d { display: block; }
   /* Suchfeld füllt den Platz zwischen Wortmarke und Menü, gleiche Höhe und Füllung wie die runden Knöpfe */
   body.has-result form.search { flex: 1 1 0; min-width: 0; margin: 0 4px; padding: 0; border-radius: 17px; background: #ececed; box-shadow: none; transition: background .2s, box-shadow .2s; }
   body.has-result form.search + .menubtn { margin-left: 0; }
-  body.has-result form.search:focus-within { background: #fff; box-shadow: 0 0 0 2px #0062cc; }
+  body.has-result form.search:focus-within { background: #e3e3e6; box-shadow: none; }
   body.has-result form.search svg { left: 11px; width: 15px; height: 15px; }
   body.has-result form.search input { height: 34px; padding: 0 10px 0 32px; }
   body.has-result form.search button[type=submit] { display: none; }
@@ -1587,8 +1592,8 @@ const startResults = $("results").innerHTML;
 function placeSearch(clear) {
   const f = $("searchForm"), h = qs(".side > header"), m = $("menuBtn"), inHead = isPhone() && body.contains("has-result");
   if (!isPhone()) { if (h.nextElementSibling !== f) h.after(f); }
-  else if (inHead) { if (f.nextElementSibling !== m) h.insertBefore(f, m); }
-  else if (h.lastElementChild !== f) h.append(f);
+  else if (inHead) { if (f.nextElementSibling !== m) { body.remove("searching"); h.insertBefore(f, m); } }
+  else if (h.lastElementChild !== f) { body.remove("searching"); h.append(f); }
   $("q").placeholder = inHead ? "Erneute Suche" : "z. B. Rathausmarkt 1";
   if (inHead && clear) $("q").value = "";
 }
@@ -2010,11 +2015,13 @@ function renderRecent(filter = "") {
 }
 // Blatt hängt am body (über Karte und Kopf), deshalb Lage vom Suchfeld abnehmen: auf dem Handy volle Breite, sonst so breit wie das Feld
 function placeRecent() {
-  const f = $("searchForm").getBoundingClientRect(), box = $("recent"), phone = isPhone();
-  Object.assign(box.style, {top: f.bottom + 8 + "px", left: (phone ? 16 : f.left) + "px", width: (phone ? innerWidth - 32 : f.width) + "px"});
+  const box = $("recent");
+  if (isPhone()) { const h = qs(".side > header").getBoundingClientRect(); return Object.assign(box.style, {top: h.bottom + "px", left: "0px", width: h.width + "px"}); }
+  const f = $("searchForm").getBoundingClientRect();
+  Object.assign(box.style, {top: f.bottom + 8 + "px", left: f.left + "px", width: f.width + "px"});
 }
 document.body.append($("recent"));
-addEventListener("resize", placeRecent); side.addEventListener("scroll", placeRecent, {passive: true});
+addEventListener("resize", placeRecent); side.addEventListener("scroll", placeRecent, {passive: true}); visualViewport?.addEventListener("resize", placeRecent);
 on("recent", "pointerdown", e => e.preventDefault()); // Feld behält den Fokus, Tastatur bleibt bis zur Auswahl
 on("recent", "click", e => { const q = e.target.closest("[data-q]")?.dataset.q; if (q) { $("q").value = q; $("searchForm").requestSubmit(); } });
 renderRecent();
