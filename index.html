@@ -469,8 +469,6 @@ section.busy::after { content: ""; height: 3px; background: linear-gradient(90de
 h2 { font: 600 17px/1.25 var(--display); letter-spacing: -.02em; margin: 0; display: flex; align-items: center; gap: 8px; }
 h2 .ico { width: 29px; height: 29px; border-radius: 7px; color: #fff; background: #8e8e93; display: grid; place-items: center; flex: none; }
 h2 .ico svg { width: 17px; height: 17px; }
-h2 .ico-alert { background: #ff9500; } h2 .ico-home { background: #0a7aff; } h2 .ico-ruler { background: #34c759; } h2 .ico-shield { background: #5856d6; }
-h2 .ico-file { background: #ff3b30; } h2 .ico-book { background: #ff9f0a; } h2 .ico-city { background: #30b0c7; } h2 .ico-phone { background: #34c759; }
 .plan-name { font: 700 28px/1.1 var(--display); letter-spacing: .005em; margin: 2px 0 0; text-wrap: balance; }
 .pill { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; padding: 3px 10px; border-radius: 99px; background: var(--ok-soft); color: var(--ok); font-weight: 650; width: fit-content; }
 .pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
@@ -783,7 +781,7 @@ body.is3d .view3d { display: block; }
 <div class="app">
   <aside class="side">
     <header>
-      <figure class="banner" role="img" aria-label="MoinPlan"><figcaption>…was darf ich auf meinem Grundstück bauen?</figcaption></figure>
+      <figure class="banner" role="img" aria-label="MoinPlan"><figcaption>…was geht auf meinem Grundstück in Hamburg?</figcaption></figure>
       <button type="button" class="logo" id="homeBtn" aria-label="Zur Startseite" title="Zur Startseite"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M10 21v-6h4v6"/></svg></button>
       <div><h1>MoinPlan</h1></div>
       <button type="button" class="menubtn" id="menuBtn" aria-label="Menü öffnen" aria-controls="drawer" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
@@ -824,7 +822,7 @@ body.is3d .view3d { display: block; }
       </div>
       <p class="v3status" id="v3status" hidden></p>
       <div class="v3info" id="v3info"></div>
-      <p class="v3credit">3D-Stadtmodell, Gelände und Luftbild: FHH, LGV<span>. Ziehen dreht, zwei Finger zoomen und verschieben.</span></p>
+      <p class="v3credit">3D-Stadtmodell, Gelände und Stadtplan: FHH, LGV<span>. Ziehen dreht, zwei Finger zoomen und verschieben.</span></p>
     </div>
   </div>
 </div>
@@ -1061,15 +1059,16 @@ const CHECKS = [
    none: "Kein Flusshochwasser-Risikogebiet.", src: "Hochwasserrisikomanagement 3. Zyklus 2025 (wfs_hwrm_3_zyklus), Datenlizenz Deutschland 2.0"},
 ];
 </script>
-<script>// 3D-Ansicht wie im 3D-Projektplaner der Stadt: CesiumJS vom Geoportal Hamburg mit Geländemodell, texturiertem
-// 3D-Gebäudemodell (LoD3) und Luftbild. Gebäudeangaben (Höhe, Geschosse, Adresse) kommen aus dem LoD2-Modell.
+<script>// 3D-Ansicht wie im 3D-Projektplaner der Stadt: CesiumJS vom Geoportal Hamburg mit Geländemodell, untexturiertem
+// (grauem) 3D-Gebäudemodell (LoD3) und Stadtplan auf dem Gelände. Gebäudeangaben (Geschosse, Nutzung, Adresse) kommen aus dem LoD2-Modell.
 // Lässt sich Cesium nicht laden, zeichnet ein eigener kleiner WebGL-Viewer das LoD2-Modell.
 // Daten: Freie und Hansestadt Hamburg, LGV (Datenlizenz Deutschland Namensnennung 2.0).
 "use strict";
 const View3D = (() => {
   const LOD2 = "https://www.daten-hamburg.de/gdi3d/datasource-data/LoD2/15/";
-  const DOP_WMS = "https://geodienste.hamburg.de/wms_dop_zeitreihe_belaubt", DOP_LAYER = "dop_zeitreihe_belaubt";
-  const DOP = `${DOP_WMS}?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&LAYERS=${DOP_LAYER}&STYLES=&CRS=EPSG:25832&FORMAT=image/jpeg`;
+  // Gelände-Karte: Stadtplan Hamburg (schlichter als das Luftbild)
+  const MAP_WMS = "https://geodienste.hamburg.de/HH_WMS_Cache_Stadtplan", MAP_LAYER = "stadtplan";
+  const MAP_IMG = `${MAP_WMS}?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&LAYERS=${MAP_LAYER}&STYLES=&CRS=EPSG:25832&FORMAT=image/png&TRANSPARENT=FALSE`;
   const GDI3D = "https://www.daten-hamburg.de/gdi3d/datasource-data/", CESIUM = "https://geoportal-hamburg.de/mastercode/cesium/latest/"; // wie im 3D-Projektplaner
   const R = 170; // Radius des Ausschnitts in Metern
   const COL = {house: [0.93, 0.94, 0.96], plot: [1.0, 0.74, 0.1], sel: [0.16, 0.5, 1.0]};
@@ -1247,7 +1246,7 @@ const View3D = (() => {
     for (const r of planL) ribbon(r, 0.7, gz + 0.12, lines, [0.78, 0.06, 0.18]);
     for (const r of plotL) ribbon(r, 0.9, gz + 0.18, lines, COL.plot);
     me.lb = buf(gl, new Float32Array(lines.length ? lines : [0, 0, 0, 0, 0, 0])); me.nLine = lines.length / 6;
-    // Boden: Raster in UTM, damit das Luftbild genau passt
+    // Boden: Raster in UTM, damit der Stadtplan genau passt
     const g = [], S = 16, [cx, cy] = opt.center;
     for (let i = 0; i <= S; i++) for (let j = 0; j <= S; j++) { const u = j / S, v = i / S, l = loc([cx - R + 2 * R * u, cy + R - 2 * R * v]); g.push(l[0], l[1], gz, u, v); }
     const gi = []; for (let i = 0; i < S; i++) for (let j = 0; j < S; j++) { const a = i * (S + 1) + j; gi.push(a, a + 1, a + S + 2, a, a + S + 2, a + S + 1); }
@@ -1260,7 +1259,7 @@ const View3D = (() => {
       gl.generateMipmap(gl.TEXTURE_2D); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
       const an = gl.getExtension("EXT_texture_filter_anisotropic"); if (an) gl.texParameterf(gl.TEXTURE_2D, an.TEXTURE_MAX_ANISOTROPY_EXT, 8);
       redraw(); };
-    img.src = `${DOP}&BBOX=${cx - R},${cy - R},${cx + R},${cy + R}&WIDTH=${px}&HEIGHT=${px}`;
+    img.src = `${MAP_IMG}&BBOX=${cx - R},${cy - R},${cx + R},${cy + R}&WIDTH=${px}&HEIGHT=${px}`;
 
     bindInput(me);
     me.ro = new ResizeObserver(() => redraw()); me.ro.observe(canvas);
@@ -1290,14 +1289,14 @@ const View3D = (() => {
     try { terrainProvider = await C.CesiumTerrainProvider.fromUrl(GDI3D + "Gelaende"); } catch { terrainProvider = new C.EllipsoidTerrainProvider(); }
     if (st !== me) return;
     const viewer = me.viewer = new C.Viewer(box, {
-      baseLayer: new C.ImageryLayer(new C.WebMapServiceImageryProvider({url: DOP_WMS, layers: DOP_LAYER, parameters: {format: "image/jpeg", transparent: false}, tilingScheme: new C.WebMercatorTilingScheme(), maximumLevel: 21})),
+      baseLayer: new C.ImageryLayer(new C.WebMapServiceImageryProvider({url: MAP_WMS, layers: MAP_LAYER, parameters: {format: "image/png", transparent: false}, tilingScheme: new C.WebMercatorTilingScheme(), maximumLevel: 21})),
       terrainProvider, animation: false, timeline: false, baseLayerPicker: false, geocoder: false, homeButton: false, sceneModePicker: false, navigationHelpButton: false,
       fullscreenButton: false, infoBox: false, selectionIndicator: false, creditContainer: credits, requestRenderMode: true, maximumRenderTimeChange: Infinity});
     const scene = viewer.scene;
     scene.globe.depthTestAgainstTerrain = true;
     viewer.clock.currentTime = C.JulianDate.fromIso8601("2026-06-21T11:00:00Z"); viewer.clock.shouldAnimate = false; // immer helles Mittagslicht
     scene.fog.enabled = true; scene.fog.density = 0.0002;
-    const ts = me.tileset = await C.Cesium3DTileset.fromUrl(GDI3D + "LoD3_tex20cm/tileset.json", {preferLeaves: true, maximumScreenSpaceError: phone ? 16 : 8});
+    const ts = me.tileset = await C.Cesium3DTileset.fromUrl(GDI3D + "LoD3_untexturiert/tileset.json", {preferLeaves: true, maximumScreenSpaceError: phone ? 16 : 8});
     if (st !== me) return;
     ts.colorBlendMode = C.Cesium3DTileColorBlendMode.MIX; ts.colorBlendAmount = 0.85; // Markierung hell, Fassade bleibt erkennbar
     scene.primitives.add(ts);
@@ -1350,11 +1349,12 @@ const View3D = (() => {
   const esc = s => String(s).replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
   function showInfo(me, initial) {
     const b = me.B[me.sel];
-    if (!b) return me.opt.onInfo(me.B.some(x => x.onPlot) ? "" : `<p class="v3hint">Tippen Sie auf ein Gebäude, um Höhe und Geschosse zu sehen.</p>`);
-    const a = b.attrs, h = a.measuredHeight || b.maxZ - b.minZ;
+    if (!b) return me.opt.onInfo(me.B.some(x => x.onPlot) ? "" : `<p class="v3hint">Tippen Sie auf ein Gebäude, um Geschosse und Nutzung zu sehen.</p>`);
+    const a = b.attrs;
     const adr = a.Adresse || (a.Address?.Street ? `${a.Address.Street} ${a.Address.HouseNumber || ""}` : "");
-    const rows = [["Höhe", h > 0 ? `${fmt(h)} m` : ""], ["Geschosse", a.storeysAboveGround != null ? String(a.storeysAboveGround) : ""], ["Dach", a.Dachform || ""], ["Nutzung", a.Gebaeudefunktion || ""]].filter(r => r[1]);
-    me.opt.onInfo(`<p class="v3title">${b.onPlot ? "Auf Ihrem Grundstück" : "Nachbargebäude"}${adr ? `<span>${esc(adr)}</span>` : ""}</p>
+    // Höhe und Dachform zeigt die App nicht: die Modellwerte stimmen oft nicht
+    const rows = [["Geschosse", a.storeysAboveGround != null ? String(a.storeysAboveGround) : ""], ["Nutzung", a.Gebaeudefunktion || ""]].filter(r => r[1]);
+    me.opt.onInfo(`<p class="v3title">${b.onPlot ? "Auf meinem Grundstück" : "Nachbargebäude"}${adr ? `<span>${esc(adr)}</span>` : ""}</p>
       <dl>${rows.map(([t, d]) => `<div><dt>${t}</dt><dd>${esc(d)}</dd></div>`).join("")}</dl>${initial ? `<p class="v3hint">Weitere Gebäude antippen zum Vergleichen.</p>` : ""}`);
   }
 
@@ -1492,6 +1492,7 @@ const CFG = {
   basemap: n => `https://sgx.geodatenzentrum.de/wmts_basemapde/tile/1.0.0/de_basemapde_web_raster_${n}/default/GLOBAL_WEBMERCATOR/{z}/{y}/{x}.png`,
   gazetteer: HH + "HH_WFS_GAGES?service=WFS&request=GetFeature&version=2.0.0",
   bplanWfs: HH + "HH_WFS_Bebauungsplaene",
+  boundsMaxRes: 6, // B-Plan-Grenzen erst ab dieser Auflösung (m/Pixel) laden
   bplanTypes: [{type: "app:hh_hh_festgestellt", label: "festgestellt"}, {type: "app:prosin_imverfahren", label: "im Verfahren"}],
   alkisWfs: [HH + "WFS_HH_ALKIS_vereinfacht", HH + "HH_WFS_ALKIS_vereinfacht"], // Objektart wird aus GetCapabilities gelesen
   start: {center: [565700, 5933930], resolution: 1.2} // Startkarte: Rathausmarkt
@@ -1562,17 +1563,24 @@ UTM.setExtent([-1877994.66, 3932281.56, 836715.13, 9440581.95]);
 const St = o => new ol.style.Style(o), Sk = (color, width, lineDash) => new ol.style.Stroke({color, width, lineDash}), Fl = color => new ol.style.Fill({color});
 const vec = (source, style, o) => new ol.layer.Vector({source, style, ...o});
 
-// Grundkarte in Farbe, ohne B-Plan-Grenzen
+// Grundkarte in Farbe
 const bgLayer = new ol.layer.Tile({source: new ol.source.XYZ({url: CFG.basemap("farbe"), maxZoom: 18, crossOrigin: "anonymous", attributions: "© basemap.de / BKG"})});
+// Alle festgestellten B-Plan-Grenzen im Kartenausschnitt, dünn und (nah herangezoomt) mit Namen
+const boundsSrc = new ol.source.Vector({format: new ol.format.WFS(), strategy: ol.loadingstrategy.bbox, url: ext => wfsUrlBbox(CFG.bplanWfs, CFG.bplanTypes[0].type, ext, 500)});
+boundsSrc.on("featuresloaderror", () => diag("✗ B-Plan-Grenzen konnten nicht geladen werden", "fail"));
+const boundsLayer = vec(boundsSrc, (f, res) => St({stroke: Sk(css("--plan"), 1.5), fill: Fl("rgba(0,0,0,0)"),
+  text: res < 2.5 ? new ol.style.Text({text: planName(f.getProperties()), font: "600 12px system-ui, sans-serif", fill: Fl(css("--plan")), stroke: Sk("#fff", 3), overflow: false}) : undefined}),
+  {maxResolution: CFG.boundsMaxRes});
 const [selSrc, plotSrc, measureSrc, markerSrc] = [1, 2, 3, 4].map(() => new ol.source.Vector());
 const clearMap = () => [markerSrc, selSrc, plotSrc].forEach(s => s.clear());
-// Grundstück: weißer Rand, gelbe Kontur und Füllung (selSrc: Plangebiet, nur für die 3D-Ansicht)
+// Gefundener Plan kräftig umrandet; Grundstück: weißer Rand, gelbe Kontur und Füllung
+const selLayer = vec(selSrc, () => St({stroke: Sk(css("--plan"), 3.5), fill: Fl("rgba(200,16,46,0.08)")}));
 const plotLayer = vec(plotSrc, () => [St({stroke: Sk("rgba(255,255,255,0.95)", 9)}), St({stroke: Sk(css("--plot"), 4), fill: Fl("rgba(255,190,0,0.32)")})], {zIndex: 10});
 const measureLayer = vec(measureSrc, () => [St({stroke: Sk(css("--accent"), 2, [6, 4]), fill: Fl("rgba(31,79,191,0.12)")}),
   St({geometry: f => { const g = f.getGeometry(); return new ol.geom.MultiPoint(g instanceof ol.geom.Polygon ? g.getCoordinates()[0] : g.getCoordinates()); },
     image: new ol.style.Circle({radius: 4, fill: Fl("#fff"), stroke: Sk(css("--accent"), 2)})})], {zIndex: 11});
 const markerLayer = vec(markerSrc, St({image: new ol.style.Circle({radius: 7, fill: Fl("#c2272d"), stroke: Sk("#fff", 2)})}));
-const map = new ol.Map({target: "map", layers: [bgLayer, plotLayer, measureLayer, markerLayer],
+const map = new ol.Map({target: "map", layers: [bgLayer, boundsLayer, selLayer, plotLayer, measureLayer, markerLayer],
   view: new ol.View({projection: UTM, ...CFG.start, maxResolution: 300, minResolution: 0.1}),
   controls: ol.control.defaults.defaults({attributionOptions: {collapsible: true}}).extend([new ol.control.ScaleLine({units: "metric"})])});
 const view = map.getView();
@@ -1582,7 +1590,8 @@ const isPhone = () => matchMedia("(max-width: 760px)").matches;
 function fitPlot(duration = 600) {
   const f = plotSrc.getFeatures()[0]; if (!f) return;
   view.cancelAnimations();
-  view.fit(ol.extent.buffer(f.getGeometry().getExtent(), 15), {padding: Array(4).fill(isPhone() ? 30 : 60), minResolution: 0.25, duration});
+  // Zoom etwas näher als früher (Puffer 15 → 8 m, bis 0,18 m/Pixel statt 0,25); links mehr Rand, dort liegen Zoom- und 3D-Knopf
+  view.fit(ol.extent.buffer(f.getGeometry().getExtent(), 8), {padding: isPhone() ? [24, 24, 24, 72] : [40, 40, 40, 100], minResolution: 0.18, duration});
 }
 const relayout = () => requestAnimationFrame(() => { map.updateSize(); fitPlot(0); });
 function toggleDrawer(v) { $("drawer").classList.toggle("open", v); $("drawer").inert = !v; $("backdrop").hidden = !v; $("menuBtn").setAttribute("aria-expanded", v); }
@@ -1711,7 +1720,7 @@ async function queryAt(coord, placeName) {
   if (id !== queryId) return;
   for (const p of plans) if (p.geometry) selSrc.addFeature(new ol.Feature(p.geometry));
   if (plot?.geometry) {
-    plotSrc.addFeature(new ol.Feature({geometry: plot.geometry, label: "Ihr Grundstück" + (plot.area ? "\n" + fmt(plot.area) + " m²" : "")}));
+    plotSrc.addFeature(new ol.Feature({geometry: plot.geometry, label: "Mein Grundstück" + (plot.area ? "\n" + fmt(plot.area) + " m²" : "")}));
     fitPlot(); // automatisch auf das Grundstück zoomen
   }
   for (const p of [...plans, ...(plot ? [plot] : [])].map(f => f.props))
@@ -1746,7 +1755,7 @@ function renderResult(coord, placeName, plans, plot) {
     if (!gilt) warns.unshift("Dieser Plan ist noch nicht beschlossen. Er kann sich noch ändern.");
     if (warns.length) r.append(card("Bitte beachten", `<ul class="warn-list">${li(warns)}</ul>`, "warn ext"));
     if (sum) {
-      const zc = card("Ihr Grundstück", `<label class="hint" for="zoneSel">${cur.zone ? "Erkannt über die Flurstücksnummer. Falls falsch, bitte auswählen:" : "Bitte wählen Sie die Lage Ihres Grundstücks:"}</label>
+      const zc = card("Mein Grundstück", `<label class="hint" for="zoneSel">${cur.zone ? "Erkannt über die Flurstücksnummer. Falls falsch, bitte auswählen:" : "Bitte wählen Sie die Lage Ihres Grundstücks:"}</label>
         <select id="zoneSel"><option value="">– Lage wählen –</option>${sum.zones.map(z => `<option value="${esc(z.id)}" ${cur.zone === z ? "selected" : ""}>${esc(z.lage)}</option>`).join("")}</select>
         <div id="glance"></div>`);
       zc.querySelector("#zoneSel").addEventListener("change", e => { cur.zone = sum.zones.find(z => z.id === e.target.value) || null; renderGlance(); updateCalc(); });
@@ -2156,7 +2165,7 @@ const ICO = {
   search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
   info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>'
 };
-const TITLE_ICO = {"Bitte beachten": "alert", "Ihr Grundstück": "home", "Was darf ich bauen?": "ruler", "Weitere Prüfungen am Grundstück": "shield",
+const TITLE_ICO = {"Bitte beachten": "alert", "Mein Grundstück": "home", "Was darf ich bauen?": "ruler", "Weitere Prüfungen am Grundstück": "shield",
   "Originalplan": "file", "Kurzfassung": "file", "Das sollten Sie wissen": "book", "Nicht in diesem Plan geregelt": "minus",
   "Gilt außerdem in ganz Hamburg": "city", "Ihr Ansprechpartner": "phone", "Kein Bebauungsplan gefunden": "search"};
 const icon = n => `<span class="ico ico-${n || "info"}" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICO[n] || ICO.info}</svg></span>`;
