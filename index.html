@@ -1776,7 +1776,7 @@ function renderResult(coord, placeName, plans, plot) {
   renderOverview(main, sum, placeName);
   appendExtras(r, coord, plot, sum, placeName);
   updateCalc();
-  if (first) relayout(); // Kopf wird kleiner, Karte größer
+  if (first) requestAnimationFrame(() => { map.updateSize(); fitPlot(); }); // Kopf wird kleiner, Karte größer; weich weiterzoomen statt springen
 }
 // Erste Ergebnisseite: Planname, Denkmalschutz ja/nein und gleich, was gebaut werden darf; alles Weitere auf der Detailseite
 function renderOverview(main, sum, placeName) {
