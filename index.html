@@ -591,6 +591,7 @@ details.okfold .checks { margin-top: 6px; }
 .bfkey[aria-pressed="false"] { opacity: .55; }
 .bfkey[aria-pressed="false"] i { background: none; border-style: dashed; }
 body:not(.has-result) .btn3d { display: none; }
+body:not(.has-result) .bfkey { top: 112px; }
 .tip { background: rgba(20,32,48,.9); color: #fff; padding: 3px 8px; border-radius: 6px; font: 12px var(--sans); white-space: nowrap; }
 
 /* ---------- Messen: Hinweisleiste, Haltering ---------- */
@@ -1660,7 +1661,7 @@ const Baufenster = (() => {
     const t0 = tileOf(...toLL([ext[0], ext[3]])), t1 = tileOf(...toLL([ext[2], ext[1]]));
     const urls = [];
     for (let x = t0[0]; x <= t1[0]; x++) for (let y = t0[1]; y <= t1[1]; y++) urls.push(`${BASE}${x}/${y}.b3dm`);
-    if (urls.length > 16) return [];
+    if (urls.length > 48) return [];
     const parts = await Promise.all(urls.map(u => {
       if (!cache.has(u)) cache.set(u, fetch(u).then(r => r.ok ? r.arrayBuffer() : null).then(b => b ? read(b) : []).catch(() => { cache.delete(u); return []; }));
       return cache.get(u);
@@ -1756,12 +1757,14 @@ const bgLayer = new ol.layer.Tile({source: new ol.source.XYZ({url: CFG.basemap("
 // Alle festgestellten B-Plan-Grenzen im Kartenausschnitt, dünn und (nah herangezoomt) mit Namen
 const boundsSrc = new ol.source.Vector({format: new ol.format.WFS(), strategy: ol.loadingstrategy.bbox, url: ext => wfsUrlBbox(CFG.bplanWfs, CFG.bplanTypes[0].type, ext, 500)});
 boundsSrc.on("featuresloaderror", () => diag("✗ B-Plan-Grenzen konnten nicht geladen werden", "fail"));
+// Baustufenpläne (BS…) haben keine Baufenster: das steht nah herangezoomt unter dem Namen
+const boundsText = p => { const n = planName(p); return /^BS/i.test(n) ? n + "\nBaustufenplan: keine Baufenster" : n; };
 const boundsLayer = vec(boundsSrc, (f, res) => St({stroke: Sk(css("--plan"), 1.5), fill: Fl("rgba(0,0,0,0)"),
-  text: res < 2.5 ? new ol.style.Text({text: planName(f.getProperties()), font: "600 12px system-ui, sans-serif", fill: Fl(css("--plan")), stroke: Sk("#fff", 3), overflow: false}) : undefined}),
+  text: res < 2.5 ? new ol.style.Text({text: boundsText(f.getProperties()), font: "600 12px system-ui, sans-serif", fill: Fl(css("--plan")), stroke: Sk("#fff", 3), overflow: false}) : undefined}),
   {maxResolution: CFG.boundsMaxRes});
 const [selSrc, plotSrc, measureSrc, markerSrc] = [1, 2, 3, 4].map(() => new ol.source.Vector());
-const bfSrc = new ol.source.Vector();
-const clearMap = () => { [markerSrc, selSrc, plotSrc, bfSrc].forEach(s => s.clear()); $("bfKey").hidden = true; };
+const bfSrc = new ol.source.Vector(), BF_MAXRES = 1.6; // Baufenster für den ganzen Kartenausschnitt, ab 1,6 m/Pixel
+const clearMap = () => { [markerSrc, selSrc, plotSrc].forEach(s => s.clear()); markMine(null); };
 // Gefundener Plan kräftig umrandet; Grundstück: weißer Rand, gelbe Kontur und Füllung
 const selLayer = vec(selSrc, () => St({stroke: Sk(css("--plan"), 3.5), fill: Fl("rgba(200,16,46,0.08)")}));
 const plotLayer = vec(plotSrc, () => [St({stroke: Sk("rgba(255,255,255,0.95)", 9)}), St({stroke: Sk(css("--plot"), 4), fill: Fl("rgba(255,190,0,0.32)")})], {zIndex: 10});
@@ -1778,7 +1781,7 @@ const bfLayer = vec(bfSrc, (f, res) => {
   const mine = f.get("mine"), bf = css("--bf");
   return St({stroke: Sk(bf, mine ? 3 : 2), fill: Fl(mine ? css("--bf-fill") : css("--bf-fill2")),
     text: mine && res < 0.6 ? new ol.style.Text({text: bfLabel(f.get("attrs")), font: "700 13px system-ui, sans-serif", fill: Fl(bf), stroke: Sk("#fff", 3), overflow: true, offsetY: 16}) : undefined});
-}, {zIndex: 10});
+}, {zIndex: 10, maxResolution: BF_MAXRES});
 const map = new ol.Map({target: "map", layers: [bgLayer, boundsLayer, selLayer, plotLayer, bfLayer, measureLayer, markerLayer],
   view: new ol.View({projection: UTM, ...CFG.start, maxResolution: 300, minResolution: 0.1}),
   controls: ol.control.defaults.defaults({attributionOptions: {collapsible: true}}).extend([new ol.control.ScaleLine({units: "metric"})])});
@@ -1813,7 +1816,7 @@ function closeDetail() { vt(() => { body.remove("detail"); side.scrollTop = 0; }
 $("drawer").inert = true;
 on("menuBtn", "click", () => toggleDrawer(true));
 on("bfKey", "click", () => {
-  const v = !bfLayer.getVisible(); bfLayer.setVisible(v); $("bfKey").setAttribute("aria-pressed", v); map.render();
+  const v = !bfLayer.getVisible(); bfLayer.setVisible(v); $("bfKey").setAttribute("aria-pressed", v); map.render(); loadBaufenster();
   if (v && bfSrc.getFeatures().length) { // Baufenster am Grundstück ins Bild holen, falls sie außerhalb des (auf dem Handy kleinen) Ausschnitts liegen
     const mine = bfSrc.getFeatures().filter(f => f.get("mine")), pf = plotSrc.getFeatures()[0];
     const ext = [...mine, ...(pf ? [pf] : [])].reduce((e, f) => ol.extent.extend(e, f.getGeometry().getExtent()), ol.extent.createEmpty());
@@ -1912,22 +1915,28 @@ function plotNumber(plot) { // Flurstücksnummer (Zähler) aus den ALKIS-Attribu
   const kz = String(p.flurstueckskennzeichen || p.flstkennz || p.kennzeichen || "").replace(/_/g, "0");
   return /^\d{14}/.test(kz) ? parseInt(kz.slice(9, 14), 10) : null;
 }
-// Baufenster rund um das Grundstück laden; die, die das Grundstück berühren, hervorheben
-async function showBaufenster(geom, id) {
-  if (typeof Baufenster === "undefined") return;
-  const ext = ol.extent.buffer(geom.getExtent(), 60);
-  const list = await Baufenster.load(ext).catch(() => []);
-  if (id !== queryId || !list.length) return;
-  const g = geom.getType() === "MultiPolygon" ? geom.getPolygons() : [geom], touches = poly => g.some(p => poly.getCoordinates()[0].some(c => p.intersectsCoordinate(c)) || p.getCoordinates()[0].some(c => poly.intersectsCoordinate(c)));
-  bfSrc.addFeatures(list.map(b => {
-    const geometry = new ol.geom.MultiPolygon(b.polys);
-    return new ol.Feature({geometry, attrs: b.attrs, mine: geometry.getPolygons().some(touches)});
-  }).filter(f => ol.extent.intersects(f.getGeometry().getExtent(), ext)));
-  // Schalter nur, wenn am Grundstück selbst (bis 15 m daneben) ein Baufenster liegt; sonst wäre er auf dem kleinen Handy-Kartenausschnitt wirkungslos
-  const near = ol.extent.buffer(geom.getExtent(), 15);
-  if (!bfSrc.getFeatures().some(f => f.get("mine") || ol.extent.intersects(f.getGeometry().getExtent(), near))) return;
-  $("bfKey").hidden = false; $("bfKey").setAttribute("aria-pressed", bfLayer.getVisible());
+// Baufenster im ganzen Kartenausschnitt nachladen (Kacheln werden gemerkt); die auf dem Grundstück hervorheben
+let bfGen = 0, bfPlot = null;
+async function loadBaufenster() {
+  if (typeof Baufenster === "undefined" || view.getResolution() > BF_MAXRES || !bfLayer.getVisible()) return;
+  const gen = ++bfGen, list = await Baufenster.load(ol.extent.buffer(view.calculateExtent(map.getSize()), 30)).catch(() => []);
+  if (gen !== bfGen) return;
+  const add = list.filter(b => !b.id || !bfSrc.getFeatureById(b.id)).map(b => {
+    const f = new ol.Feature({geometry: new ol.geom.MultiPolygon(b.polys), attrs: b.attrs});
+    if (b.id) f.setId(b.id);
+    return f;
+  });
+  bfSrc.addFeatures(add);
+  if (bfPlot) markMine(bfPlot);
 }
+function markMine(geom) {
+  bfPlot = geom;
+  const g = !geom ? [] : geom.getType() === "MultiPolygon" ? geom.getPolygons() : [geom];
+  const touches = poly => g.some(p => poly.getCoordinates()[0].some(c => p.intersectsCoordinate(c)) || p.getCoordinates()[0].some(c => poly.intersectsCoordinate(c)));
+  for (const f of bfSrc.getFeatures()) { const m = !!g.length && f.getGeometry().getPolygons().some(touches); if (m !== !!f.get("mine")) f.set("mine", m); }
+}
+const bfKeyUpdate = () => { $("bfKey").hidden = view.getResolution() > BF_MAXRES; $("bfKey").setAttribute("aria-pressed", bfLayer.getVisible()); };
+map.on("moveend", () => { bfKeyUpdate(); loadBaufenster(); });
 async function queryAt(coord, placeName) {
   const id = ++queryId, was3d = View3D.isOpen();
   close3d(); clearMap(); plotArea = null; // Fläche des vorigen Grundstücks nicht übernehmen
@@ -1945,7 +1954,7 @@ async function queryAt(coord, placeName) {
   if (plot?.geometry) {
     plotSrc.addFeature(new ol.Feature({geometry: plot.geometry, label: "Mein Grundstück" + (plot.area ? "\n" + fmt(plot.area) + " m²" : "")}));
     fitPlot(); // automatisch auf das Grundstück zoomen
-    showBaufenster(plot.geometry, id);
+    markMine(plot.geometry);
   }
   for (const p of [...plans, ...(plot ? [plot] : [])].map(f => f.props))
     for (const [k, v] of Object.entries(p)) { const key = k.toLowerCase(); if (MASS[key] && !lastMass[key]) lastMass[key] = v; }
@@ -2218,7 +2227,7 @@ function open3d() {
   const center = pg ? ol.extent.getCenter(pg.getExtent()) : mk ? mk.getCoordinates() : view.getCenter();
   body.add("is3d"); $("v3info").innerHTML = "";
   View3D.open({el: $("view3d"), center, plot: rings(pg), plan: selSrc.getFeatures().flatMap(f => rings(f.getGeometry())),
-    bf: bfLayer.getVisible() ? bfSrc.getFeatures().flatMap(f => rings(f.getGeometry())) : [], showBf: bfLayer.getVisible(),
+    bf: bfLayer.getVisible() ? bfSrc.getFeaturesInExtent(ol.extent.buffer(ol.extent.boundingExtent([center]), 200)).flatMap(f => rings(f.getGeometry())) : [], showBf: bfLayer.getVisible(),
     onInfo: h => { $("v3info").innerHTML = h; $("v3info").hidden = !h; },
     onStatus: t => { $("v3status").textContent = t; $("v3status").hidden = !t; }});
 }
