@@ -752,12 +752,22 @@ body.is3d .view3d { display: block; }
   body.has-result .side > header::after { top: auto; bottom: calc(var(--welle) - 2px); height: 40px; opacity: .13; background: #000; }
   /* Nach der Suche: Karte oben, Infos als Blatt darunter */
   body.has-result { --kopf: calc(74px + env(safe-area-inset-top, 0px)); }
-  body.has-result .app { grid-template-rows: minmax(0, 1fr) auto; padding-top: var(--kopf); }
+  body.has-result .app { grid-template-rows: 34dvh minmax(0, 1fr); padding-top: var(--kopf); }
   body.has-result .mapwrap { order: -1; }
   body.has-result:not(.detail) .side > header { position: fixed; top: 0; left: 0; right: 0; margin: 0; }
-  body.has-result:not(.detail) .side { position: relative; z-index: 4; max-height: 60dvh; margin-top: -20px; padding-top: 14px; border: 0; border-radius: 22px 22px 0 0; box-shadow: 0 -8px 24px rgba(0,0,0,.35); }
+  body.has-result:not(.detail) .side { position: relative; z-index: 4; max-height: none; margin-top: -20px; padding-top: 14px; border: 0; border-radius: 22px 22px 0 0; box-shadow: 0 -8px 24px rgba(0,0,0,.35); }
   body.has-result .mapwrap :is(.ol-scale-line, .ol-attribution) { margin-bottom: 20px; }
   body.detail .side { margin-top: 0; }
+  /* Mehr Platz fürs Blatt: Übersicht größer und luftiger */
+  body.has-result #overview { gap: 10px; }
+  body.has-result .plan-name { font-size: 27px; }
+  body.has-result #overview .ov-more { font-size: 15px; }
+  .ov-build .big > * { padding: 9px 12px; }
+  .ov-build .big b { font-size: 19px; }
+  .ov-build .big span, .ov-build .big small { font-size: 13px; }
+  .ov-row { padding: 14px 16px; }
+  .ov-row .ov-label, .ov-build > .ov-label { font-size: 17px; }
+  .ov-build { padding-bottom: 14px; }
 }
 
 /* ---------- Merkblatt (Drucken): kompakt, höchstens drei Seiten ---------- */
