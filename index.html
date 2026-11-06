@@ -365,7 +365,7 @@
   --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif; --display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif;
   --bg: #f2f2f7; --panel: #fff; --fg: #000; --muted: rgba(60,60,67,.6); --line: rgba(60,60,67,.16); --fill: rgba(118,118,128,.12);
   --accent: #0062cc; --accent-soft: rgba(0,98,204,.1); --accent-fill: #0062cc; --ok: #187030; --ok-soft: rgba(52,199,89,.14); --warn: #c93400; --warn-soft: rgba(255,149,0,.14);
-  --plan: #c8102e; --plot: #e0a100; --bf: #0062cc; --bf-fill: rgba(0,98,204,.30); --bf-fill2: rgba(0,98,204,.12); --radius: 12px; --ease: cubic-bezier(.2, .8, .2, 1);
+  --plan: #c8102e; --plot: #e0a100; --bf: #0062cc; --bf-fill: rgba(0,98,204,.36); --bf-fill2: rgba(0,98,204,.16); --radius: 12px; --ease: cubic-bezier(.2, .8, .2, 1);
   --gl: rgba(255,255,255,.78); --gl-strong: rgba(255,255,255,.9); --gl-edge: 0 0 0 .5px rgba(0,0,0,.08); --gl-shadow: 0 4px 16px rgba(0,0,0,.1); --gl-blur: blur(20px) saturate(1.8);
   --search-bg: var(--panel); --search-ring: 0 0 0 1.5px color-mix(in srgb, var(--accent) 55%, transparent); --search-shadow: 0 10px 28px rgba(0,40,100,.2); --search-ph: var(--muted); --v3bg: #c9d6e3;
   --ico-file: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z'/%3E%3Cpath d='M14 3v6h6'/%3E%3C/svg%3E");
@@ -1776,7 +1776,7 @@ const dez = v => v && String(v).replace(".", ",");
 const bfLabel = a => [a.Anzahl_Vollgeschosse && roman(+a.Anzahl_Vollgeschosse), a.Grundflaechenzahl && "GRZ " + dez(a.Grundflaechenzahl), a.Geschossflaechenzahl && "GFZ " + dez(a.Geschossflaechenzahl)].filter(Boolean).join("  ");
 const bfLayer = vec(bfSrc, (f, res) => {
   const mine = f.get("mine"), bf = css("--bf");
-  return St({stroke: Sk(bf, mine ? 2.5 : 1.5), fill: Fl(mine ? css("--bf-fill") : css("--bf-fill2")),
+  return St({stroke: Sk(bf, mine ? 3 : 2), fill: Fl(mine ? css("--bf-fill") : css("--bf-fill2")),
     text: mine && res < 0.6 ? new ol.style.Text({text: bfLabel(f.get("attrs")), font: "700 13px system-ui, sans-serif", fill: Fl(bf), stroke: Sk("#fff", 3), overflow: true, offsetY: 16}) : undefined});
 }, {zIndex: 10});
 const map = new ol.Map({target: "map", layers: [bgLayer, boundsLayer, selLayer, plotLayer, bfLayer, measureLayer, markerLayer],
@@ -1812,7 +1812,14 @@ function openDetail(checkId) {
 function closeDetail() { vt(() => { body.remove("detail"); side.scrollTop = 0; }, "zurueck"); relayout(); }
 $("drawer").inert = true;
 on("menuBtn", "click", () => toggleDrawer(true));
-on("bfKey", "click", () => { const v = !bfLayer.getVisible(); bfLayer.setVisible(v); $("bfKey").setAttribute("aria-pressed", v); });
+on("bfKey", "click", () => {
+  const v = !bfLayer.getVisible(); bfLayer.setVisible(v); $("bfKey").setAttribute("aria-pressed", v); map.render();
+  if (v && bfSrc.getFeatures().length) { // Baufenster am Grundstück ins Bild holen, falls sie außerhalb des (auf dem Handy kleinen) Ausschnitts liegen
+    const mine = bfSrc.getFeatures().filter(f => f.get("mine")), pf = plotSrc.getFeatures()[0];
+    const ext = [...mine, ...(pf ? [pf] : [])].reduce((e, f) => ol.extent.extend(e, f.getGeometry().getExtent()), ol.extent.createEmpty());
+    if (!ol.extent.isEmpty(ext) && !ol.extent.containsExtent(view.calculateExtent(map.getSize()), ext)) view.fit(ol.extent.buffer(ext, 6), {padding: [40, 24, 44, 72], duration: 400});
+  }
+});
 on("drawerClose", "click", () => toggleDrawer(false));
 on("backdrop", "click", () => toggleDrawer(false));
 addEventListener("keydown", e => { if (e.key === "Escape" && $("drawer").classList.contains("open")) toggleDrawer(false); });
@@ -1916,6 +1923,9 @@ async function showBaufenster(geom, id) {
     const geometry = new ol.geom.MultiPolygon(b.polys);
     return new ol.Feature({geometry, attrs: b.attrs, mine: geometry.getPolygons().some(touches)});
   }).filter(f => ol.extent.intersects(f.getGeometry().getExtent(), ext)));
+  // Schalter nur, wenn am Grundstück selbst (bis 15 m daneben) ein Baufenster liegt; sonst wäre er auf dem kleinen Handy-Kartenausschnitt wirkungslos
+  const near = ol.extent.buffer(geom.getExtent(), 15);
+  if (!bfSrc.getFeatures().some(f => f.get("mine") || ol.extent.intersects(f.getGeometry().getExtent(), near))) return;
   $("bfKey").hidden = false; $("bfKey").setAttribute("aria-pressed", bfLayer.getVisible());
 }
 async function queryAt(coord, placeName) {
