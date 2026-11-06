@@ -365,7 +365,7 @@
   --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif; --display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif;
   --bg: #f2f2f7; --panel: #fff; --fg: #000; --muted: rgba(60,60,67,.6); --line: rgba(60,60,67,.16); --fill: rgba(118,118,128,.12);
   --accent: #0062cc; --accent-soft: rgba(0,98,204,.1); --accent-fill: #0062cc; --ok: #187030; --ok-soft: rgba(52,199,89,.14); --warn: #c93400; --warn-soft: rgba(255,149,0,.14);
-  --plan: #c8102e; --plot: #e0a100; --radius: 12px; --ease: cubic-bezier(.2, .8, .2, 1);
+  --plan: #c8102e; --plot: #e0a100; --bf: #0062cc; --bf-fill: rgba(0,98,204,.30); --bf-fill2: rgba(0,98,204,.12); --radius: 12px; --ease: cubic-bezier(.2, .8, .2, 1);
   --gl: rgba(255,255,255,.78); --gl-strong: rgba(255,255,255,.9); --gl-edge: 0 0 0 .5px rgba(0,0,0,.08); --gl-shadow: 0 4px 16px rgba(0,0,0,.1); --gl-blur: blur(20px) saturate(1.8);
   --search-bg: var(--panel); --search-ring: 0 0 0 1.5px color-mix(in srgb, var(--accent) 55%, transparent); --search-shadow: 0 10px 28px rgba(0,40,100,.2); --search-ph: var(--muted); --v3bg: #c9d6e3;
   --ico-file: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z'/%3E%3Cpath d='M14 3v6h6'/%3E%3C/svg%3E");
@@ -585,6 +585,11 @@ details.okfold .checks { margin-top: 6px; }
 .mapwrap > .compass:not(.turned) { display: none; } /* wie Apple Karten: Kompass nur, wenn die Karte gedreht ist */
 .btn3d { position: absolute; z-index: 6; top: 112px; left: 12px; height: 44px; padding: 0 14px 0 10px; border: 0; border-radius: 12px; justify-content: center; gap: 7px; font: 700 16px/1 var(--sans); letter-spacing: .01em; color: var(--fg); background: var(--gl-strong); }
 .btn3d svg { width: 22px; height: 22px; }
+/* Baufenster-Legende, zugleich Schalter zum Ein- und Ausblenden */
+.bfkey { position: absolute; z-index: 6; top: 168px; left: 12px; height: 34px; padding: 0 12px 0 9px; border: 0; border-radius: 10px; display: flex; align-items: center; gap: 7px; font: 600 13px/1 var(--sans); color: var(--fg); background: var(--gl-strong); cursor: pointer; }
+.bfkey i { width: 16px; height: 12px; border: 2px solid var(--bf); background: var(--bf-fill); border-radius: 2px; }
+.bfkey[aria-pressed="false"] { opacity: .55; }
+.bfkey[aria-pressed="false"] i { background: none; border-style: dashed; }
 body:not(.has-result) .btn3d { display: none; }
 .tip { background: rgba(20,32,48,.9); color: #fff; padding: 3px 8px; border-radius: 6px; font: 12px var(--sans); white-space: nowrap; }
 
@@ -715,9 +720,10 @@ body.is3d .view3d { display: block; }
   /* Messen und 3D: Karte über den ganzen Bildschirm */
   body.mapfull .mapwrap, body.is3d .mapwrap { position: fixed; inset: 0; z-index: 30; background: var(--bg); }
   body.mapfull .side { visibility: hidden; }
-  body.mapfull .ol-zoom, body.mapfull .compass, body.mapfull .btn3d { margin-top: env(safe-area-inset-top, 0px); }
+  body.mapfull .ol-zoom, body.mapfull .compass, body.mapfull .btn3d, body.mapfull .bfkey { margin-top: env(safe-area-inset-top, 0px); }
   .compass { top: calc(166px + env(safe-area-inset-top, 0px)); }
   .btn3d { top: calc(112px + env(safe-area-inset-top, 0px)); font-size: 17px; }
+  .bfkey { top: calc(166px + env(safe-area-inset-top, 0px)); }
   .mbar { bottom: calc(26px + env(safe-area-inset-bottom, 0px)); width: calc(100% - 16px); padding: 10px; border-radius: 24px; }
   .mbar p { flex-basis: 100%; text-align: center; padding: 0 4px 2px; }
   .mbar button { flex: 1; min-height: 46px; justify-content: center; font-size: 15px !important; }
@@ -747,7 +753,7 @@ body.is3d .view3d { display: block; }
   body.searching .side > header { --welle-tief: 0px; }
   /* Karte läuft unter der Welle weiter; Bedienknöpfe rücken etwas nach unten */
   body:not(.mapfull):not(.is3d) .mapwrap { margin-top: calc(-1 * var(--welle)); }
-  body:not(.mapfull):not(.is3d) .mapwrap :is(.ol-zoom, .compass, .btn3d) { margin-top: var(--welle); }
+  body:not(.mapfull):not(.is3d) .mapwrap :is(.ol-zoom, .compass, .btn3d, .bfkey) { margin-top: var(--welle); }
   /* Kompakte Leiste: Skyline steht leise auf der Wasserlinie statt hinter dem Schriftzug */
   body.has-result .side > header::after { top: auto; bottom: calc(var(--welle) - 2px); height: 40px; opacity: .13; background: #000; }
   /* Nach der Suche: Karte oben, Infos als Blatt darunter */
@@ -803,7 +809,7 @@ body.is3d .view3d { display: block; }
   dl.rules { column-count: 2; column-gap: 8mm; } dl.rules dt { break-after: avoid; } dl.rules dd { break-inside: avoid; margin-bottom: 4pt; }
   .checks li, .checks li.hit { padding: 1pt 0 1pt 16pt; background: none; font-size: 8.5pt; }
   .checks li::before { left: 0; top: 2pt; }
-  .view3d, .mbar, .lpring, .mtip, .tip { display: none !important; }
+  .view3d, .mbar, .lpring, .mtip, .tip, .bfkey { display: none !important; }
 }
 </style>
 
@@ -851,6 +857,7 @@ body.is3d .view3d { display: block; }
       <button type="button" id="mDone">Fertig</button>
     </div>
     <button type="button" class="compass" id="compass" aria-label="Nach Norden ausrichten" title="Nach Norden ausrichten"><svg viewBox="0 0 44 44" aria-hidden="true"><g class="needle"><text x="22" y="10.5" text-anchor="middle">N</text><path d="M22 12 27 22H17z" fill="#ff3b30"/><path d="M22 34 17 22h10z" fill="currentColor" opacity=".38"/></g></svg></button>
+    <button type="button" class="bfkey" id="bfKey" aria-pressed="true" title="Baufenster aus dem Bebauungsplan ein- oder ausblenden" hidden><i aria-hidden="true"></i>Baufenster</button>
     <button type="button" class="btn3d" id="btn3d" aria-label="3D-Ansicht öffnen" title="Gebäude in 3D ansehen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 3 7v10l9 5 9-5V7z"/><path d="m3 7 9 5 9-5M12 12v10"/></svg>3D</button>
     <div class="lpring" id="lpRing" aria-hidden="true"></div>
     <p class="mtip" id="mTip" role="status"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="8" stroke-dasharray="3 3"/></svg><span></span></p>
@@ -1214,14 +1221,14 @@ const View3D = (() => {
   function attrib(gl, p, name, b, size, stride = 0, off = 0) { const l = gl.getAttribLocation(p, name); if (l < 0) return; gl.bindBuffer(gl.ARRAY_BUFFER, b); gl.enableVertexAttribArray(l); gl.vertexAttribPointer(l, size, gl.FLOAT, false, stride, off); }
 
   // ---------- öffnen ----------
-  // opt: {el, center: [x, y] (UTM 32), plot: [[x, y], ...][] , plan: [[x, y], ...][], onInfo(html), onStatus(text)}
+  // opt: {el, center: [x, y] (UTM 32), plot: [[x, y], ...][] , plan: [[x, y], ...][], bf: [[x, y], ...][] (Baufenster-Umrisse), showBf (Baufenster-Körper zeigen), onInfo(html), onStatus(text)}
   async function open(opt) {
     close();
     const me = st = {opt, yaw: -0.35, pitch: 0.62, dist: 140, target: [0, 0, 0], sel: -1, dirty: true, raf: 0, ptr: new Map()};
     const cesiumReady = loadCesium(); // lädt parallel zu den Gebäudeangaben
     const [lon, lat] = toLonLat(opt.center), frame = enuFrame(lon, lat);
     const loc = xy => { const [a, b] = toLonLat(xy); return frame.pt(ecef(a, b, 0)); };
-    const plotL = (opt.plot || []).map(r => r.map(loc)), planL = (opt.plan || []).map(r => r.map(loc));
+    const plotL = (opt.plot || []).map(r => r.map(loc)), planL = (opt.plan || []).map(r => r.map(loc)), bfL = (opt.bf || []).map(r => r.map(loc));
 
     // Kacheln im Umkreis laden
     const t0 = tileOf(...toLonLat([opt.center[0] - R, opt.center[1] + R])), t1 = tileOf(...toLonLat([opt.center[0] + R, opt.center[1] - R]));
@@ -1285,6 +1292,7 @@ const View3D = (() => {
     // Linien: Grundstück (gelb) und Plangrenze (rot)
     const lines = [];
     for (const r of planL) ribbon(r, 0.7, gz + 0.12, lines, [0.78, 0.06, 0.18]);
+    for (const r of bfL) ribbon(r, 0.6, gz + 0.15, lines, [0.0, 0.38, 0.8]);
     for (const r of plotL) ribbon(r, 0.9, gz + 0.18, lines, COL.plot);
     me.lb = buf(gl, new Float32Array(lines.length ? lines : [0, 0, 0, 0, 0, 0])); me.nLine = lines.length / 6;
     // Boden: Raster in UTM, damit der Stadtplan genau passt
@@ -1342,11 +1350,19 @@ const View3D = (() => {
     ts.colorBlendMode = C.Cesium3DTileColorBlendMode.MIX; ts.colorBlendAmount = 0.85; // Markierung hell, Fassade bleibt erkennbar
     scene.primitives.add(ts);
     restyle(me);
+    // Baufenster aus dem B-Plan als halbtransparente blaue Körper (wie im 3D-Projektplaner), nur wenn auf der Karte eingeblendet
+    if (opt.showBf) try {
+      const bt = me.bfTileset = await C.Cesium3DTileset.fromUrl(GDI3D + "Ueberbaubare_Grundstuecksflaechen/tileset.json", {maximumScreenSpaceError: phone ? 16 : 8});
+      if (st !== me) return;
+      bt.style = new C.Cesium3DTileStyle({color: "color('#0a6cff', 0.32)"});
+      scene.primitives.add(bt);
+    } catch (e) { console.warn("Baufenster 3D", e); }
     ts.initialTilesLoaded.addEventListener(() => { if (st === me) opt.onStatus(""); });
     setTimeout(() => { if (st === me) opt.onStatus(""); }, 20000);
     // Grundstück gelb, Plangrenze rot, beides auf dem Gelände
     const deg = r => C.Cartesian3.fromDegreesArray(r.flatMap(p => toLonLat(p)));
     for (const r of plan) viewer.entities.add({polyline: {positions: deg(r), width: 3, clampToGround: true, material: C.Color.fromCssColorString("#c8102e")}});
+    for (const r of opt.bf || []) viewer.entities.add({polyline: {positions: deg(r), width: 2.5, clampToGround: true, material: C.Color.fromCssColorString("#0062cc")}});
     for (const r of plot) {
       viewer.entities.add({polygon: {hierarchy: deg(r), material: C.Color.fromCssColorString("#ffbe1a").withAlpha(0.28), classificationType: C.ClassificationType.TERRAIN}});
       viewer.entities.add({polyline: {positions: deg(r), width: 5, clampToGround: true, material: C.Color.fromCssColorString("#ffbe1a")}});
@@ -1362,7 +1378,7 @@ const View3D = (() => {
     // Antippen: Gebäudeangaben aus dem LoD2-Modell (gleiche ALKIS-Kennung)
     me.handler = new C.ScreenSpaceEventHandler(scene.canvas);
     me.handler.setInputAction(e => {
-      const f = scene.pick(e.position), id = f instanceof C.Cesium3DTileFeature ? f.getProperty("id") : null;
+      const f = scene.drillPick(e.position, 4).find(x => !(x instanceof C.Cesium3DTileFeature) || x.tileset !== me.bfTileset), id = f instanceof C.Cesium3DTileFeature ? f.getProperty("id") : null;
       let i = id != null ? me.byId.get(id) : undefined;
       if (id != null && i === undefined) { // nicht im LoD2-Ausschnitt: Angaben aus dem LoD3-Modell
         const a = f.getProperty("attributes") || {};
@@ -1525,6 +1541,128 @@ const View3D = (() => {
   return api;
 })();
 </script>
+<script>// Baufenster (überbaubare Grundstücksflächen) aus dem B-Plan als Flächen für die 2D-Karte.
+// Quelle: 3D-Kacheln „Ueberbaubare_Grundstuecksflaechen“ der Stadt Hamburg (wie im 3D-Projektplaner),
+// erzeugt aus den XPlanung-Daten der Bebauungspläne. Jedes Baufenster ist dort ein Körper; wir nehmen
+// seine Dachflächen, legen sie flach und bilden daraus den Umriss. Dazu gibt es je Baufenster
+// Planname, GRZ, GFZ, Vollgeschosse, Bauweise und Nutzung.
+// Daten: Freie und Hansestadt Hamburg, LGV (Datenlizenz Deutschland Namensnennung 2.0).
+"use strict";
+const Baufenster = (() => {
+  const BASE = "https://www.daten-hamburg.de/gdi3d/datasource-data/Ueberbaubare_Grundstuecksflaechen/15/";
+  const A = 6378137, E2 = 6.69437999014e-3, rad = Math.PI / 180;
+  const tileOf = (lon, lat) => [Math.floor((lon + 180) / 360 * 65536), Math.floor((90 - lat) / 180 * 32768)];
+  const cache = new Map(); // Kachel-URL -> Promise der Baufenster
+
+  // ECEF -> geografische Länge/Breite (Bowring, für unsere Zwecke genau genug)
+  function lonLat(x, y, z) {
+    const b = A * Math.sqrt(1 - E2), ep2 = (A * A - b * b) / (b * b), p = Math.hypot(x, y), th = Math.atan2(z * A, p * b);
+    const lat = Math.atan2(z + ep2 * b * Math.sin(th) ** 3, p - E2 * A * Math.cos(th) ** 3);
+    return [Math.atan2(y, x) / rad, lat / rad];
+  }
+  const mmul = (a, b) => { const o = new Array(16).fill(0); for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++) for (let k = 0; k < 4; k++) o[j * 4 + i] += a[k * 4 + i] * b[j * 4 + k]; return o; };
+
+  // Eine b3dm-Kachel lesen: je Baufenster die nach oben zeigenden Dreiecke, flach in UTM 32
+  function read(buf) {
+    const dv = new DataView(buf), td = new TextDecoder();
+    if (td.decode(new Uint8Array(buf, 0, 4)) !== "b3dm") return [];
+    const [ftj, ftb, btj, btb] = [12, 16, 20, 24].map(o => dv.getUint32(o, true));
+    const ft = JSON.parse(td.decode(new Uint8Array(buf, 28, ftj)));
+    const bt = btj ? JSON.parse(td.decode(new Uint8Array(buf, 28 + ftj + ftb, btj))) : {};
+    const g = 28 + ftj + ftb + btj + btb, jl = dv.getUint32(g + 12, true), gl = JSON.parse(td.decode(new Uint8Array(buf, g + 20, jl)));
+    const bin = g + 20 + jl + 8, rtc = ft.RTC_CENTER || [0, 0, 0];
+    const acc = i => {
+      const a = gl.accessors[i], v = gl.bufferViews[a.bufferView], n = {VEC3: 3, VEC2: 2, SCALAR: 1}[a.type], off = bin + (v.byteOffset || 0) + (a.byteOffset || 0);
+      const size = {5126: 4, 5125: 4, 5123: 2, 5121: 1}[a.componentType], stride = v.byteStride || n * size, out = new Float64Array(a.count * n);
+      const get = {5126: o => dv.getFloat32(o, true), 5125: o => dv.getUint32(o, true), 5123: o => dv.getUint16(o, true), 5121: o => dv.getUint8(o)}[a.componentType];
+      for (let k = 0; k < a.count; k++) for (let j = 0; j < n; j++) out[k * n + j] = get(off + k * stride + j * size);
+      return out;
+    };
+    const tris = new Map(); // Batch-Nummer -> [[x, y] × 3, ...]
+    const visit = (ni, parent) => {
+      const nd = gl.nodes[ni], m = mmul(parent, nd.matrix || [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
+      if (nd.mesh != null) for (const p of gl.meshes[nd.mesh].primitives) {
+        if ((p.mode ?? 4) !== 4 || p.attributes.POSITION == null) continue;
+        const pos = acc(p.attributes.POSITION), cnt = pos.length / 3;
+        const bid = p.attributes._BATCHID != null ? acc(p.attributes._BATCHID) : new Float64Array(cnt);
+        const idx = p.indices != null ? acc(p.indices) : Float64Array.from({length: cnt}, (_, i) => i);
+        const E = new Float64Array(cnt * 3), U = new Float64Array(cnt * 2); // ECEF und UTM je Punkt
+        for (let k = 0; k < cnt; k++) {
+          const x = pos[k * 3], y = pos[k * 3 + 1], z = pos[k * 3 + 2];
+          const q = [m[0] * x + m[4] * y + m[8] * z + m[12], m[1] * x + m[5] * y + m[9] * z + m[13], m[2] * x + m[6] * y + m[10] * z + m[14]];
+          const X = rtc[0] + q[0], Y = rtc[1] - q[2], Z = rtc[2] + q[1]; // glTF: y oben -> z oben
+          E.set([X, Y, Z], k * 3);
+          U.set(proj4("EPSG:4326", "EPSG:25832", lonLat(X, Y, Z)), k * 2);
+        }
+        for (let t = 0; t < idx.length; t += 3) {
+          const [a, b, c] = [idx[t], idx[t + 1], idx[t + 2]];
+          // Flächennormale gegen die Lotrichtung: nur Dachflächen (zeigen nach oben)
+          const ab = [0, 1, 2].map(j => E[b * 3 + j] - E[a * 3 + j]), ac = [0, 1, 2].map(j => E[c * 3 + j] - E[a * 3 + j]);
+          const n = [ab[1] * ac[2] - ab[2] * ac[1], ab[2] * ac[0] - ab[0] * ac[2], ab[0] * ac[1] - ab[1] * ac[0]];
+          const ln = Math.hypot(...n), up = [E[a * 3], E[a * 3 + 1], E[a * 3 + 2]], lu = Math.hypot(...up);
+          if (!ln || (n[0] * up[0] + n[1] * up[1] + n[2] * up[2]) / ln / lu < 0.7) continue;
+          const id = bid[a];
+          if (!tris.has(id)) tris.set(id, []);
+          tris.get(id).push([a, b, c].map(i => [U[i * 2], U[i * 2 + 1]]));
+        }
+      }
+      (nd.children || []).forEach(c => visit(c, m));
+    };
+    (gl.scenes[gl.scene || 0].nodes).forEach(n => visit(n, [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]));
+    const attrs = bt.attributes || [], ids = bt.id || [];
+    return [...tris].map(([b, t]) => ({id: ids[b] || "", attrs: attrs[b] || {}, polys: outline(t)})).filter(f => f.polys.length);
+  }
+
+  // Umriss aus Dreiecken: Kanten, die nur einmal vorkommen, sind Außenkanten; zu Ringen verketten
+  function outline(tris) {
+    const key = p => Math.round(p[0] * 50) + "," + Math.round(p[1] * 50); // 2 cm Raster
+    const pts = new Map(), count = new Map(), dir = new Map();
+    for (const t of tris) for (let i = 0; i < 3; i++) {
+      const a = t[i], b = t[(i + 1) % 3], ka = key(a), kb = key(b);
+      if (ka === kb) continue;
+      pts.set(ka, a); pts.set(kb, b);
+      const e = ka < kb ? ka + "|" + kb : kb + "|" + ka;
+      count.set(e, (count.get(e) || 0) + 1); dir.set(e, [ka, kb]);
+    }
+    const next = new Map();
+    for (const [e, n] of count) if (n === 1) { const [a, b] = dir.get(e); (next.get(a) || next.set(a, []).get(a)).push(b); }
+    const rings = [];
+    for (const start of next.keys()) {
+      while (next.get(start)?.length) {
+        const ring = [start]; let cur = next.get(start).pop();
+        while (cur && cur !== start && ring.length < 5000) { ring.push(cur); cur = next.get(cur)?.pop(); }
+        if (cur === start && ring.length >= 3) rings.push([...ring, start].map(k => pts.get(k)));
+      }
+    }
+    // Größte Ringe zuerst; liegt ein Ring in einem größeren, ist er ein Loch, sonst ein eigenes Teilstück
+    const area = r => r.reduce((s, p, i) => i ? s + (r[i - 1][0] * p[1] - p[0] * r[i - 1][1]) : 0, 0) / 2;
+    const inside = ([x, y], r) => { let c = false; for (let i = 0, j = r.length - 1; i < r.length; j = i++) if ((r[i][1] > y) !== (r[j][1] > y) && x < (r[j][0] - r[i][0]) * (y - r[i][1]) / (r[j][1] - r[i][1]) + r[i][0]) c = !c; return c; };
+    const polys = [];
+    for (const r of rings.filter(r => Math.abs(area(r)) > 0.5).sort((a, b) => Math.abs(area(b)) - Math.abs(area(a)))) {
+      const host = polys.find(p => inside(r[0], p[0]));
+      host ? host.push(r) : polys.push([r]);
+    }
+    return polys;
+  }
+
+  // Alle Baufenster in einem Ausschnitt (UTM 32: [minx, miny, maxx, maxy]); Kacheln ohne Baufenster gibt es nicht (404)
+  async function load(ext) {
+    const toLL = xy => proj4("EPSG:25832", "EPSG:4326", xy);
+    const t0 = tileOf(...toLL([ext[0], ext[3]])), t1 = tileOf(...toLL([ext[2], ext[1]]));
+    const urls = [];
+    for (let x = t0[0]; x <= t1[0]; x++) for (let y = t0[1]; y <= t1[1]; y++) urls.push(`${BASE}${x}/${y}.b3dm`);
+    if (urls.length > 16) return [];
+    const parts = await Promise.all(urls.map(u => {
+      if (!cache.has(u)) cache.set(u, fetch(u).then(r => r.ok ? r.arrayBuffer() : null).then(b => b ? read(b) : []).catch(() => { cache.delete(u); return []; }));
+      return cache.get(u);
+    }));
+    // Ein Baufenster kann über zwei Kacheln reichen und steht dann in beiden: nach ID zusammenführen
+    const seen = new Set();
+    return parts.flat().filter(f => !f.id || !seen.has(f.id) && seen.add(f.id));
+  }
+  return {load};
+})();
+</script>
 <script>
 "use strict";
 // ---------- Konfiguration ----------
@@ -1613,7 +1751,8 @@ const boundsLayer = vec(boundsSrc, (f, res) => St({stroke: Sk(css("--plan"), 1.5
   text: res < 2.5 ? new ol.style.Text({text: planName(f.getProperties()), font: "600 12px system-ui, sans-serif", fill: Fl(css("--plan")), stroke: Sk("#fff", 3), overflow: false}) : undefined}),
   {maxResolution: CFG.boundsMaxRes});
 const [selSrc, plotSrc, measureSrc, markerSrc] = [1, 2, 3, 4].map(() => new ol.source.Vector());
-const clearMap = () => [markerSrc, selSrc, plotSrc].forEach(s => s.clear());
+const bfSrc = new ol.source.Vector();
+const clearMap = () => { [markerSrc, selSrc, plotSrc, bfSrc].forEach(s => s.clear()); $("bfKey").hidden = true; };
 // Gefundener Plan kräftig umrandet; Grundstück: weißer Rand, gelbe Kontur und Füllung
 const selLayer = vec(selSrc, () => St({stroke: Sk(css("--plan"), 3.5), fill: Fl("rgba(200,16,46,0.08)")}));
 const plotLayer = vec(plotSrc, () => [St({stroke: Sk("rgba(255,255,255,0.95)", 9)}), St({stroke: Sk(css("--plot"), 4), fill: Fl("rgba(255,190,0,0.32)")})], {zIndex: 10});
@@ -1621,7 +1760,17 @@ const measureLayer = vec(measureSrc, () => [St({stroke: Sk(css("--accent"), 2, [
   St({geometry: f => { const g = f.getGeometry(); return new ol.geom.MultiPoint(g instanceof ol.geom.Polygon ? g.getCoordinates()[0] : g.getCoordinates()); },
     image: new ol.style.Circle({radius: 4, fill: Fl("#fff"), stroke: Sk(css("--accent"), 2)})})], {zIndex: 11});
 const markerLayer = vec(markerSrc, St({image: new ol.style.Circle({radius: 7, fill: Fl("#c2272d"), stroke: Sk("#fff", 2)})}));
-const map = new ol.Map({target: "map", layers: [bgLayer, boundsLayer, selLayer, plotLayer, measureLayer, markerLayer],
+// Baufenster aus dem B-Plan (überbaubare Flächen): halbtransparent blau über Grundstück und Haus, das auf dem Grundstück kräftiger,
+// nah herangezoomt mit Vollgeschossen und GRZ beschriftet wie im Plan
+const roman = n => ["", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"][n] || String(n);
+const dez = v => v && String(v).replace(".", ",");
+const bfLabel = a => [a.Anzahl_Vollgeschosse && roman(+a.Anzahl_Vollgeschosse), a.Grundflaechenzahl && "GRZ " + dez(a.Grundflaechenzahl), a.Geschossflaechenzahl && "GFZ " + dez(a.Geschossflaechenzahl)].filter(Boolean).join("  ");
+const bfLayer = vec(bfSrc, (f, res) => {
+  const mine = f.get("mine"), bf = css("--bf");
+  return St({stroke: Sk(bf, mine ? 2.5 : 1.5), fill: Fl(mine ? css("--bf-fill") : css("--bf-fill2")),
+    text: mine && res < 0.6 ? new ol.style.Text({text: bfLabel(f.get("attrs")), font: "700 13px system-ui, sans-serif", fill: Fl(bf), stroke: Sk("#fff", 3), overflow: true, offsetY: 16}) : undefined});
+}, {zIndex: 10});
+const map = new ol.Map({target: "map", layers: [bgLayer, boundsLayer, selLayer, plotLayer, bfLayer, measureLayer, markerLayer],
   view: new ol.View({projection: UTM, ...CFG.start, maxResolution: 300, minResolution: 0.1}),
   controls: ol.control.defaults.defaults({attributionOptions: {collapsible: true}}).extend([new ol.control.ScaleLine({units: "metric"})])});
 const view = map.getView();
@@ -1654,6 +1803,7 @@ function openDetail(checkId) {
 function closeDetail() { vt(() => { body.remove("detail"); side.scrollTop = 0; }, "zurueck"); relayout(); }
 $("drawer").inert = true;
 on("menuBtn", "click", () => toggleDrawer(true));
+on("bfKey", "click", () => { const v = !bfLayer.getVisible(); bfLayer.setVisible(v); $("bfKey").setAttribute("aria-pressed", v); });
 on("drawerClose", "click", () => toggleDrawer(false));
 on("backdrop", "click", () => toggleDrawer(false));
 addEventListener("keydown", e => { if (e.key === "Escape" && $("drawer").classList.contains("open")) toggleDrawer(false); });
@@ -1746,6 +1896,19 @@ function plotNumber(plot) { // Flurstücksnummer (Zähler) aus den ALKIS-Attribu
   const kz = String(p.flurstueckskennzeichen || p.flstkennz || p.kennzeichen || "").replace(/_/g, "0");
   return /^\d{14}/.test(kz) ? parseInt(kz.slice(9, 14), 10) : null;
 }
+// Baufenster rund um das Grundstück laden; die, die das Grundstück berühren, hervorheben
+async function showBaufenster(geom, id) {
+  if (typeof Baufenster === "undefined") return;
+  const ext = ol.extent.buffer(geom.getExtent(), 60);
+  const list = await Baufenster.load(ext).catch(() => []);
+  if (id !== queryId || !list.length) return;
+  const g = geom.getType() === "MultiPolygon" ? geom.getPolygons() : [geom], touches = poly => g.some(p => poly.getCoordinates()[0].some(c => p.intersectsCoordinate(c)) || p.getCoordinates()[0].some(c => poly.intersectsCoordinate(c)));
+  bfSrc.addFeatures(list.map(b => {
+    const geometry = new ol.geom.MultiPolygon(b.polys);
+    return new ol.Feature({geometry, attrs: b.attrs, mine: geometry.getPolygons().some(touches)});
+  }).filter(f => ol.extent.intersects(f.getGeometry().getExtent(), ext)));
+  $("bfKey").hidden = false; $("bfKey").setAttribute("aria-pressed", bfLayer.getVisible());
+}
 async function queryAt(coord, placeName) {
   const id = ++queryId, was3d = View3D.isOpen();
   close3d(); clearMap(); plotArea = null; // Fläche des vorigen Grundstücks nicht übernehmen
@@ -1763,6 +1926,7 @@ async function queryAt(coord, placeName) {
   if (plot?.geometry) {
     plotSrc.addFeature(new ol.Feature({geometry: plot.geometry, label: "Mein Grundstück" + (plot.area ? "\n" + fmt(plot.area) + " m²" : "")}));
     fitPlot(); // automatisch auf das Grundstück zoomen
+    showBaufenster(plot.geometry, id);
   }
   for (const p of [...plans, ...(plot ? [plot] : [])].map(f => f.props))
     for (const [k, v] of Object.entries(p)) { const key = k.toLowerCase(); if (MASS[key] && !lastMass[key]) lastMass[key] = v; }
@@ -2035,6 +2199,7 @@ function open3d() {
   const center = pg ? ol.extent.getCenter(pg.getExtent()) : mk ? mk.getCoordinates() : view.getCenter();
   body.add("is3d"); $("v3info").innerHTML = "";
   View3D.open({el: $("view3d"), center, plot: rings(pg), plan: selSrc.getFeatures().flatMap(f => rings(f.getGeometry())),
+    bf: bfLayer.getVisible() ? bfSrc.getFeatures().flatMap(f => rings(f.getGeometry())) : [], showBf: bfLayer.getVisible(),
     onInfo: h => { $("v3info").innerHTML = h; $("v3info").hidden = !h; },
     onStatus: t => { $("v3status").textContent = t; $("v3status").hidden = !t; }});
 }
