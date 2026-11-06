@@ -758,12 +758,22 @@ body.is3d .view3d { display: block; }
   body.has-result .side > header::after { top: auto; bottom: calc(var(--welle) - 2px); height: 40px; opacity: .13; background: #000; }
   /* Nach der Suche: Karte oben, Infos als Blatt darunter */
   body.has-result { --kopf: calc(74px + env(safe-area-inset-top, 0px)); }
-  body.has-result .app { grid-template-rows: minmax(0, 1fr) auto; padding-top: var(--kopf); }
+  body.has-result .app { grid-template-rows: 34dvh minmax(0, 1fr); padding-top: var(--kopf); }
   body.has-result .mapwrap { order: -1; }
   body.has-result:not(.detail) .side > header { position: fixed; top: 0; left: 0; right: 0; margin: 0; }
-  body.has-result:not(.detail) .side { position: relative; z-index: 4; max-height: 60dvh; margin-top: -20px; padding-top: 14px; border: 0; border-radius: 22px 22px 0 0; box-shadow: 0 -8px 24px rgba(0,0,0,.35); }
+  body.has-result:not(.detail) .side { position: relative; z-index: 4; max-height: none; margin-top: -20px; padding-top: 14px; border: 0; border-radius: 22px 22px 0 0; box-shadow: 0 -8px 24px rgba(0,0,0,.35); }
   body.has-result .mapwrap :is(.ol-scale-line, .ol-attribution) { margin-bottom: 20px; }
   body.detail .side { margin-top: 0; }
+  /* Mehr Platz fürs Blatt: Übersicht größer und luftiger */
+  body.has-result #overview { gap: 10px; }
+  body.has-result .plan-name { font-size: 27px; }
+  body.has-result #overview .ov-more { font-size: 15px; }
+  .ov-build .big > * { padding: 9px 12px; }
+  .ov-build .big b { font-size: 19px; }
+  .ov-build .big span, .ov-build .big small { font-size: 13px; }
+  .ov-row { padding: 14px 16px; }
+  .ov-row .ov-label, .ov-build > .ov-label { font-size: 17px; }
+  .ov-build { padding-bottom: 14px; }
 }
 
 /* ---------- Merkblatt (Drucken): kompakt, höchstens drei Seiten ---------- */
@@ -1211,14 +1221,14 @@ const View3D = (() => {
   function attrib(gl, p, name, b, size, stride = 0, off = 0) { const l = gl.getAttribLocation(p, name); if (l < 0) return; gl.bindBuffer(gl.ARRAY_BUFFER, b); gl.enableVertexAttribArray(l); gl.vertexAttribPointer(l, size, gl.FLOAT, false, stride, off); }
 
   // ---------- öffnen ----------
-  // opt: {el, center: [x, y] (UTM 32), plot: [[x, y], ...][] , plan: [[x, y], ...][], onInfo(html), onStatus(text)}
+  // opt: {el, center: [x, y] (UTM 32), plot: [[x, y], ...][] , plan: [[x, y], ...][], bf: [[x, y], ...][] (Baufenster-Umrisse), showBf (Baufenster-Körper zeigen), onInfo(html), onStatus(text)}
   async function open(opt) {
     close();
     const me = st = {opt, yaw: -0.35, pitch: 0.62, dist: 140, target: [0, 0, 0], sel: -1, dirty: true, raf: 0, ptr: new Map()};
     const cesiumReady = loadCesium(); // lädt parallel zu den Gebäudeangaben
     const [lon, lat] = toLonLat(opt.center), frame = enuFrame(lon, lat);
     const loc = xy => { const [a, b] = toLonLat(xy); return frame.pt(ecef(a, b, 0)); };
-    const plotL = (opt.plot || []).map(r => r.map(loc)), planL = (opt.plan || []).map(r => r.map(loc));
+    const plotL = (opt.plot || []).map(r => r.map(loc)), planL = (opt.plan || []).map(r => r.map(loc)), bfL = (opt.bf || []).map(r => r.map(loc));
 
     // Kacheln im Umkreis laden
     const t0 = tileOf(...toLonLat([opt.center[0] - R, opt.center[1] + R])), t1 = tileOf(...toLonLat([opt.center[0] + R, opt.center[1] - R]));
@@ -1282,6 +1292,7 @@ const View3D = (() => {
     // Linien: Grundstück (gelb) und Plangrenze (rot)
     const lines = [];
     for (const r of planL) ribbon(r, 0.7, gz + 0.12, lines, [0.78, 0.06, 0.18]);
+    for (const r of bfL) ribbon(r, 0.6, gz + 0.15, lines, [0.0, 0.38, 0.8]);
     for (const r of plotL) ribbon(r, 0.9, gz + 0.18, lines, COL.plot);
     me.lb = buf(gl, new Float32Array(lines.length ? lines : [0, 0, 0, 0, 0, 0])); me.nLine = lines.length / 6;
     // Boden: Raster in UTM, damit der Stadtplan genau passt
@@ -1339,11 +1350,19 @@ const View3D = (() => {
     ts.colorBlendMode = C.Cesium3DTileColorBlendMode.MIX; ts.colorBlendAmount = 0.85; // Markierung hell, Fassade bleibt erkennbar
     scene.primitives.add(ts);
     restyle(me);
+    // Baufenster aus dem B-Plan als halbtransparente blaue Körper (wie im 3D-Projektplaner), nur wenn auf der Karte eingeblendet
+    if (opt.showBf) try {
+      const bt = me.bfTileset = await C.Cesium3DTileset.fromUrl(GDI3D + "Ueberbaubare_Grundstuecksflaechen/tileset.json", {maximumScreenSpaceError: phone ? 16 : 8});
+      if (st !== me) return;
+      bt.style = new C.Cesium3DTileStyle({color: "color('#0a6cff', 0.32)"});
+      scene.primitives.add(bt);
+    } catch (e) { console.warn("Baufenster 3D", e); }
     ts.initialTilesLoaded.addEventListener(() => { if (st === me) opt.onStatus(""); });
     setTimeout(() => { if (st === me) opt.onStatus(""); }, 20000);
     // Grundstück gelb, Plangrenze rot, beides auf dem Gelände
     const deg = r => C.Cartesian3.fromDegreesArray(r.flatMap(p => toLonLat(p)));
     for (const r of plan) viewer.entities.add({polyline: {positions: deg(r), width: 3, clampToGround: true, material: C.Color.fromCssColorString("#c8102e")}});
+    for (const r of opt.bf || []) viewer.entities.add({polyline: {positions: deg(r), width: 2.5, clampToGround: true, material: C.Color.fromCssColorString("#0062cc")}});
     for (const r of plot) {
       viewer.entities.add({polygon: {hierarchy: deg(r), material: C.Color.fromCssColorString("#ffbe1a").withAlpha(0.28), classificationType: C.ClassificationType.TERRAIN}});
       viewer.entities.add({polyline: {positions: deg(r), width: 5, clampToGround: true, material: C.Color.fromCssColorString("#ffbe1a")}});
@@ -1359,7 +1378,7 @@ const View3D = (() => {
     // Antippen: Gebäudeangaben aus dem LoD2-Modell (gleiche ALKIS-Kennung)
     me.handler = new C.ScreenSpaceEventHandler(scene.canvas);
     me.handler.setInputAction(e => {
-      const f = scene.pick(e.position), id = f instanceof C.Cesium3DTileFeature ? f.getProperty("id") : null;
+      const f = scene.drillPick(e.position, 4).find(x => !(x instanceof C.Cesium3DTileFeature) || x.tileset !== me.bfTileset), id = f instanceof C.Cesium3DTileFeature ? f.getProperty("id") : null;
       let i = id != null ? me.byId.get(id) : undefined;
       if (id != null && i === undefined) { // nicht im LoD2-Ausschnitt: Angaben aus dem LoD3-Modell
         const a = f.getProperty("attributes") || {};
@@ -2180,6 +2199,7 @@ function open3d() {
   const center = pg ? ol.extent.getCenter(pg.getExtent()) : mk ? mk.getCoordinates() : view.getCenter();
   body.add("is3d"); $("v3info").innerHTML = "";
   View3D.open({el: $("view3d"), center, plot: rings(pg), plan: selSrc.getFeatures().flatMap(f => rings(f.getGeometry())),
+    bf: bfLayer.getVisible() ? bfSrc.getFeatures().flatMap(f => rings(f.getGeometry())) : [], showBf: bfLayer.getVisible(),
     onInfo: h => { $("v3info").innerHTML = h; $("v3info").hidden = !h; },
     onStatus: t => { $("v3status").textContent = t; $("v3status").hidden = !t; }});
 }
