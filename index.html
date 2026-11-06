@@ -469,6 +469,8 @@ section.busy::after { content: ""; height: 3px; background: linear-gradient(90de
 h2 { font: 600 17px/1.25 var(--display); letter-spacing: -.02em; margin: 0; display: flex; align-items: center; gap: 8px; }
 h2 .ico { width: 29px; height: 29px; border-radius: 7px; color: #fff; background: #8e8e93; display: grid; place-items: center; flex: none; }
 h2 .ico svg { width: 17px; height: 17px; }
+h2 .ico-alert { background: #ff9500; } h2 .ico-home { background: #0a7aff; } h2 .ico-ruler { background: #34c759; } h2 .ico-shield { background: #5856d6; }
+h2 .ico-file { background: #ff3b30; } h2 .ico-book { background: #ff9f0a; } h2 .ico-city { background: #30b0c7; } h2 .ico-phone { background: #34c759; }
 .plan-name { font: 700 28px/1.1 var(--display); letter-spacing: .005em; margin: 2px 0 0; text-wrap: balance; }
 .pill { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; padding: 3px 10px; border-radius: 99px; background: var(--ok-soft); color: var(--ok); font-weight: 650; width: fit-content; }
 .pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
@@ -727,6 +729,35 @@ body.is3d .view3d { display: block; }
   .v3info dd { font-size: 13px; }
   .v3credit { left: 12px; right: auto; top: calc(60px + env(safe-area-inset-top, 0px)); bottom: auto; }
   .v3credit span { display: none; }
+}
+
+/* ---------- Kopf endet in einer sanften Elbwelle statt einer harten Kante ---------- */
+@property --welle-tief { syntax: "<length>"; inherits: true; initial-value: 14px; }
+@media screen {
+  :root { --welle: 14px; }
+  .side > header { --welle-tief: var(--welle); padding-bottom: var(--welle);
+    -webkit-mask: linear-gradient(#000 0 0) top / 100% calc(100% - var(--welle-tief) + 1px) no-repeat, url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 24' preserveAspectRatio='none'%3E%3Cpath d='M0 0H1200V9C1090 2 970 0 850 6C710 13 610 23 470 21C335 19 245 7 135 6C80 6 35 9 0 13Z'/%3E%3C/svg%3E") bottom / 100% var(--welle-tief) no-repeat;
+    mask: linear-gradient(#000 0 0) top / 100% calc(100% - var(--welle-tief) + 1px) no-repeat, url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 24' preserveAspectRatio='none'%3E%3Cpath d='M0 0H1200V9C1090 2 970 0 850 6C710 13 610 23 470 21C335 19 245 7 135 6C80 6 35 9 0 13Z'/%3E%3C/svg%3E") bottom / 100% var(--welle-tief) no-repeat;
+    transition: --welle-tief .24s var(--ease); }
+}
+@media screen and (max-width: 760px) {
+  body:not(.has-result) .side > header { padding-bottom: calc(14px + var(--welle)); }
+  body.has-result .side > header { padding-bottom: calc(14px + var(--welle)); }
+  /* Suchhistorie wächst aus dem Kopf: Welle glättet sich, solange sie offen ist */
+  body.searching .side > header { --welle-tief: 0px; }
+  /* Karte läuft unter der Welle weiter; Bedienknöpfe rücken etwas nach unten */
+  body:not(.mapfull):not(.is3d) .mapwrap { margin-top: calc(-1 * var(--welle)); }
+  body:not(.mapfull):not(.is3d) .mapwrap :is(.ol-zoom, .compass, .btn3d) { margin-top: var(--welle); }
+  /* Kompakte Leiste: Skyline steht leise auf der Wasserlinie statt hinter dem Schriftzug */
+  body.has-result .side > header::after { top: auto; bottom: calc(var(--welle) - 2px); height: 40px; opacity: .13; background: #000; }
+  /* Nach der Suche: Karte oben, Infos als Blatt darunter */
+  body.has-result { --kopf: calc(74px + env(safe-area-inset-top, 0px)); }
+  body.has-result .app { grid-template-rows: minmax(0, 1fr) auto; padding-top: var(--kopf); }
+  body.has-result .mapwrap { order: -1; }
+  body.has-result:not(.detail) .side > header { position: fixed; top: 0; left: 0; right: 0; margin: 0; }
+  body.has-result:not(.detail) .side { position: relative; z-index: 4; max-height: 60dvh; margin-top: -20px; padding-top: 14px; border: 0; border-radius: 22px 22px 0 0; box-shadow: 0 -8px 24px rgba(0,0,0,.35); }
+  body.has-result .mapwrap :is(.ol-scale-line, .ol-attribution) { margin-bottom: 20px; }
+  body.detail .side { margin-top: 0; }
 }
 
 /* ---------- Merkblatt (Drucken): kompakt, höchstens drei Seiten ---------- */
@@ -1591,7 +1622,7 @@ function fitPlot(duration = 600) {
   const f = plotSrc.getFeatures()[0]; if (!f) return;
   view.cancelAnimations();
   // Zoom etwas näher als früher (Puffer 15 → 8 m, bis 0,18 m/Pixel statt 0,25); links mehr Rand, dort liegen Zoom- und 3D-Knopf
-  view.fit(ol.extent.buffer(f.getGeometry().getExtent(), 8), {padding: isPhone() ? [24, 24, 24, 72] : [40, 40, 40, 100], minResolution: 0.18, duration});
+  view.fit(ol.extent.buffer(f.getGeometry().getExtent(), 8), {padding: isPhone() ? [40, 24, 44, 72] : [40, 40, 40, 100], minResolution: 0.18, duration});
 }
 const relayout = () => requestAnimationFrame(() => { map.updateSize(); fitPlot(0); });
 function toggleDrawer(v) { $("drawer").classList.toggle("open", v); $("drawer").inert = !v; $("backdrop").hidden = !v; $("menuBtn").setAttribute("aria-expanded", v); }
