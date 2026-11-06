@@ -754,19 +754,28 @@ body.is3d .view3d { display: block; }
   /* Karte läuft unter der Welle weiter; Bedienknöpfe rücken etwas nach unten */
   body:not(.mapfull):not(.is3d) .mapwrap { margin-top: calc(-1 * var(--welle)); }
   body:not(.mapfull):not(.is3d) .mapwrap :is(.ol-zoom, .compass, .btn3d, .bfkey) { margin-top: var(--welle); }
+  /* Baufenster-Schalter oben rechts, damit er bei kleiner Karte nicht auf dem Maßstab liegt */
+  body.has-result:not(.mapfull):not(.is3d) .mapwrap .bfkey { top: 12px; left: auto; right: 12px; }
+  /* Kein Gummiband-Ziehen am Kopf: sonst rutscht die Welle weg und schwarzer Hintergrund schiebt sich über die Karte */
+  html, body { overscroll-behavior: none; }
+  body:not(.has-result) .side { overflow: hidden; }
+  .side { overscroll-behavior: contain; }
   /* Kompakte Leiste: Skyline steht leise auf der Wasserlinie statt hinter dem Schriftzug */
   body.has-result .side > header::after { top: auto; bottom: calc(var(--welle) - 2px); height: 40px; opacity: .13; background: #000; }
   /* Nach der Suche: Karte oben, Infos als Blatt darunter */
   body.has-result { --kopf: calc(74px + env(safe-area-inset-top, 0px)); }
-  body.has-result .app { grid-template-rows: 34dvh minmax(0, 1fr); padding-top: var(--kopf); }
+  body.has-result .app { grid-template-rows: minmax(0, 1fr) auto; padding-top: var(--kopf); }
   body.has-result .mapwrap { order: -1; }
   body.has-result:not(.detail) .side > header { position: fixed; top: 0; left: 0; right: 0; margin: 0; }
-  body.has-result:not(.detail) .side { position: relative; z-index: 4; max-height: none; margin-top: -20px; padding-top: 14px; border: 0; border-radius: 22px 22px 0 0; box-shadow: 0 -8px 24px rgba(0,0,0,.35); }
+  body.has-result:not(.detail) .side { position: relative; z-index: 4; max-height: 64dvh; margin-top: -20px; padding-top: 14px; border: 0; border-radius: 22px 22px 0 0; box-shadow: 0 -8px 24px rgba(0,0,0,.35); }
   body.has-result .mapwrap :is(.ol-scale-line, .ol-attribution) { margin-bottom: 20px; }
   body.detail .side { margin-top: 0; }
   /* Mehr Platz fürs Blatt: Übersicht größer und luftiger */
   body.has-result #overview { gap: 10px; }
   body.has-result .plan-name { font-size: 27px; }
+  .ov-plan { padding: 12px 14px; gap: 2px; }
+  .ov-name { font-size: 23px; }
+  .ov-build > .ov-label { margin-bottom: 2px; }
   body.has-result #overview .ov-more { font-size: 15px; }
   .ov-build .big > * { padding: 9px 12px; }
   .ov-build .big b { font-size: 19px; }
