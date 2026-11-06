@@ -765,9 +765,6 @@ body.is3d .view3d { display: block; }
 }
 @media screen and (max-width: 760px) {
   body:not(.has-result) .side > header { padding-bottom: 18px; }
-  /* Karte läuft unter den runden Ecken weiter; Bedienknöpfe rücken etwas nach unten */
-  body:not(.mapfull):not(.is3d):not(.has-result) .mapwrap { margin-top: -28px; }
-  body:not(.mapfull):not(.is3d):not(.has-result) .mapwrap :is(.ol-zoom, .compass, .btn3d, .bfkey) { margin-top: 28px; }
   /* Baufenster-Schalter oben rechts, damit er bei kleiner Karte nicht auf dem Maßstab liegt */
   body.has-result:not(.mapfull):not(.is3d) .mapwrap .bfkey { top: 12px; left: auto; right: 12px; }
   /* Kein Gummiband-Ziehen am Kopf: sonst rutscht die Welle weg und schwarzer Hintergrund schiebt sich über die Karte */
@@ -777,7 +774,7 @@ body.is3d .view3d { display: block; }
   /* Kompakte Leiste: Skyline steht leise am unteren Rand statt hinter dem Schriftzug */
   body.has-result .side > header::after { top: auto; bottom: -2px; height: 40px; opacity: .13; background: #000; }
   /* Nach der Suche: Karte oben, Infos als Blatt darunter */
-  body.has-result .app { grid-template-rows: minmax(0, 1fr) auto; }
+  body.has-result .app { grid-template-rows: minmax(0, 1fr) auto; padding-top: calc(64px + env(safe-area-inset-top, 0px)); }
   body.has-result .mapwrap { order: -1; }
   /* Kopf schwebt als Glasleiste über der Karte; die Suchhistorie wächst unten aus ihr heraus */
   body.has-result:not(.detail) .side > header { position: fixed; top: calc(8px + env(safe-area-inset-top, 0px)); left: 10px; right: 10px; margin: 0; padding: 8px; border-radius: 25px;
@@ -785,7 +782,6 @@ body.is3d .view3d { display: block; }
   body.has-result.searching:not(.detail) .side > header { border-radius: 25px 25px 0 0; }
   body.has-result .recent { background: var(--lg); -webkit-backdrop-filter: var(--lg-blur); backdrop-filter: var(--lg-blur); border-radius: 0 0 25px 25px; }
   body.has-result form.search { background: rgba(118,118,128,.14); }
-  body.has-result:not(.mapfull):not(.is3d) .mapwrap :is(.ol-zoom, .compass, .btn3d, .bfkey) { margin-top: calc(64px + env(safe-area-inset-top, 0px)); }
   body.has-result:not(.detail) .side { position: relative; z-index: 4; max-height: 64dvh; margin-top: -20px; padding-top: 14px; border: 0; border-radius: 22px 22px 0 0; box-shadow: 0 -8px 24px rgba(0,0,0,.35); }
   body.has-result .mapwrap :is(.ol-scale-line, .ol-attribution) { margin-bottom: 20px; }
   body.detail .side { margin-top: 0; }
@@ -1816,7 +1812,7 @@ function fitPlot(duration = 600) {
   const f = plotSrc.getFeatures()[0]; if (!f) return;
   view.cancelAnimations();
   // Zoom etwas näher als früher (Puffer 15 → 8 m, bis 0,18 m/Pixel statt 0,25); links mehr Rand, dort liegen Zoom- und 3D-Knopf
-  view.fit(ol.extent.buffer(f.getGeometry().getExtent(), 8), {padding: isPhone() ? [84, 24, 44, 72] : [40, 40, 40, 100], minResolution: 0.18, duration});
+  view.fit(ol.extent.buffer(f.getGeometry().getExtent(), 8), {padding: isPhone() ? [40, 24, 44, 72] : [40, 40, 40, 100], minResolution: 0.18, duration});
 }
 const relayout = () => requestAnimationFrame(() => { map.updateSize(); fitPlot(0); });
 function toggleDrawer(v) { $("drawer").classList.toggle("open", v); $("drawer").inert = !v; $("backdrop").hidden = !v; $("menuBtn").setAttribute("aria-expanded", v); }
