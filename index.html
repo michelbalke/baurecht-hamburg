@@ -1357,17 +1357,22 @@ const View3D = (() => {
       terrainProvider, animation: false, timeline: false, baseLayerPicker: false, geocoder: false, homeButton: false, sceneModePicker: false, navigationHelpButton: false,
       fullscreenButton: false, infoBox: false, selectionIndicator: false, creditContainer: credits, requestRenderMode: true, maximumRenderTimeChange: Infinity});
     const scene = viewer.scene;
+    // Schärfer: in voller Bildschirmauflösung rechnen (Retina/iPhone), höchstens doppelt, damit es flüssig bleibt; feinere Kacheln
+    viewer.useBrowserRecommendedResolution = false;
+    viewer.resolutionScale = Math.min(1, 2 / (devicePixelRatio || 1));
+    scene.globe.maximumScreenSpaceError = 1.33;
+    if (scene.msaaSupported) scene.msaaSamples = phone ? 2 : 4;
     scene.globe.depthTestAgainstTerrain = true;
     viewer.clock.currentTime = C.JulianDate.fromIso8601("2026-06-21T11:00:00Z"); viewer.clock.shouldAnimate = false; // immer helles Mittagslicht
     scene.fog.enabled = true; scene.fog.density = 0.0002;
-    const ts = me.tileset = await C.Cesium3DTileset.fromUrl(GDI3D + "LoD3_untexturiert/tileset.json", {preferLeaves: true, maximumScreenSpaceError: phone ? 16 : 8});
+    const ts = me.tileset = await C.Cesium3DTileset.fromUrl(GDI3D + "LoD3_untexturiert/tileset.json", {preferLeaves: true, maximumScreenSpaceError: phone ? 6 : 4});
     if (st !== me) return;
     ts.colorBlendMode = C.Cesium3DTileColorBlendMode.MIX; ts.colorBlendAmount = 0.85; // Markierung hell, Fassade bleibt erkennbar
     scene.primitives.add(ts);
     restyle(me);
     // Baufenster aus dem B-Plan als halbtransparente blaue Körper (wie im 3D-Projektplaner), nur wenn auf der Karte eingeblendet
     if (opt.showBf) try {
-      const bt = me.bfTileset = await C.Cesium3DTileset.fromUrl(GDI3D + "Ueberbaubare_Grundstuecksflaechen/tileset.json", {maximumScreenSpaceError: phone ? 16 : 8});
+      const bt = me.bfTileset = await C.Cesium3DTileset.fromUrl(GDI3D + "Ueberbaubare_Grundstuecksflaechen/tileset.json", {maximumScreenSpaceError: phone ? 6 : 4});
       if (st !== me) return;
       bt.style = new C.Cesium3DTileStyle({color: "color('#0a6cff', 0.32)"});
       scene.primitives.add(bt);
