@@ -1324,6 +1324,89 @@ const View3D = (() => {
     showInfo(me, true);
     redraw();
   }
+  // ---------- Stadtplan ohne eingebrannte Straßennamen ----------
+  // Die Stadtplan-Kacheln enthalten die Namen als Bild. Nah am Boden sind die Buchstaben mehrere Meter groß und
+  // ziehen sich über die ganze Straße. Deshalb wird die schwarze Schrift (samt weißem Rand) aus den nahen Kacheln
+  // herausgerechnet; die Straßennamen kommen stattdessen klein und lesbar aus dem Straßennetz (streetLabels).
+  const CLEAN_LEVEL = 16;
+  function mapProvider(C) {
+    const p = new C.WebMapServiceImageryProvider({url: MAP_WMS, layers: MAP_LAYER, parameters: {format: "image/png", transparent: false}, tilingScheme: new C.WebMercatorTilingScheme(), maximumLevel: 19});
+    const load = p.requestImage.bind(p);
+    p.requestImage = (x, y, level, request) => {
+      const r = load(x, y, level, request);
+      return r && level >= CLEAN_LEVEL ? Promise.resolve(r).then(img => { try { return stripText(img); } catch { return img; } }) : r;
+    };
+    return p;
+  }
+  function stripText(img) {
+    const w = img.width, h = img.height, cv = document.createElement("canvas"); cv.width = w; cv.height = h;
+    const cx = cv.getContext("2d", {willReadFrequently: true}); cx.drawImage(img, 0, 0);
+    const id = cx.getImageData(0, 0, w, h), d = id.data, n = w * h, m = new Uint8Array(n);
+    const grey = i => { const r = d[i * 4], g = d[i * 4 + 1], b = d[i * 4 + 2]; return Math.max(r, g, b) - Math.min(r, g, b) < 24 ? (r + g + b) / 3 : -1; };
+    let any = false;
+    for (let i = 0; i < n; i++) { const l = grey(i); if (l >= 0 && l < 120) { m[i] = 1; any = true; } }
+    if (!any) return img;
+    // Maske um 3 Pixel erweitern: Kantenglättung und weißer Schriftrand
+    for (let k = 0; k < 3; k++) {
+      const o = m.slice();
+      for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+        const i = y * w + x; if (m[i]) continue;
+        if ((x > 0 && m[i - 1]) || (x < w - 1 && m[i + 1]) || (y > 0 && m[i - w]) || (y < h - 1 && m[i + w])) o[i] = 1;
+      }
+      m.set(o);
+    }
+    // Jedes Schriftpixel bekommt die häufigste Farbe, die man in 8 Richtungen außerhalb der Schrift trifft
+    const dirs = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [-1, -1], [1, -1], [-1, 1]], out = new Uint8ClampedArray(d);
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      const i = y * w + x; if (!m[i]) continue;
+      const seen = new Map(); let best = -1, bc = 0;
+      for (const [dx, dy] of dirs) {
+        let X = x + dx, Y = y + dy;
+        while (X >= 0 && X < w && Y >= 0 && Y < h && m[Y * w + X]) { X += dx; Y += dy; }
+        if (X < 0 || X >= w || Y < 0 || Y >= h) continue;
+        const j = (Y * w + X) * 4, key = (d[j] << 16) | (d[j + 1] << 8) | d[j + 2], c = (seen.get(key) || 0) + 1;
+        seen.set(key, c); if (c > bc) { bc = c; best = key; }
+      }
+      if (best >= 0) { out[i * 4] = best >> 16; out[i * 4 + 1] = (best >> 8) & 255; out[i * 4 + 2] = best & 255; }
+    }
+    id.data.set(out); cx.putImageData(id, 0, 0);
+    // Cesium liefert die Kachel als ImageBitmap (schon gespiegelt) und erwartet sie so zurück
+    return typeof ImageBitmap !== "undefined" && img instanceof ImageBitmap ? createImageBitmap(cv) : cv;
+  }
+  // Straßennamen aus dem Straßennetz Hamburg (WFS), klein und waagerecht über der Straße
+  const NETZ = "https://geodienste.hamburg.de/HH_WFS_Strassen_und_Wegenetz?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=de.hh.up:strassennetz_gesamt&OUTPUTFORMAT=application/geo%2Bjson";
+  async function streetLabels(me, lon, lat) {
+    const C = Cesium, [x, y] = proj4("EPSG:4326", "EPSG:25832", [lon, lat]), r = 450;
+    let js;
+    try { js = await (await fetch(`${NETZ}&BBOX=${x - r},${y - r},${x + r},${y + r},urn:ogc:def:crs:EPSG::25832`)).json(); } catch (e) { console.warn("Straßennamen", e); return; }
+    if (st !== me || !me.viewer) return;
+    const placed = [], step = 160, gap = 110;
+    for (const f of js.features || []) {
+      const name = f.properties?.strassenname, g = f.geometry;
+      if (!name || !g) continue;
+      for (const line of g.type === "MultiLineString" ? g.coordinates : [g.coordinates]) {
+        let len = 0; const seg = [];
+        for (let i = 1; i < line.length; i++) { const l = Math.hypot(line[i][0] - line[i - 1][0], line[i][1] - line[i - 1][1]); seg.push(l); len += l; }
+        if (len < 25) continue;
+        for (let at = len < step ? len / 2 : step / 2; at < len; at += step) {
+          let a = at, i = 0; while (i < seg.length - 1 && a > seg[i]) a -= seg[i++];
+          const t = seg[i] ? a / seg[i] : 0, p = [line[i][0] + (line[i + 1][0] - line[i][0]) * t, line[i][1] + (line[i + 1][1] - line[i][1]) * t];
+          if (Math.hypot(p[0] - x, p[1] - y) > r) continue;
+          if (placed.some(q => q.name === name && Math.hypot(q.p[0] - p[0], q.p[1] - p[1]) < gap)) continue;
+          placed.push({name, p});
+        }
+      }
+    }
+    const font = `600 13px ${getComputedStyle(document.documentElement).getPropertyValue("--sans").trim() || "system-ui, sans-serif"}`;
+    for (const {name, p} of placed) {
+      const [lo, la] = toLonLat(p);
+      me.viewer.entities.add({position: C.Cartesian3.fromDegrees(lo, la), label: {text: name, font, fillColor: C.Color.fromCssColorString("#3a3a3c"),
+        outlineColor: C.Color.WHITE, outlineWidth: 3, style: C.LabelStyle.FILL_AND_OUTLINE, heightReference: C.HeightReference.CLAMP_TO_GROUND,
+        verticalOrigin: C.VerticalOrigin.CENTER, horizontalOrigin: C.HorizontalOrigin.CENTER, pixelOffset: new C.Cartesian2(0, -4),
+        scaleByDistance: new C.NearFarScalar(150, 1, 1200, 0.7), distanceDisplayCondition: new C.DistanceDisplayCondition(0, 1400), disableDepthTestDistance: 0}});
+    }
+    me.viewer.scene.requestRender();
+  }
   // ---------- Cesium (wie im 3D-Projektplaner) ----------
   let cesiumP = null;
   function loadCesium() {
@@ -1346,7 +1429,7 @@ const View3D = (() => {
     try { terrainProvider = await C.CesiumTerrainProvider.fromUrl(GDI3D + "Gelaende"); } catch { terrainProvider = new C.EllipsoidTerrainProvider(); }
     if (st !== me) return;
     const viewer = me.viewer = new C.Viewer(box, {
-      baseLayer: new C.ImageryLayer(new C.WebMapServiceImageryProvider({url: MAP_WMS, layers: MAP_LAYER, parameters: {format: "image/png", transparent: false}, tilingScheme: new C.WebMercatorTilingScheme(), maximumLevel: 21})),
+      baseLayer: new C.ImageryLayer(mapProvider(C)),
       terrainProvider, animation: false, timeline: false, baseLayerPicker: false, geocoder: false, homeButton: false, sceneModePicker: false, navigationHelpButton: false,
       fullscreenButton: false, infoBox: false, selectionIndicator: false, creditContainer: credits, requestRenderMode: true, maximumRenderTimeChange: Infinity});
     const scene = viewer.scene;
@@ -1380,6 +1463,7 @@ const View3D = (() => {
       viewer.entities.add({polygon: {hierarchy: deg(r), material: C.Color.fromCssColorString("#ffbe1a").withAlpha(0.28), classificationType: C.ClassificationType.TERRAIN}});
       viewer.entities.add({polyline: {positions: deg(r), width: 5, clampToGround: true, material: C.Color.fromCssColorString("#ffbe1a")}});
     }
+    streetLabels(me, lon, lat);
     // Blick schräg auf das Grundstück
     let h = me.gz;
     try { const [c] = await C.sampleTerrainMostDetailed(terrainProvider, [C.Cartographic.fromDegrees(lon, lat)]); if (isFinite(c.height)) h = c.height; } catch { /* Sockelhöhe aus LoD2 */ }
