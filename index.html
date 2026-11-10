@@ -813,7 +813,7 @@ dialog.pro[open] { animation: rise .28s var(--ease) both; }
 
 
 /* ---------- Zusatzkarten im gekauften Bericht ---------- */
-.v3shot { position: fixed; left: -4000px; top: 0; width: 840px; height: 525px; overflow: hidden; pointer-events: none; }
+.v3shot { position: fixed; left: 0; top: 0; width: min(840px, 100vw); aspect-ratio: 840 / 525; overflow: hidden; pointer-events: none; opacity: 0; z-index: -1; } /* im Bild statt weit daneben: das iPhone zeichnet sonst nichts */
 .v3shot canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
 .rep-x .rimg, .rep-x svg.skizze { display: block; width: 100%; height: auto; border-radius: 14px; background: #fff; }
 .rep-x.loading .hint::before { content: ""; display: inline-block; width: 12px; height: 12px; margin-right: 8px; vertical-align: -1px; border-radius: 50%; border: 2px solid var(--line); border-top-color: var(--accent); animation: spin 1s linear infinite; }
@@ -832,7 +832,7 @@ dialog.pro[open] { animation: rise .28s var(--ease) both; }
 .rbar-key i { width: 12px; height: 8px; border-radius: 4px; background: var(--muted); } .rbar-key u { width: 3px; height: 12px; border-radius: 2px; background: var(--accent); }
 .skey { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 8px 0 4px; }
 .skey span { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; } .skey i { width: 14px; height: 10px; border-radius: 3px; box-sizing: border-box; }
-.k-plot { background: #fff4d1; border: 2px solid #d79a00; } .k-bf { background: rgba(10,108,255,.25); border: 1.5px dashed #0a5fe0; } .k-own { background: #9aa0ab; } .k-nb { background: #e3e5ea; }
+.k-plot { background: #fff4d1; border: 2px solid #d79a00; } .k-bf { background: #cfe2ff; border: 1.5px dashed #0a5fe0; } .k-own { background: #9aa0ab; border: 1px solid #5c626d; } .k-nb { background: #e3e5ea; border: 1px solid #b9bdc6; }
 ol.steps { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 8px; line-height: 1.45; }
 .pro button[disabled] { opacity: .55; cursor: default; }
 
@@ -867,7 +867,8 @@ ol.steps { margin: 0; padding-left: 22px; display: flex; flex-direction: column;
   .big b { font-size: 11pt; } .big > * > span { font-size: 7.5pt; }
   #calcOut > :first-child :is(b, span) { color: #000; }
   a.ghostbtn { padding: 0; display: block; background: none; }
-  a[href^="http"]::after { content: " (" attr(href) ")"; font-size: 7pt; color: #444; word-break: break-all; }
+  a[href^="http"] { color: #1f4fa3; text-decoration: underline; }
+  a[href^="http"]::after { content: attr(href); display: block; font-size: 6.5pt; font-weight: 400; color: #444; overflow-wrap: anywhere; } /* Adresse in eigener Zeile und am Stück: so erkennt sie auch ein PDF-Programm als Link */
   dl.rules { column-count: 2; column-gap: 8mm; } dl.rules dt { break-after: avoid; } dl.rules dd { break-inside: avoid; margin-bottom: 4pt; }
   .checks li, .checks li.hit { padding: 1pt 0 1pt 16pt; background: none; font-size: 8.5pt; }
   .checks li::before { left: 0; top: 2pt; }
@@ -886,24 +887,28 @@ ol.steps { margin: 0; padding-left: 22px; display: flex; flex-direction: column;
   .rep-x.loading, .v3shot { display: none !important; }
   #results > section.card { display: block; } #results > section.card > * + * { margin-top: 4pt; } /* Block statt Flex: nur so hält der Browser Überschrift und Text zusammen */
   h2, dl.rules dt { break-after: avoid; page-break-after: avoid; }
-  #results > section.card:has(> dl.rules) { break-before: page; } /* lange Regel-Liste beginnt oben auf einer neuen Seite */
   #results > section.rep-x { break-inside: avoid; }
-  .rep-x .rimg, .rep-x svg.skizze { border: .5pt solid #bbb; border-radius: 0; max-height: 120mm; width: auto; max-width: 100%; margin: 0 auto; }
+  .rep-x .rimg, .rep-x svg.skizze { border: .5pt solid #bbb; border-radius: 0; max-height: 88mm; width: auto; max-width: 100%; margin: 0 auto; }
   .rtab, .rtab.nbt { font-size: 8.5pt; min-width: 0; } .rtab :is(th, td) { padding: 2.5pt 5pt 2.5pt 0; border-color: #bbb; } .rtab.nbt th { font-size: 7.5pt; }
   .rscroll { overflow: visible; }
   .rbar { background: #eee !important; border: .5pt solid #bbb; } .rbar i { background: #888 !important; } .rbar u { background: #1f4fa3 !important; }
   .rbar, .rbar *, .rbar-key *, .skey i, svg.skizze, svg.skizze * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   ol.steps { gap: 3pt; }
 
-  body.report #repCover { display: block; break-after: page; }
-  #repCover h1 { font: 700 22pt/1.1 var(--sans); margin: 0 0 2pt; }
+  body.report #repCover { display: block; margin: 0 0 9pt; padding: 0 0 7pt; border-bottom: .5pt solid #bbb; }
+  #repCover .rep-brand { display: flex; align-items: center; gap: 6pt; margin: 0 0 9pt; font: 700 15pt/1 var(--sans); letter-spacing: -.01em; color: #000; }
+  #repCover .rep-brand i { display: grid; place-items: center; width: 22pt; height: 22pt; border-radius: 6pt; background: #4766f0 !important; color: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  #repCover .rep-brand svg { width: 14pt; height: 14pt; }
+  #repCover .rep-brand small { margin-left: auto; font: 400 8pt/1.2 var(--sans); color: #444; letter-spacing: 0; }
+  #repCover h1 { font: 700 20pt/1.1 var(--sans); margin: 0 0 2pt; }
   #repCover .rep-sub { margin: 0 0 10pt; color: #444; font-size: 9pt; }
-  #repCover table { width: 100%; border-collapse: collapse; margin: 0 0 10pt; font-size: 10pt; }
+  #repCover table { width: 100%; border-collapse: collapse; margin: 0 0 6pt; font-size: 9.5pt; }
   #repCover th { text-align: left; font-weight: 600; width: 34%; color: #444; }
-  #repCover :is(th, td) { padding: 4pt 6pt 4pt 0; border-bottom: .5pt solid #bbb; vertical-align: top; }
-  #repCover h2 { font-size: 12pt; margin: 10pt 0 5pt; }
+  #repCover :is(th, td) { padding: 3pt 6pt 3pt 0; border-bottom: .5pt solid #bbb; vertical-align: top; }
+  #repCover h2 { font-size: 11pt; margin: 8pt 0 4pt; }
+  #repCover td.rep-links b { color: #444; font-weight: 600; } #repCover td.rep-links a { display: block; margin-top: 3pt; }
   #repCover .big { display: grid; grid-template-columns: repeat(4, 1fr); }
-  #repCover img { display: block; width: 100%; max-height: 105mm; object-fit: cover; border: .5pt solid #bbb; margin: 4pt 0 2pt; }
+  #repCover img { display: block; width: 100%; height: 62mm; object-fit: cover; border: .5pt solid #bbb; margin: 4pt 0 2pt; }
   #repCover .rep-legal { font-size: 7.5pt; color: #444; margin-top: 8pt; }
 }
 </style>
@@ -1522,11 +1527,12 @@ const View3D = (() => {
     const viewer = me.viewer = new C.Viewer(box, {
       baseLayer: new C.ImageryLayer(mapProvider(C)),
       terrainProvider, animation: false, timeline: false, baseLayerPicker: false, geocoder: false, homeButton: false, sceneModePicker: false, navigationHelpButton: false,
-      fullscreenButton: false, infoBox: false, selectionIndicator: false, creditContainer: credits, requestRenderMode: true, maximumRenderTimeChange: Infinity});
+      fullscreenButton: false, infoBox: false, selectionIndicator: false, creditContainer: credits, requestRenderMode: true, maximumRenderTimeChange: Infinity,
+      ...(opt.shot ? {contextOptions: {webgl: {preserveDrawingBuffer: true}}} : {})}); // Foto: Bild im Puffer behalten, sonst liest das iPhone nur Schwarz
     const scene = viewer.scene;
     // Schärfer: in voller Bildschirmauflösung rechnen (Retina/iPhone), höchstens doppelt, damit es flüssig bleibt; feinere Kacheln
     viewer.useBrowserRecommendedResolution = false;
-    viewer.resolutionScale = opt.shot ? Math.min(1, 1.5 / (devicePixelRatio || 1)) : Math.min(1, 2 / (devicePixelRatio || 1)); // Foto für den Bericht: kleiner, schont Speicher
+    viewer.resolutionScale = opt.shot ? 1260 / ((opt.el.clientWidth || 840) * (devicePixelRatio || 1)) : Math.min(1, 2 / (devicePixelRatio || 1)); // Foto für den Bericht: immer 1260 px breit, schont Speicher
     scene.globe.maximumScreenSpaceError = 1.33;
     if (scene.msaaSupported) scene.msaaSamples = opt.shot || phone ? 2 : 4;
     scene.globe.depthTestAgainstTerrain = true;
@@ -1726,18 +1732,42 @@ const View3D = (() => {
     me.gl?.getExtension("WEBGL_lose_context")?.loseContext(); me.canvas?.remove();
   }
   // Foto der 3D-Ansicht für den Bericht: wartet, bis Gebäude, Gelände und Baufenster geladen sind
-  async function snapshot(maxMs = 30000) {
+  async function snapshot(maxMs = window.__repCap || 18000) {
     const me = st, t0 = Date.now(); if (!me) return "";
     while (st === me && Date.now() - t0 < maxMs) {
       const v = me.viewer;
-      if (v && me.lon != null && me.tileset?.tilesLoaded && (!me.bfTileset || me.bfTileset.tilesLoaded) && v.scene.globe.tilesLoaded && Date.now() - t0 > 2500) break;
+      if (v && me.lon != null && me.tileset?.tilesLoaded && (!me.bfTileset || me.bfTileset.tilesLoaded) && v.scene.globe.tilesLoaded && Date.now() - t0 > 1200) break;
       if (v) v.scene.requestRender();
-      if (!v && Date.now() - t0 > 12000 && !window.Cesium) return ""; // ohne Cesium (z. B. Datei vom Rechner) gibt es kein Foto
-      await new Promise(r => setTimeout(r, 300));
+      if (!v && Date.now() - t0 > 10000 && !window.Cesium) return ""; // ohne Cesium (z. B. Datei vom Rechner) gibt es kein Foto
+      await new Promise(r => setTimeout(r, 200));
     }
-    if (st !== me || !me.viewer) return "";
-    try { me.sel = -1; restyle(me); me.viewer.render(); return me.viewer.canvas.toDataURL("image/jpeg", 0.88); } catch { return ""; }
+    if (st !== me || !me.viewer || me.lon == null) return "";
+    me.sel = -1; restyle(me);
+    for (let i = 0; i < 2; i++) { const u = await grab(me); if (u || st !== me) return u; await new Promise(r => setTimeout(r, 400)); }
+    return "";
   }
+  // Bild direkt nach dem Zeichnen aus dem Puffer holen; ein schwarzes Bild (iPhone) gilt als misslungen
+  const grab = me => new Promise(res => {
+    const sc = me.viewer.scene, src = me.viewer.canvas, w = src.width, h = src.height;
+    const cv = Object.assign(document.createElement("canvas"), {width: w, height: h}), ctx = cv.getContext("2d", {willReadFrequently: true});
+    const bright = () => { const d = ctx.getImageData(0, 0, w, h).data; let s = 0, n = 0; for (let i = 0; i < d.length; i += 4 * 211) { s += d[i] + d[i + 1] + d[i + 2]; n += 3; } return s / n > 14; };
+    const off = sc.postRender.addEventListener(() => {
+      off();
+      try {
+        ctx.drawImage(src, 0, 0);
+        if (!bright()) { // zweiter Weg: Bildpunkte direkt aus WebGL lesen
+          const gl = src.getContext("webgl2") || src.getContext("webgl"), px = new Uint8Array(w * h * 4), im = ctx.createImageData(w, h);
+          gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, px);
+          for (let y = 0; y < h; y++) im.data.set(px.subarray((h - 1 - y) * w * 4, (h - y) * w * 4), y * w * 4);
+          for (let i = 3; i < im.data.length; i += 4) im.data[i] = 255;
+          ctx.putImageData(im, 0, 0);
+        }
+        res(bright() ? cv.toDataURL("image/jpeg", 0.88) : "");
+      } catch { res(""); }
+    });
+    try { sc.requestRender(); me.viewer.render(); } catch { off(); res(""); }
+    setTimeout(() => { off(); res(""); }, 4000);
+  });
   // Gebäude aus dem 3D-Stadtmodell (LoD2) im Umkreis: Lage (Ost/Nord in Metern ab der Mitte), Höhe und Angaben wie Dachform
   const tileCache = new Map();
   async function buildings(center, r = 70) {
@@ -1959,9 +1989,10 @@ const Bericht = (() => {
     const bar = [5, 10, 20, 50].find(v => v * sc >= 60) || 100;
     return `<svg class="skizze" viewBox="0 0 ${W} ${H}" role="img" aria-label="Skizze: Grundstück mit Baufenster und Maßen" font-family="-apple-system, system-ui, 'Segoe UI', sans-serif" font-size="${fs}">
       <rect width="${W}" height="${H}" fill="#fff"/>
-      <path d="${path(others)}" fill="#e3e5ea" stroke="#b9bdc6" stroke-width="1"/>
       <path d="${path(plotPs)}" fill="#fff4d1" stroke="#d79a00" stroke-width="3" stroke-linejoin="round"/>
-      <path d="${path(bfPs)}" fill="rgba(10,108,255,.16)" stroke="#0a5fe0" stroke-width="2" stroke-dasharray="7 4" fill-rule="evenodd"/>
+      <path d="${path(bfPs)}" fill="#cfe2ff" stroke="#0a5fe0" stroke-width="2" stroke-dasharray="7 4" fill-rule="evenodd"/>
+      <path d="${path(plotPs)}" fill="none" stroke="#d79a00" stroke-width="3" stroke-linejoin="round"/>
+      <path d="${path(others)}" fill="#e3e5ea" stroke="#b9bdc6" stroke-width="1"/>
       <path d="${path(own)}" fill="#9aa0ab" stroke="#5c626d" stroke-width="1.2"/>
       <g fill="#7a5200" font-weight="600" stroke="#fff" stroke-width="3.5" paint-order="stroke">${labels.filter(l => l.includes('"mp"')).join("")}</g>
       <g fill="#0a4fc0" font-weight="600" stroke="#fff" stroke-width="3.5" paint-order="stroke">${labels.filter(l => l.includes('"mb"')).join("")}</g>
@@ -1973,6 +2004,71 @@ const Bericht = (() => {
   // ---------- Karten des Berichts ----------
   const place = (r, el, afterSel) => { const a = [...r.querySelectorAll(afterSel)].pop(); a ? a.after(el) : r.append(el); return el; };
   const rowsHtml = rows => `<table class="rtab">${rows.map(([k, v, cls]) => `<tr class="${cls || ""}"><th>${esc(k)}</th><td>${v}</td></tr>`).join("")}</table>`;
+
+  // ---------- Vorladen: startet, sobald das Kauf-Fenster aufgeht, damit der Bericht nach dem Kauf schnell fertig ist ----------
+  let pre = null;
+  function warm(plot, with3d) {
+    const geom = plot?.geometry, plotPs = polysOf(geom); if (!plotPs.length) return null;
+    const ext = geom.getExtent(), center = ol.extent.getCenter(ext), key = center.map(Math.round).join(",");
+    if (pre?.key !== key) {
+      pre = {key, plotPs, ext, center};
+      pre.data = loadData(plot, plotPs, ext);
+      pre.lod = pre.data.then(d => d && lodHeights(center, d.alk)).catch(() => {});
+      pre.plan = planUrl(plotPs, ext, center).catch(() => "");
+    }
+    if (with3d && !pre.shot && !(typeof View3D !== "undefined" && View3D.isOpen())) { const p = pre; p.shot = p.data.then(d => shot3d(p, d)).then(u => { if (!u) p.shot = null; return u; }); }
+    return pre;
+  }
+  const loadData = (plot, plotPs, ext) => (async () => {
+      const [alkRaw, bfRaw] = await Promise.all([alkisBuildings(ol.extent.buffer(ext, 45)), typeof Baufenster === "undefined" ? [] : Baufenster.load(ol.extent.buffer(ext, 30)).catch(() => [])]);
+      const alk = alkRaw.map(f => ({f, polys: polysOf(f.geometry), area: polysOf(f.geometry).reduce((s, p) => s + p.getArea(), 0), fn: f.props.funktion || "Gebäude", vg: parseInt(f.props.anzahlgs, 10) || null}));
+      const bfPs = bfRaw.flatMap(b => b.polys.map(p => new ol.geom.Polygon(p))).filter(p => ol.extent.intersects(p.getExtent(), ext));
+      // Flächen über ein Punktraster: Grundstück, bebaut, im Baufenster
+      const A = plotPs.reduce((s, p) => s + p.getArea(), 0), step = Math.max(0.25, Math.sqrt(A / 60000));
+      let n = 0, nBf = 0, nBfBuilt = 0; alk.forEach(a => a.on = 0);
+      const cand = alk.filter(a => ol.extent.intersects(a.f.geometry.getExtent(), ext));
+      for (let x = ext[0] + step / 2; x < ext[2]; x += step) for (let y = ext[1] + step / 2; y < ext[3]; y += step) {
+        const c = [x, y]; if (!inAny(plotPs, c)) continue;
+        n++; const inBf = inAny(bfPs, c); if (inBf) nBf++;
+        const b = cand.find(a => inAny(a.polys, c)); if (b) { b.on++; if (inBf) nBfBuilt++; }
+      }
+      const k = n ? A / n : 0; alk.forEach(a => { a.onArea = a.on * k; a.own = a.onArea > Math.max(2, a.area * 0.5); });
+      return {alk, bfPs, A, bf: nBf * k, bfBuilt: nBfBuilt * k, own: alk.filter(a => a.own), rest: alk.filter(a => !a.own)};
+    })().catch(() => null);
+  // Ausschnitt aus der Planzeichnung, Grundstück gelb umrandet
+  async function planUrl(plotPs, ext, center) {
+    const w = Math.max(260, Math.max(ext[2] - ext[0], (ext[3] - ext[1]) * 1.5) * 2.2 + 80), h = w / 1.5, bb = [center[0] - w / 2, center[1] - h / 2, center[0] + w / 2, center[1] + h / 2]; // weiter Ausschnitt: die Umgebung und die Einträge des Plans sollen lesbar bleiben
+    const src = `${RASTER}?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&LAYERS=bp_raster&STYLES=&CRS=EPSG:25832&BBOX=${bb.map(v => v.toFixed(2))}&WIDTH=1500&HEIGHT=1000&FORMAT=image/png`;
+    let img = null; // der Dienst ist mal schnell, mal langsam und antwortet manchmal erst beim zweiten Mal
+    for (let i = 0; i < 3 && !img; i++) { if (i) await new Promise(res => setTimeout(res, 1500 * i)); img = await loadImg(src + (i ? "&_=" + i : ""), true); }
+    if (!img) return "";
+    const cv = Object.assign(document.createElement("canvas"), {width: 1500, height: 1000}), ctx = cv.getContext("2d");
+    ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, 1500, 1000); ctx.drawImage(img, 0, 0, 1500, 1000);
+    try { // leeres Bild (kein gescannter Plan an dieser Stelle) erkennen
+      const px = ctx.getImageData(0, 0, 1500, 1000).data; let diff = 0, cnt = 0;
+      for (let i = 0; i < px.length; i += 4 * 97) { cnt++; if (Math.abs(px[i] - px[0]) + Math.abs(px[i + 1] - px[1]) + Math.abs(px[i + 2] - px[2]) > 24) diff++; }
+      if (diff / cnt < 0.02) return "";
+      const sx = 1500 / w, P = c => [(c[0] - bb[0]) * sx, (bb[3] - c[1]) * sx];
+      for (const [lw, col] of [[12, "rgba(255,255,255,.9)"], [6, "#e6a700"]]) { ctx.lineWidth = lw; ctx.strokeStyle = col; ctx.lineJoin = "round"; ctx.beginPath(); for (const p of plotPs) for (const ring of p.getCoordinates()) { ring.forEach((c, i) => ctx[i ? "lineTo" : "moveTo"](...P(c))); ctx.closePath(); } ctx.stroke(); }
+      return cv.toDataURL("image/jpeg", 0.85);
+    } catch { return ""; }
+  }
+  // Foto aus der 3D-Ansicht: unsichtbar öffnen, warten bis alles geladen ist, fotografieren, schließen
+  async function shot3d(p, d, force) {
+    if (typeof View3D === "undefined" || location.protocol === "file:" || window.__no3d) return "";
+    if (View3D.isOpen()) { if (!force) return ""; if (typeof close3d === "function") close3d(); }
+    const el = Object.assign(document.createElement("div"), {className: "v3shot"}); document.body.append(el);
+    const ringsOf = ps => ps.map(q => q.getCoordinates()[0]);
+    let url = "";
+    try {
+      const sel = typeof selSrc === "undefined" ? [] : selSrc.getFeatures().flatMap(f => ringsOf(polysOf(f.getGeometry())));
+      View3D.open({el, center: p.center, plot: ringsOf(p.plotPs), plan: sel, bf: ringsOf(d?.bfPs || []), showBf: true, shot: true, onInfo: () => {}, onStatus: () => {}});
+      url = await View3D.snapshot();
+    } catch { /* ohne Bild weiter */ }
+    if (!document.body.classList.contains("is3d")) View3D.close(); // nicht schließen, falls inzwischen die echte 3D-Ansicht offen ist
+    el.remove();
+    return url;
+  }
 
   async function build(r, plot, rep) {
     r.querySelectorAll(".rep-x").forEach(x => x.remove());
@@ -1997,23 +2093,7 @@ const Bericht = (() => {
     steps.before(cNb);
     const done = (c, html) => { if (html) { c.classList.remove("loading"); c.querySelector("h2").nextElementSibling.outerHTML = html; } else c.remove(); };
 
-    // Gebäude und Baufenster
-    const dataP = (async () => {
-      const [alkRaw, bfRaw] = await Promise.all([alkisBuildings(ol.extent.buffer(ext, 45)), typeof Baufenster === "undefined" ? [] : Baufenster.load(ol.extent.buffer(ext, 30)).catch(() => [])]);
-      const alk = alkRaw.map(f => ({f, polys: polysOf(f.geometry), area: polysOf(f.geometry).reduce((s, p) => s + p.getArea(), 0), fn: f.props.funktion || "Gebäude", vg: parseInt(f.props.anzahlgs, 10) || null}));
-      const bfPs = bfRaw.flatMap(b => b.polys.map(p => new ol.geom.Polygon(p))).filter(p => ol.extent.intersects(p.getExtent(), ext));
-      // Flächen über ein Punktraster: Grundstück, bebaut, im Baufenster
-      const A = plotPs.reduce((s, p) => s + p.getArea(), 0), step = Math.max(0.25, Math.sqrt(A / 60000));
-      let n = 0, nBf = 0, nBfBuilt = 0; alk.forEach(a => a.on = 0);
-      const cand = alk.filter(a => ol.extent.intersects(a.f.geometry.getExtent(), ext));
-      for (let x = ext[0] + step / 2; x < ext[2]; x += step) for (let y = ext[1] + step / 2; y < ext[3]; y += step) {
-        const c = [x, y]; if (!inAny(plotPs, c)) continue;
-        n++; const inBf = inAny(bfPs, c); if (inBf) nBf++;
-        const b = cand.find(a => inAny(a.polys, c)); if (b) { b.on++; if (inBf) nBfBuilt++; }
-      }
-      const k = n ? A / n : 0; alk.forEach(a => { a.onArea = a.on * k; a.own = a.onArea > Math.max(2, a.area * 0.5); });
-      return {alk, bfPs, A, bf: nBf * k, bfBuilt: nBfBuilt * k, own: alk.filter(a => a.own), rest: alk.filter(a => !a.own)};
-    })().catch(() => null);
+    const pre = warm(plot, true), dataP = pre.data;
 
     const rech = dataP.then(d => {
       if (!d) return done(cRech, "");
@@ -2049,7 +2129,7 @@ const Bericht = (() => {
     const nb = dataP.then(async d => {
       if (!d) return done(cNb, "");
       const rings = plotPs.flatMap(p => p.getCoordinates());
-      await lodHeights(center, d.alk).catch(() => {});
+      await pre.lod;
       const list = d.rest.filter(a => a.area >= 30 && !NEBEN.test(a.fn)).map(a => ({...a, dist: Math.min(...a.polys.flatMap(p => p.getCoordinates()[0]).map(c => ringDist(c, rings)))}))
         .filter(a => a.dist <= 40).sort((a, b) => a.dist - b.dist).slice(0, 8);
       if (!list.length) return done(cNb, "");
@@ -2062,49 +2142,18 @@ const Bericht = (() => {
         <p class="hint">Wichtig, wenn sich ein Neubau in die Umgebung einfügen muss (§ 34 BauGB) oder das Amt über Ausnahmen entscheidet. Höhe: Gelände bis höchster Punkt des Dachs, aus dem 3D-Stadtmodell.</p></div>`);
     });
 
-    // Ausschnitt aus der Planzeichnung, Grundstück gelb umrandet
-    const planImg = (async () => {
-      const w = Math.max(ext[2] - ext[0], (ext[3] - ext[1]) * 1.5) + 60, h = w / 1.5, bb = [center[0] - w / 2, center[1] - h / 2, center[0] + w / 2, center[1] + h / 2];
-      const src = `${RASTER}?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&LAYERS=bp_raster&STYLES=&CRS=EPSG:25832&BBOX=${bb.map(v => v.toFixed(2))}&WIDTH=1200&HEIGHT=800&FORMAT=image/png`;
-      const img = await loadImg(src, true) || await new Promise(res => setTimeout(res, 1500)).then(() => loadImg(src + "&_=2", true)); // der Dienst antwortet manchmal erst beim zweiten Mal
-      if (!img) return done(cPlan, "");
-      const cv = Object.assign(document.createElement("canvas"), {width: 1200, height: 800}), ctx = cv.getContext("2d");
-      ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, 1200, 800); ctx.drawImage(img, 0, 0, 1200, 800);
-      let url = "";
-      try { // leeres Bild (kein gescannter Plan an dieser Stelle) erkennen
-        const px = ctx.getImageData(0, 0, 1200, 800).data; let diff = 0, cnt = 0;
-        for (let i = 0; i < px.length; i += 4 * 97) { cnt++; if (Math.abs(px[i] - px[0]) + Math.abs(px[i + 1] - px[1]) + Math.abs(px[i + 2] - px[2]) > 24) diff++; }
-        if (diff / cnt < 0.02) return done(cPlan, "");
-        const sx = 1200 / w, P = c => [(c[0] - bb[0]) * sx, (bb[3] - c[1]) * sx];
-        for (const [lw, col] of [[14, "rgba(255,255,255,.9)"], [7, "#e6a700"]]) { ctx.lineWidth = lw; ctx.strokeStyle = col; ctx.lineJoin = "round"; ctx.beginPath(); for (const p of plotPs) for (const ring of p.getCoordinates()) { ring.forEach((c, i) => ctx[i ? "lineTo" : "moveTo"](...P(c))); ctx.closePath(); } ctx.stroke(); }
-        url = cv.toDataURL("image/jpeg", 0.85);
-      } catch { return done(cPlan, ""); }
-      done(cPlan, `<div><img class="rimg" src="${url}" alt="Ausschnitt aus der Planzeichnung, Grundstück gelb umrandet">
-        <p class="hint">Gescannte Planzeichnung der Stadt, Ihr Grundstück ist gelb umrandet. Die Zeichen erklärt die Legende im Originalplan (Link in diesem Bericht).</p></div>`);
-    })().catch(() => done(cPlan, ""));
-
-    // Foto aus der 3D-Ansicht: unsichtbar öffnen, warten bis alles geladen ist, fotografieren, schließen
-    const img3d = dataP.then(async d => {
-      if (typeof View3D === "undefined" || location.protocol === "file:" || window.__no3d) return done(c3d, "");
-      if (typeof close3d === "function") close3d();
-      const el = Object.assign(document.createElement("div"), {className: "v3shot"}); document.body.append(el);
-      const ringsOf = ps => ps.map(p => p.getCoordinates()[0]);
-      let url = "";
-      try {
-        const sel = typeof selSrc === "undefined" ? [] : selSrc.getFeatures().flatMap(f => ringsOf(polysOf(f.getGeometry())));
-        View3D.open({el, center, plot: ringsOf(plotPs), plan: sel, bf: ringsOf(d?.bfPs || []), showBf: true, shot: true, onInfo: () => {}, onStatus: () => {}});
-        url = await View3D.snapshot();
-      } catch { /* ohne Bild weiter */ }
-      if (!document.body.classList.contains("is3d")) View3D.close(); // nicht schließen, falls inzwischen die echte 3D-Ansicht offen ist
-      el.remove();
+    const planImg = pre.plan.then(url => done(cPlan, url ? `<div><img class="rimg" src="${url}" alt="Ausschnitt aus der Planzeichnung, Grundstück gelb umrandet">
+        <p class="hint">Gescannte Planzeichnung der Stadt, Ihr Grundstück ist gelb umrandet. Die Zeichen erklärt die Legende im Originalplan (Link in diesem Bericht).</p></div>` : ""));
+    if (!pre.shot) pre.shot = dataP.then(d => shot3d(pre, d, true));
+    const img3d = Promise.all([dataP, pre.shot]).then(([d, url]) => { if (!url) pre.shot = null;
       done(c3d, url ? `<div><img class="rimg" src="${url}" alt="3D-Ansicht: Grundstück gelb, Baufenster blau">
-        <p class="hint">Gelb: Ihr Grundstück. Blau: das Baufenster aus dem Bebauungsplan${d?.bfPs.length ? "" : " (für diesen Plan liegen keine Baufenster als Daten vor)"}. Grau: Gebäude aus dem 3D-Stadtmodell der Stadt Hamburg.</p></div>` : "");
-    });
+        <p class="hint">Gelb: Ihr Grundstück. Blau: das Baufenster aus dem Bebauungsplan${d?.bfPs.length ? "" : " (für diesen Plan liegen keine Baufenster als Daten vor)"}. Grau: Gebäude aus dem 3D-Stadtmodell der Stadt Hamburg.</p></div>` : ""); });
 
-    await Promise.race([Promise.allSettled([rech, sk, nb, planImg, img3d]), new Promise(res => setTimeout(res, 40000))]);
-    r.querySelectorAll(".rep-x.loading").forEach(x => x.remove()); // was nach 40 s nicht da ist, entfällt
+    // Fertig, sobald alles da ist, spätestens nach 12 s. Was länger braucht (Planbild, 3D-Bild), erscheint danach von selbst.
+    const all = Promise.allSettled([rech, sk, nb, planImg, img3d]).then(() => [cRech, cSk, c3d, cNb, cPlan].forEach(c => c.classList.contains("loading") && c.remove()));
+    await Promise.race([all, new Promise(res => setTimeout(res, window.__repCap || 12000))]);
   }
-  return {build};
+  return {build, warm};
 })();
 </script>
 <script>
@@ -2893,7 +2942,8 @@ const PRO_VIEWS = {
     <p class="pro-note">Vorschau: Es wurde nichts verschickt. So sähe die Anfrage an das Büro aus:</p><pre>${esc(txt)}</pre>
     <button type="button" class="wide" data-pro="close">Fertig</button>`
 };
-function proView(v, arg) { proIn.innerHTML = PRO_VIEWS[v](arg); proIn.parentElement.scrollTop = 0; if (!proDlg.open) proDlg.showModal(); }
+function proView(v, arg) { if (!bezahlt && (v === "start" || v === "report")) try { Bericht.warm(lastPlot, v === "report"); } catch { /* Vorladen ist nur Tempo */ }
+  proIn.innerHTML = PRO_VIEWS[v](arg); proIn.parentElement.scrollTop = 0; if (!proDlg.open) proDlg.showModal(); }
 proDlg.addEventListener("click", e => { if (e.target === proDlg) proDlg.close(); }); // Tipp neben das Fenster schließt
 document.addEventListener("click", e => {
   const b = e.target.closest("[data-pro]"); if (!b) return;
@@ -2952,12 +3002,12 @@ function prepareReport() {
   const dm = qs('#overview [data-go="denkmal"] .ov-val')?.textContent || "nicht geprüft";
   const tiles = [...document.querySelectorAll("#ovBuild .big > span")].map(t => `<span><b>${esc(t.querySelector("b")?.textContent || "")}</b><span>${esc(t.querySelector(":scope > span")?.textContent || "")}</span></span>`).join("");
   const img = rep.img || mapImage(), row = (k, v) => v ? `<tr><th>${esc(k)}</th><td>${v}</td></tr>` : "";
-  $("repCover").innerHTML = `<p class="rep-brand">MoinPlan</p><h1>Grundstücksbericht</h1><p class="rep-sub">Nr. ${nr} · erstellt am ${date}</p>
+  $("repCover").innerHTML = `<p class="rep-brand"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M10 21v-6h4v6"/></svg></i>MoinPlan<small>Planungsrecht für mein Hamburger Grundstück</small></p><h1>Grundstücksbericht</h1><p class="rep-sub">Nr. ${nr} · erstellt am ${date}</p>
     <table>${row("Ort", esc(rep.place || ""))}${row("Flurstück", esc(rep.flst || ""))}${row("Grundstücksfläche", rep.area ? fmt(rep.area) + " m²" : "")}${row("Geltender Plan", esc(rep.plan || ""))}${row("Stand", esc(rep.status || ""))}${row("Denkmalschutz", esc(dm))}
-      ${row("Originalpläne", (rep.links || []).map(l => `<a href="${esc(l.u)}">${esc(l.label)}</a>`).join("<br>"))}</table>
+      ${rep.links?.length ? `<tr><td colspan="2" class="rep-links"><b>Originalpläne</b>${rep.links.map(l => `<a href="${esc(l.u)}" target="_blank" rel="noopener">${esc(l.label)}</a>`).join("")}</td></tr>` : ""}</table>
     ${tiles ? `<h2>Was darf ich bauen?</h2><div class="big">${tiles}</div>` : ""}
     ${img ? `<h2>Lage</h2><img src="${img}" alt="Kartenausschnitt">` : ""}
-    <p class="rep-legal">Zusammenstellung aus offenen Daten der Freien und Hansestadt Hamburg (Datenlizenz Deutschland Namensnennung 2.0). Keine Rechtsberatung und keine Genehmigung. Ob gebaut werden darf, entscheidet allein das Bauamt (Bezirksamt); Sicherheit gibt ein Bauvorbescheid. Auf den folgenden Seiten stehen alle Details.</p>`;
+    <p class="rep-legal">Zusammenstellung aus offenen Daten der Freien und Hansestadt Hamburg (Datenlizenz Deutschland Namensnennung 2.0). Keine Rechtsberatung und keine Genehmigung. Ob gebaut werden darf, entscheidet allein das Bauamt (Bezirksamt); Sicherheit gibt ein Bauvorbescheid. Danach folgen alle Details.</p>`;
   body.add("report");
 }
 addEventListener("afterprint", () => body.remove("report"));
