@@ -899,8 +899,8 @@ ol.steps { margin: 0; padding-left: 22px; display: flex; flex-direction: column;
   #repCover .rep-brand { display: flex; align-items: center; gap: 9pt; margin: 0 0 12pt; color: #15202b; }
   #repCover .rep-brand svg { width: 26pt; height: 26pt; flex: none; }
   #repCover .rep-brand span { display: flex; flex-direction: column; gap: 3pt; padding-left: 9pt; border-left: .8pt solid #15202b; }
-  #repCover .rep-brand b { font: 500 15pt/1 var(--sans); letter-spacing: .2em; }
-  #repCover .rep-brand small { font: 400 6.5pt/1 var(--sans); letter-spacing: .32em; }
+  #repCover .rep-brand b { font: 700 17pt/1 var(--sans); letter-spacing: -.02em; }
+  #repCover .rep-brand small { font: 500 8pt/1 var(--sans); letter-spacing: 0; color: #444; }
   #repCover h1 { font: 700 20pt/1.1 var(--sans); margin: 0 0 2pt; }
   #repCover .rep-sub { margin: 0 0 10pt; color: #444; font-size: 9pt; }
   #repCover table { width: 100%; border-collapse: collapse; margin: 0 0 6pt; font-size: 9.5pt; }
@@ -913,14 +913,14 @@ ol.steps { margin: 0; padding-left: 22px; display: flex; flex-direction: column;
   #repCover .rep-legal { font-size: 7.5pt; color: #444; margin-top: 8pt; }
 }
 
-/* Vorschau: Michels Logo im Kopf */
+/* Logo im Kopf: Michels Zeichen, Schriftzug in der Apple-Systemschrift wie der Rest */
 .side > header .logo { background: transparent; }
 .side > header .logo svg { width: 30px; height: 30px; }
-.side > header h1 { display: flex; flex-direction: column; gap: 5px; padding-left: 12px; border-left: 1px solid rgba(255,255,255,.55); font: 500 21px/1 var(--display); letter-spacing: .2em; }
-.side > header h1 small { font: 450 8.5px/1 var(--display); letter-spacing: .34em; color: rgba(255,255,255,.75); }
+.side > header h1 { display: flex; flex-direction: column; gap: 3px; padding-left: 12px; border-left: 1px solid rgba(255,255,255,.4); font: 700 24px/1 var(--sans); letter-spacing: -.02em; }
+.side > header h1 small { font: 500 12.5px/1.1 var(--sans); letter-spacing: 0; color: rgba(255,255,255,.7); }
 @media (max-width: 760px) {
-  .side > header h1 { font-size: 19px; }
-  body.has-result .side > header h1 { font-size: 15px; letter-spacing: .14em; padding-left: 9px; gap: 0; }
+  .side > header h1 { font-size: 22px; }
+  body.has-result .side > header h1 { font-size: 19px; padding-left: 9px; gap: 0; }
   body.has-result .side > header h1 small { display: none; }
   body.has-result .side > header .logo svg { width: 25px; height: 25px; }
 }
@@ -944,7 +944,7 @@ ol.steps { margin: 0; padding-left: 22px; display: flex; flex-direction: column;
   <aside class="side">
     <header>
       <button type="button" class="logo" id="homeBtn" aria-label="Zur Startseite" title="Zur Startseite"><svg viewBox="0 0 215 213" aria-hidden="true"><path d="M0 68 117 0v73L70 100v113H0ZM135 118l80-46v141h-80Z" fill="currentColor"/></svg></button>
-      <div><h1>MOIN PLAN<small>BAURECHT HAMBURG</small></h1></div>
+      <div><h1>MoinPlan<small>Baurecht Hamburg</small></h1></div>
       <button type="button" class="menubtn" id="menuBtn" aria-label="Menü öffnen" aria-controls="drawer" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
       <figure class="banner"><figcaption>Planungsrecht für mein Hamburger Grundstück</figcaption></figure>
       <form class="search" id="searchForm">
@@ -3050,7 +3050,7 @@ function prepareReport() {
   const dm = qs('#overview [data-go="denkmal"] .ov-val')?.textContent || "nicht geprüft";
   const tiles = [...document.querySelectorAll("#ovBuild .big > span")].map(t => `<span><b>${esc(t.querySelector("b")?.textContent || "")}</b><span>${esc(t.querySelector(":scope > span")?.textContent || "")}</span></span>`).join("");
   const img = rep.img || mapImage(), row = (k, v) => v ? `<tr><th>${esc(k)}</th><td>${v}</td></tr>` : "";
-  $("repCover").innerHTML = `<p class="rep-brand"><svg viewBox="0 0 215 213" aria-hidden="true"><path d="M0 68 117 0v73L70 100v113H0ZM135 118l80-46v141h-80Z" fill="#15202b"/></svg><span><b>MOIN PLAN</b><small>BAURECHT HAMBURG</small></span></p><h1>Grundstücksbericht</h1><p class="rep-sub">Nr. ${nr} · erstellt am ${date}</p>
+  $("repCover").innerHTML = `<p class="rep-brand"><svg viewBox="0 0 215 213" aria-hidden="true"><path d="M0 68 117 0v73L70 100v113H0ZM135 118l80-46v141h-80Z" fill="#15202b"/></svg><span><b>MoinPlan</b><small>Baurecht Hamburg</small></span></p><h1>Grundstücksbericht</h1><p class="rep-sub">Nr. ${nr} · erstellt am ${date}</p>
     <table>${row("Ort", esc(rep.place || ""))}${row("Flurstück", esc(rep.flst || ""))}${row("Grundstücksfläche", rep.area ? fmt(rep.area) + " m²" : "")}${row("Geltender Plan", esc(rep.plan || ""))}${row("Stand", esc(rep.status || ""))}${row("Denkmalschutz", esc(dm))}
       ${rep.links?.length ? `<tr><td colspan="2" class="rep-links"><b>Originalpläne</b>${rep.links.map(l => `<a href="${esc(l.u)}" target="_blank" rel="noopener">${esc(l.label)}</a>`).join("")}</td></tr>` : ""}</table>
     ${tiles ? `<h2>Was darf ich bauen?</h2><div class="big">${tiles}</div>` : ""}
