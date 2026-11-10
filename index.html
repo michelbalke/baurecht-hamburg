@@ -773,6 +773,44 @@ body.is3d .view3d { display: block; }
   .ov-row .ov-label, .ov-build > .ov-label { font-size: 17px; }
 }
 
+
+/* ---------- Genauer wissen: Grundstücks-Report und Fachfrage (Vorschau) ---------- */
+.ov-pro { box-shadow: inset 4px 0 0 var(--navy), var(--shadow); }
+.ov-pro .ov-label small { display: block; font-size: 12.5px; color: var(--muted); font-weight: 450; margin-top: 2px; }
+.pro-btns { display: flex; flex-wrap: wrap; gap: 8px; }
+dialog.pro { border: 0; padding: 0; background: var(--panel); color: var(--fg); border-radius: 24px; width: min(460px, calc(100vw - 32px)); max-height: calc(100dvh - 48px); box-shadow: var(--shadow-lg); overscroll-behavior: contain; }
+dialog.pro::backdrop { background: rgba(0,0,0,.6); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
+dialog.pro[open] { animation: rise .28s var(--ease) both; }
+@media (max-width: 760px) { dialog.pro { margin: auto 0 0; width: 100%; max-width: 100%; max-height: 92dvh; border-radius: 24px 24px 0 0; } }
+.pro-in { padding: 18px 18px calc(18px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 12px; }
+.pro-top { display: flex; align-items: center; gap: 10px; }
+.pro-top h3 { flex: 1; margin: 0; font: 700 21px/1.2 var(--display); }
+.pro-top button.ghost { flex: none; }
+.pro-for { margin: -4px 0 0; font-size: 13.5px; color: var(--muted); }
+.pro-opt { all: unset; box-sizing: border-box; cursor: pointer; display: flex; flex-direction: column; gap: 4px; padding: 14px 16px; border-radius: 18px; background: var(--fill); -webkit-tap-highlight-color: transparent; transition: transform .2s var(--ease); }
+.pro-opt:active { transform: scale(.98); }
+.pro-opt:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.pro-t { font-weight: 650; font-size: 16px; }
+.pro-d { font-size: 13.5px; line-height: 1.4; color: var(--muted); }
+.pro-p { margin-top: 4px; font-weight: 650; color: var(--accent); font-size: 14.5px; }
+.pro ul.pro-list { margin: 0; padding-left: 20px; font-size: 14px; line-height: 1.5; }
+.pro-price { display: flex; align-items: baseline; justify-content: space-between; padding: 12px 14px; border-radius: 14px; background: var(--fill); font-weight: 600; }
+.pro-price b { font: 700 22px/1 var(--display); }
+.pro-note { margin: 0; padding: 10px 12px; border-radius: 12px; background: var(--warn-soft); color: var(--warn); font-size: 13px; line-height: 1.4; }
+.pro-in > button.ghost:is([data-pro="start"], .pro-free) { align-self: flex-start; }
+.pro .pro-d { margin: 0; }
+.pro button.wide { justify-content: center; width: 100%; box-sizing: border-box; padding: 12px 16px; font-size: 16px; }
+.pro form { display: flex; flex-direction: column; gap: 10px; }
+.pro form label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; font-weight: 600; color: var(--muted); }
+.pro form :is(input:not([type=checkbox]), select, textarea) { font: inherit; font-size: 16px; color: var(--fg); background: var(--fill); border: 1px solid transparent; border-radius: 12px; padding: 10px 12px; }
+.pro form textarea { min-height: 96px; resize: vertical; }
+.pro form label.consent { flex-direction: row; align-items: flex-start; gap: 8px; font-weight: 450; line-height: 1.4; }
+.pro form label.consent input { margin-top: 3px; flex: none; }
+.pro-ctx { font-size: 13px; color: var(--muted); padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line); }
+.pro-ctx b { color: var(--fg); }
+.pro pre { white-space: pre-wrap; font: 12.5px/1.45 ui-monospace, Menlo, monospace; background: var(--fill); padding: 10px 12px; border-radius: 12px; margin: 0; max-height: 34vh; overflow: auto; }
+#repCover { display: none; }
+
 /* ---------- Merkblatt (Drucken): kompakt, höchstens drei Seiten ---------- */
 .printonly { display: none; }
 @media print {
@@ -809,12 +847,26 @@ body.is3d .view3d { display: block; }
   .checks li, .checks li.hit { padding: 1pt 0 1pt 16pt; background: none; font-size: 8.5pt; }
   .checks li::before { left: 0; top: 2pt; }
   .view3d, .mbar, .lpring, .mtip, .tip, .bfkey { display: none !important; }
+  dialog.pro { display: none !important; }
+  body:not(.bezahlt) #results .ext { display: none !important; } /* erweiterte Infos nur nach dem Kauf im Druck */
+  body.report #repCover { display: block; break-after: page; }
+  #repCover h1 { font: 700 22pt/1.1 var(--sans); margin: 0 0 2pt; }
+  #repCover .rep-sub { margin: 0 0 10pt; color: #444; font-size: 9pt; }
+  #repCover table { width: 100%; border-collapse: collapse; margin: 0 0 10pt; font-size: 10pt; }
+  #repCover th { text-align: left; font-weight: 600; width: 34%; color: #444; }
+  #repCover :is(th, td) { padding: 4pt 6pt 4pt 0; border-bottom: .5pt solid #bbb; vertical-align: top; }
+  #repCover h2 { font-size: 12pt; margin: 10pt 0 5pt; }
+  #repCover .big { display: grid; grid-template-columns: repeat(4, 1fr); }
+  #repCover img { display: block; width: 100%; max-height: 105mm; object-fit: cover; border: .5pt solid #bbb; margin: 4pt 0 2pt; }
+  #repCover .rep-legal { font-size: 7.5pt; color: #444; margin-top: 8pt; }
 }
 </style>
 
 </head>
 <body>
 <div id="printHead" class="printonly"></div>
+<section id="repCover" class="printonly"></section>
+<dialog class="pro" id="pro" aria-labelledby="proH"><div class="pro-in" id="proIn"></div></dialog>
 <div class="backdrop" id="backdrop" hidden></div>
 <nav class="drawer" id="drawer" aria-label="Menü">
   <button type="button" class="ghost close" id="drawerClose">Schließen ✕</button>
@@ -1936,7 +1988,7 @@ on("homeBtn", "click", () => {
   requestAnimationFrame(() => { map.updateSize(); view.cancelAnimations(); view.animate({...CFG.start, duration: 500}); });
 });
 document.addEventListener("click", e => {
-  const go = e.target.closest("[data-go]"); if (go) return openDetail(go.dataset.go);
+  const go = e.target.closest("[data-go]"); if (go) return go.dataset.go === "" && !bezahlt ? proView("start") : openDetail(go.dataset.go);
   if (e.target.closest("#backBtn")) closeDetail();
 });
 
@@ -2055,6 +2107,8 @@ async function queryAt(coord, placeName) {
 const linkBtns = p => `<div class="linkbtns">${pdfLinks(p).map(l => `<a class="btn ghostbtn" href="${esc(l.u)}" target="_blank" rel="noopener">${esc(l.label)} ansehen</a>`).join("")}</div>`;
 const li = a => a.map(x => `<li>${esc(x)}</li>`).join("");
 function renderResult(coord, placeName, plans, plot) {
+  lastPlot = plot;
+  bezahlt = false; extended = false; body.remove("bezahlt"); // Kauf gilt je Grundstück
   const r = $("results"), first = !body.contains("has-result"); r.innerHTML = "";
   body.add("has-result"); body.remove("detail"); placeSearch(true); dmLayer.changed();
   r.append(Object.assign(document.createElement("div"), {className: "backbar noprint", innerHTML: `<button type="button" class="ghost" id="backBtn">‹ Zurück zur Übersicht</button>`}));
@@ -2110,8 +2164,10 @@ function renderOverview(main, sum, placeName) {
       <span class="ov-name">${esc(name).replace(/(Baustufen|Teilbebauungs|Durchführungs|Bebauungs)(plan)/, "$1&shy;$2")}</span>
       <span class="ov-more">Weitere Infos zur Bebaubarkeit ›</span></button>
     ${typeof CHECKS === "undefined" ? "" : `<button type="button" class="ov-box ov-row" data-go="denkmal"><span class="ov-label">Denkmalschutz</span><b class="ov-val">wird geprüft …</b><span class="ov-more">›</span></button>`}
-    <button type="button" class="ov-build" data-go="calc" id="ovBuild"></button>`;
+    <button type="button" class="ov-build" data-go="calc" id="ovBuild"></button>
+    <button type="button" class="ov-box ov-row ov-pro" data-pro="start"><span class="ov-label">Vollständigen Bericht anfordern?<small>Erweiterte Infos, Report oder Frage an Architekten</small></span><span class="ov-more">›</span></button>`;
   cur.hasPlan = !!main;
+  rep = {place: placeName, plan: main ? name : "Kein Bebauungsplan (§ 34 BauGB)", status: !main ? "" : gilt ? "festgestellt" + (sum?.festgestellt ? " " + sum.festgestellt : "") : "im Verfahren", flst: plotNumber(lastPlot), area: lastPlot?.area, links: main ? pdfLinks(main) : []};
 }
 // „Was darf ich bauen?“ in der Übersicht: dieselben Werte wie im Rechner der Detailseite, dazu die Eckdaten der Lage
 function renderOvBuild(tiles) {
@@ -2418,6 +2474,8 @@ function appendExtras(r, coord, plot, sum, placeName) {
     <p class="hint ext">Fasst alles auf dieser Seite für den Termin beim Bezirksamt zusammen. Im Druckfenster „Als PDF speichern“ wählen.</p>`, "noprint");
   printTitle = `Merkblatt MoinPlan · ${placeName} · erstellt am ${new Date().toLocaleDateString("de-DE")}`;
   m.querySelector("#printBtn").addEventListener("click", () => window.print());
+  r.append(card("Vollständigen Bericht anfordern?", `<p class="hint">Alles zum Grundstück als ausführlicher Report, oder eine Einschätzung Ihres Vorhabens durch ein unabhängiges Architekturbüro.</p>
+    <div class="pro-btns"><button type="button" data-pro="${bezahlt ? "pdf" : "report"}">${bezahlt ? "Report als PDF speichern" : "Erweiterte Infos + Report · " + PRO.preis}</button><button type="button" class="ghost" data-pro="frage">Fachfrage stellen</button></div>`, "noprint"));
   r.append(card("Ihr Ansprechpartner", d
     ? `<p><b>${esc(d.amt)}</b></p>
        <dl class="contact"><dt>Adresse</dt><dd>${esc(d.adr)}</dd><dt>Telefon</dt><dd><a href="tel:${esc(d.tel.replace(/[^\d+]/g, ""))}">${esc(d.tel)}</a></dd><dt>E-Mail</dt><dd><a href="mailto:${esc(d.mail)}">${esc(d.mail)}</a></dd></dl>
@@ -2431,12 +2489,12 @@ function extToggle() {
   const r = $("results"), mk = top => { const d = document.createElement("div"), b = document.createElement("button"); d.className = "exttoggle noprint" + (top ? " top" : ""); b.type = "button"; b.className = "ghost"; d.append(b); return d; };
   const bottom = mk(false), top = mk(true), set = () => {
     r.classList.toggle("short", !extended);
-    bottom.firstChild.textContent = extended ? "Zurück zur Kurzfassung" : "Erweiterte Informationen anzeigen"; top.firstChild.textContent = "Zurück zur Kurzfassung";
+    bottom.firstChild.textContent = extended ? "Zurück zur Kurzfassung" : `Erweiterte Informationen anzeigen${bezahlt ? "" : " · " + PRO.preis}`; top.firstChild.textContent = "Zurück zur Kurzfassung";
     bottom.firstChild.setAttribute("aria-expanded", extended);
   };
-  for (const d of [bottom, top]) d.firstChild.addEventListener("click", () => { extended = !extended; set(); side.scrollTo({top: 0, behavior: "smooth"}); });
+  for (const d of [bottom, top]) d.firstChild.addEventListener("click", () => { if (!extended && !bezahlt) return proView("report"); extended = !extended; set(); side.scrollTo({top: 0, behavior: "smooth"}); });
   const head = r.querySelector("section.hero") || r.firstElementChild;
-  head ? head.after(top) : r.append(top); set(); // unter dem Kopf
+  head ? head.after(top) : r.append(top); set(); extSet = set; // unter dem Kopf
   return bottom;
 }
 // Trifft eine Geometrie das Grundstück? (Näherung ohne Geometrie-Bibliothek)
@@ -2491,12 +2549,105 @@ const ICO = {
 };
 const TITLE_ICO = {"Bitte beachten": "alert", "Mein Grundstück": "home", "Was darf ich bauen?": "ruler", "Weitere Prüfungen am Grundstück": "shield",
   "Originalplan": "file", "Kurzfassung": "file", "Das sollten Sie wissen": "book", "Nicht in diesem Plan geregelt": "minus",
-  "Gilt außerdem in ganz Hamburg": "city", "Ihr Ansprechpartner": "phone", "Kein Bebauungsplan gefunden": "search"};
+  "Gilt außerdem in ganz Hamburg": "city", "Vollständigen Bericht anfordern?": "file", "Ihr Ansprechpartner": "phone", "Kein Bebauungsplan gefunden": "search"};
 const icon = n => `<span class="ico ico-${n || "info"}" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICO[n] || ICO.info}</svg></span>`;
 function card(title, html, cls = "") { const s = document.createElement("section"); s.className = "card " + cls; s.innerHTML = (title ? `<h2>${icon(TITLE_ICO[title])}${esc(title)}</h2>` : "") + html; return s; }
 function showCard(title, msg) { body.remove("detail"); $("overview").innerHTML = ""; $("overview").append(card(title, `<p class="hint">${esc(msg)}</p>`, title === "Bitte warten" ? "busy" : "")); }
 
 let printTitle = "";
+
+// ---------- Genauer wissen: Grundstücks-Report und Fachfrage (Vorschau, noch ohne Bezahlung und ohne Versand) ----------
+const PRO = {preis: "19,90 €", anfrageAn: ""}; // anfrageAn: E-Mail des Partner-Büros; leer = Vorschau
+let rep = {}, lastPlot = null, bezahlt = false, extSet = null; // bezahlt: Vorschau, gilt nur bis zum Neuladen
+const proDlg = $("pro"), proIn = $("proIn");
+const proHead = t => `<div class="pro-top"><h3 id="proH">${esc(t)}</h3><button type="button" class="ghost" data-pro="close">Schließen</button></div>${rep.place ? `<p class="pro-for">Für ${esc(rep.place)}${rep.flst ? " · Flurstück " + esc(rep.flst) : ""}</p>` : ""}`;
+const PRO_VIEWS = {
+  start: () => `${proHead("Vollständigen Bericht anfordern?")}
+    <button type="button" class="pro-opt" data-pro="report"><span class="pro-t">Erweiterte Informationen + Report (PDF)</span><span class="pro-d">Schaltet alle Regeln, Prüfungen und Hinweise zum Grundstück frei. Dazu der Report mit Werten, Karte, Denkmalschutz und Links zu den Originalplänen, gut für Gespräche mit Bauamt, Bank oder Architekt.</span><span class="pro-p">${PRO.preis}</span></button>
+    <button type="button" class="pro-opt" data-pro="frage"><span class="pro-t">Fachfrage an Architekten</span><span class="pro-d">Beschreiben Sie Ihr Vorhaben, zum Beispiel einen Anbau. Ein unabhängiges Architekturbüro aus Hamburg schätzt es ein und nennt Ihnen vorher den Preis.</span><span class="pro-p">Anfrage kostenlos und unverbindlich</span></button>
+    <button type="button" class="ghost pro-free" data-pro="kurz">Weiter zur kostenlosen Kurzfassung ›</button>
+    <p class="legal">Ob gebaut werden darf, entscheidet allein das Bauamt. Verbindliche Sicherheit gibt ein Bauvorbescheid beim Bezirksamt.</p>`,
+  report: () => `${proHead("Erweiterte Informationen")}
+    <p class="pro-d">Mit dem Kauf werden die erweiterten Informationen für dieses Grundstück freigeschaltet und der Grundstücks-Report als PDF erstellt. Enthalten sind:</p>
+    <ul class="pro-list"><li>Alle Regeln aus dem Plan, Prüfungen am Grundstück und Hinweise für ganz Hamburg</li><li>Deckblatt mit Adresse, Flurstück und Fläche</li><li>Geltender Plan mit Stand und Denkmalschutz</li><li>Was darf ich bauen: Fläche, Geschosse, Bauweise, Nutzung</li><li>Kartenausschnitt mit Grundstück</li><li>Ansprechpartner im Bezirksamt</li><li>Links zu den Originalplänen</li></ul>
+    <div class="pro-price"><span>Preis einmalig</span><b>${PRO.preis}</b></div>
+    <p class="pro-note">Vorschau: Die Bezahlung ist noch nicht eingebaut. Hier wird alles kostenlos freigeschaltet.</p>
+    <button type="button" class="wide" data-pro="kaufen">Für ${PRO.preis} kaufen</button>
+    <button type="button" class="ghost" data-pro="start">‹ Zurück</button>`,
+  frage: () => `${proHead("Fachfrage an Architekten")}
+    <div class="pro-ctx">Wird mitgeschickt: <b>${esc(rep.place || "")}</b>${rep.flst ? `, Flurstück ${esc(rep.flst)}` : ""}<br>${esc(rep.plan || "")}${rep.status ? ` (${esc(rep.status)})` : ""}</div>
+    <form id="proForm">
+      <label>Was haben Sie vor?<select name="vorhaben" required><option value="">Bitte wählen</option><option>Anbau oder Erweiterung</option><option>Neubau Einfamilienhaus</option><option>Aufstockung oder Dachausbau</option><option>Carport, Garage oder Gartenhaus</option><option>Grundstück teilen oder zweites Haus</option><option>Kauf eines Grundstücks prüfen</option><option>Etwas anderes</option></select></label>
+      <label>Beschreibung<textarea name="text" required placeholder="z. B. Wir möchten an der Gartenseite ca. 25 m² anbauen, eingeschossig mit Flachdach."></textarea></label>
+      <label>Name<input name="name" required autocomplete="name"></label>
+      <label>E-Mail<input name="mail" type="email" required autocomplete="email"></label>
+      <label>Telefon (freiwillig)<input name="tel" type="tel" autocomplete="tel"></label>
+      <label class="consent"><input type="checkbox" name="ok" required>Ich bin einverstanden, dass meine Angaben an ein unabhängiges Architekturbüro weitergegeben werden, damit es mir ein Angebot machen kann.</label>
+      <button type="submit" class="wide">Anfrage senden</button>
+    </form>
+    <p class="legal">MoinPlan vermittelt nur. Die Einschätzung und den Preis macht das Büro. Ob gebaut werden darf, entscheidet allein das Bauamt.</p>
+    <button type="button" class="ghost" data-pro="start">‹ Zurück</button>`,
+  fertig: txt => `${proHead("Danke!")}
+    <p>Ihre Anfrage ist angekommen. Ein Architekturbüro meldet sich in der Regel innerhalb von zwei Werktagen per E-Mail.</p>
+    <p class="pro-note">Vorschau: Es wurde nichts verschickt. So sähe die Anfrage an das Büro aus:</p><pre>${esc(txt)}</pre>
+    <button type="button" class="wide" data-pro="close">Fertig</button>`
+};
+function proView(v, arg) { proIn.innerHTML = PRO_VIEWS[v](arg); proIn.parentElement.scrollTop = 0; if (!proDlg.open) proDlg.showModal(); (proIn.querySelector("form :is(select, input)") || proIn.querySelector(".pro-opt, button.wide"))?.focus({preventScroll: true}); }
+proDlg.addEventListener("click", e => { if (e.target === proDlg) proDlg.close(); }); // Tipp neben das Fenster schließt
+document.addEventListener("click", e => {
+  const b = e.target.closest("[data-pro]"); if (!b) return;
+  const v = b.dataset.pro;
+  if (v === "close") return proDlg.close();
+  if (v === "kaufen") { proDlg.close(); return unlock(); }
+  if (v === "kurz") { proDlg.close(); return openDetail(""); }
+  if (v === "pdf") return makeReport();
+  proView(v);
+});
+proIn.addEventListener("submit", e => {
+  e.preventDefault(); const f = new FormData(e.target);
+  const txt = [`Anfrage über MoinPlan vom ${new Date().toLocaleDateString("de-DE")}`, "", `Ort: ${rep.place || "–"}`, `Flurstück: ${rep.flst || "–"}${rep.area ? ` (${fmt(rep.area)} m²)` : ""}`, `Plan: ${rep.plan || "–"}${rep.status ? ` (${rep.status})` : ""}`,
+    "", `Vorhaben: ${f.get("vorhaben")}`, f.get("text"), "", `Name: ${f.get("name")}`, `E-Mail: ${f.get("mail")}`, f.get("tel") ? `Telefon: ${f.get("tel")}` : ""].filter(x => x != null).join("\n").trim();
+  if (PRO.anfrageAn) location.href = `mailto:${PRO.anfrageAn}?subject=${encodeURIComponent("MoinPlan-Anfrage: " + f.get("vorhaben"))}&body=${encodeURIComponent(txt)}`;
+  proView("fertig", txt);
+});
+// Kartenbild aus den OpenLayers-Ebenen; fremde Kacheln ohne CORS machen das Bild unlesbar, dann ohne Karte
+function mapImage() {
+  const [w, h] = map.getSize() || [0, 0]; if (!w || !h) return "";
+  const cv = Object.assign(document.createElement("canvas"), {width: w, height: h}), ctx = cv.getContext("2d");
+  ctx.fillStyle = "#e9eef3"; ctx.fillRect(0, 0, w, h);
+  map.getViewport().querySelectorAll(".ol-layer canvas, canvas.ol-layer").forEach(c => {
+    if (!c.width) return;
+    const op = c.parentNode.style.opacity || c.style.opacity; ctx.globalAlpha = op === "" ? 1 : +op;
+    const m = c.style.transform.match(/^matrix\(([^(]*)\)$/);
+    ctx.setTransform(...(m ? m[1].split(",").map(Number) : [w / c.width, 0, 0, h / c.height, 0, 0]));
+    ctx.drawImage(c, 0, 0);
+  });
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  try { return cv.toDataURL("image/jpeg", .86); } catch { return ""; }
+}
+// Vorschau-Kauf: freischalten, erweiterte Infos zeigen, Report drucken
+function unlock() {
+  bezahlt = true; body.add("bezahlt"); extended = true; extSet?.();
+  document.querySelectorAll('[data-pro="report"]').forEach(b => { if (!b.closest("#pro")) { b.dataset.pro = "pdf"; b.textContent = "Report als PDF speichern"; } });
+  if (!body.contains("detail")) openDetail("");
+  setTimeout(makeReport, 600);
+}
+function makeReport() {
+  const nr = "MP-" + Date.now().toString(36).toUpperCase().slice(-6), date = new Date().toLocaleDateString("de-DE");
+  const dm = qs('#overview [data-go="denkmal"] .ov-val')?.textContent || "nicht geprüft";
+  const tiles = [...document.querySelectorAll("#ovBuild .big > span")].map(t => `<span><b>${esc(t.querySelector("b")?.textContent || "")}</b><span>${esc(t.querySelector(":scope > span")?.textContent || "")}</span></span>`).join("");
+  const img = mapImage(), row = (k, v) => v ? `<tr><th>${esc(k)}</th><td>${v}</td></tr>` : "";
+  $("repCover").innerHTML = `<h1>Grundstücks-Report</h1><p class="rep-sub">MoinPlan · Nr. ${nr} · erstellt am ${date}</p>
+    <table>${row("Ort", esc(rep.place || ""))}${row("Flurstück", esc(rep.flst || ""))}${row("Grundstücksfläche", rep.area ? fmt(rep.area) + " m²" : "")}${row("Geltender Plan", esc(rep.plan || ""))}${row("Stand", esc(rep.status || ""))}${row("Denkmalschutz", esc(dm))}
+      ${row("Originalpläne", (rep.links || []).map(l => `<a href="${esc(l.u)}">${esc(l.label)}</a>`).join("<br>"))}</table>
+    ${tiles ? `<h2>Was darf ich bauen?</h2><div class="big">${tiles}</div>` : ""}
+    ${img ? `<h2>Lage</h2><img src="${img}" alt="Kartenausschnitt">` : ""}
+    <p class="rep-legal">Zusammenstellung aus offenen Daten der Freien und Hansestadt Hamburg (Datenlizenz Deutschland Namensnennung 2.0). Keine Rechtsberatung und keine Genehmigung. Ob gebaut werden darf, entscheidet allein das Bauamt (Bezirksamt); Sicherheit gibt ein Bauvorbescheid. Auf den folgenden Seiten stehen alle Details.</p>`;
+  const keep = printTitle; printTitle = `Grundstücks-Report MoinPlan · Nr. ${nr} · ${rep.place || ""} · ${date}`;
+  body.add("report");
+  addEventListener("afterprint", () => { body.remove("report"); printTitle = keep; }, {once: true});
+  setTimeout(() => window.print(), 50);
+}
 const openDetails = () => document.querySelectorAll("#results details").forEach(x => x.open = true);
 // auch beim Drucken über das Browser-Menü (Strg+P, Teilen > Drucken): alles aufklappen, Kopfzeile setzen
 window.addEventListener("beforeprint", () => { openDetails(); $("printHead").textContent = body.contains("has-result") ? printTitle : ""; });
