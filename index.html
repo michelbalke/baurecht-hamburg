@@ -365,7 +365,7 @@
   --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif; --display: var(--sans);
   --bg: #000; --panel: #1c1c1e; --fg: #fff; --muted: rgba(235,235,245,.6); --line: rgba(255,255,255,.12); --fill: #2c2c2e;
   --navy: #4766f0; --accent: #8ea2ff; --accent-soft: rgba(120,145,255,.17); --accent-fill: #4766f0; --ok: #30d158; --ok-soft: rgba(48,209,88,.16); --warn: #ff9f0a; --warn-soft: rgba(255,159,10,.16);
-  --plan: #c8102e; --plot: #e0a100; --bf: #2f55e4; --bf-fill: rgba(47,85,228,.36); --bf-fill2: rgba(47,85,228,.16); --radius: 12px; --ease: cubic-bezier(.2, .8, .2, 1);
+  --plan: #c8102e; --plot: #e0a100; --bf: #2f55e4; --bf-fill: rgba(47,85,228,.36); --bf-fill2: rgba(47,85,228,.16); --dm: #ff3b30; --dm-fill: rgba(255,59,48,.42); --radius: 12px; --ease: cubic-bezier(.2, .8, .2, 1);
   --gl: rgba(28,28,30,.86); --gl-strong: rgba(28,28,30,.94); --gl-edge: 0 0 0 .5px rgba(255,255,255,.1); --gl-shadow: 0 6px 20px rgba(0,0,0,.14); --gl-blur: blur(20px) saturate(1.8);
   --search-bg: #2c2c2e; --search-ring: 0 0 0 1px rgba(255,255,255,.08); --search-shadow: 0 12px 30px rgba(0,0,0,.14); --search-ph: rgba(235,235,245,.5); --v3bg: #10141a;
   --shadow: 0 0 0 .5px rgba(255,255,255,.07); --shadow-lg: 0 0 0 .5px rgba(255,255,255,.1), 0 10px 30px rgba(0,0,0,.55);
@@ -390,6 +390,7 @@ html:not([data-theme="dark"]) body { background: radial-gradient(circle at 0 0, 
 p, .hint, .legal, dl.rules { margin: 0; }
 a { color: var(--accent); }
 .hint { color: var(--muted); font-size: 13px; }
+.bs34 { margin: 4px 0 0; padding: 10px 12px; border-radius: 12px; background: var(--accent-soft); font-size: 14px; line-height: 1.4; }
 .legal { font-size: 11.5px; color: var(--muted); }
 .app { display: grid; grid-template-columns: minmax(350px, 470px) 1fr; gap: 18px; padding: 18px; height: 100%; }
 .side { overflow-y: auto; display: flex; flex-direction: column; gap: 14px; min-width: 0; margin: -6px; padding: 6px 6px 20px; view-transition-name: info; }
@@ -433,25 +434,23 @@ body.searching .recent:not(.leer) { opacity: 1; visibility: visible; pointer-eve
 
 /* ---------- Kopf: weiße Karte mit Wortmarke, zentrierter Frage, Suchkapsel und Hamburg-Skyline als Linienzeichnung ----------
    Raster ordnet die Teile; auf dem Handy nach der Suche wird daraus eine schmale Leiste (Haus, Wortmarke, Suchfeld, Menü). */
-.side > header { position: relative; flex-shrink: 0; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "logo name menu" "cap cap cap" "search search search" "sky sky sky";
+.side > header { position: relative; flex-shrink: 0; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "logo name menu" "sky sky sky" "search search search";
   align-items: center; column-gap: 10px; padding: calc(16px + env(safe-area-inset-top, 0px)) 18px 0; background: var(--panel); color: var(--fg); border-radius: 28px; box-shadow: var(--shadow); overflow: hidden; isolation: isolate; container-type: inline-size; }
-/* Großer hellblauer Bogen hinter Frage und Skyline */
-.side > header::before { content: ""; position: absolute; z-index: 0; left: 50%; top: calc(74px + env(safe-area-inset-top, 0px)); width: 128%; aspect-ratio: 1; transform: translateX(-50%); border-radius: 50%; background: var(--arch); pointer-events: none; }
 .side > header > * { position: relative; z-index: 1; }
 .side > header .logo { grid-area: logo; width: 40px; height: 40px; padding: 0; border: 0; border-radius: 12px; background: var(--navy); color: #fff; display: grid; place-items: center; }
 .side > header .logo svg { width: 22px; height: 22px; }
 .side > header > div { grid-area: name; min-width: 0; }
 .side > header h1 { margin: 0; font: 750 23px/1 var(--display); letter-spacing: -.03em; color: #fff; white-space: nowrap; }
-.side > header h1 span { color: var(--accent); }
+.side > header h1 span { color: inherit; }
 .menubtn { grid-area: menu; display: none; width: 40px; height: 40px; padding: 0; border: 0; border-radius: 12px; background: var(--fill); color: #fff; place-items: center; }
 .menubtn svg { width: 22px; height: 22px; }
 .side > header :is(.logo, .menubtn):hover { filter: none; }
-.banner { grid-area: cap; margin: 30px 0 0; text-align: center; }
-.banner figcaption { font: 500 clamp(23px, 6.6cqw, 30px)/1.18 var(--display); letter-spacing: -.025em; color: #fff; text-wrap: balance; }
+.banner { grid-area: sky; align-self: start; justify-self: end; z-index: 2; width: 48%; margin: 14px 0 0; text-align: left; }
+.banner figcaption { font: 500 clamp(14px, 4.2cqw, 17px)/1.25 var(--display); letter-spacing: -.01em; color: var(--fg); text-wrap: balance; }
 .banner figcaption b { font-weight: 800; }
 body.has-result .banner { cursor: pointer; }
 /* Suchfeld: weiße Kapsel mit dunkelblauem Knopf */
-form.search { grid-area: search; display: flex; align-items: center; position: relative; margin: 20px 0 0; padding: 6px; border-radius: 99px; background: var(--search-bg); box-shadow: var(--search-ring), var(--search-shadow); transition: box-shadow .2s; }
+form.search { grid-area: search; display: flex; align-items: center; position: relative; margin: 4px 0 18px; padding: 6px; border-radius: 99px; background: var(--search-bg); box-shadow: var(--search-ring), var(--search-shadow); transition: box-shadow .2s; }
 form.search:focus-within { box-shadow: 0 0 0 2px var(--accent), var(--search-shadow); }
 form.search svg { width: 18px; height: 18px; position: absolute; left: 20px; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
 form.search input { height: 44px; border: 0; background: transparent; padding: 0 10px 0 42px; font-size: 16px; border-radius: 99px; color: var(--fg); }
@@ -459,13 +458,8 @@ form.search input::placeholder { color: var(--search-ph); }
 form.search input:focus-visible { outline: none; }
 form.search button[type=submit] { height: 44px; padding: 0 22px; border: 0; border-radius: 99px; background: var(--navy); font-size: 16px; font-weight: 600; }
 #printBtn, #mDone { background: var(--accent-fill); border: 0; }
-/* Skyline: Speicherstadt, Michel, Rathaus, Elbphilharmonie, Fernsehturm, Tanzende Türme, Hafenkräne */
-.skyline { grid-area: sky; display: block; width: calc(100% + 36px); height: 124px; margin: 16px -18px 0; pointer-events: none; }
-.skyline .lines *, .skyline .t { stroke: var(--ink); stroke-width: 1.5; stroke-linejoin: round; stroke-linecap: round; vector-effect: non-scaling-stroke; }
-.skyline .t { fill: none; }
-.skyline .thin { stroke-width: 1; }
-.skyline .bold { stroke-width: 2; }
-.skyline .lines .w { stroke: none; }
+/* Skyline: weiße Silhouette (Köhlbrandbrücke, Fernsehturm, Michel, Türme, Elbphilharmonie) mit Spiegelung, nach Michels Entwurf */
+.skyline { grid-area: sky; display: block; width: 100%; height: auto; aspect-ratio: 300 / 190; margin: 10px 0 0; pointer-events: none; fill: var(--fg); color: var(--fg); }
 
 /* ---------- Abschnitte (Karten) ---------- */
 #results { display: flex; flex-direction: column; gap: 14px; flex-shrink: 0; }
@@ -598,12 +592,12 @@ details.okfold .checks { margin-top: 6px; }
 .bfkey[aria-pressed="false"] { opacity: .55; }
 .bfkey[aria-pressed="false"] i { background: none; border-style: dashed; }
 .bfkey span { display: flex; flex-direction: column; gap: 3px; text-align: left; }
-.bfkey small { display: none; font: 600 11px/1 var(--sans); color: var(--warn); }
-.bfkey.bs { height: auto; padding-block: 7px; }
-.bfkey.bs small { display: block; }
-.bfkey.bs i { background: none; border-style: dashed; }
+/* Zweiter Schalter (Baudenkmale, rot) direkt unter dem Baufenster-Schalter */
+.dmkey { margin-top: 42px; }
+.bfkey { min-width: 150px; }
+.dmkey i { border-color: var(--dm); background: var(--dm-fill); }
 body:not(.has-result) .btn3d { display: none; }
-body:not(.has-result) .bfkey { top: 112px; }
+body:not(.has-result) .bfkey { display: none !important; }
 .tip { background: rgba(20,32,48,.9); color: #fff; padding: 3px 8px; border-radius: 6px; font: 12px var(--sans); white-space: nowrap; }
 
 /* ---------- Messen: Hinweisleiste, Haltering ---------- */
@@ -675,20 +669,18 @@ body.is3d .view3d { display: block; }
   body:not(.has-result) .side { padding: 0; gap: 0; overflow: visible; }
   .side > header { margin: 0 -12px; padding: calc(12px + env(safe-area-inset-top, 0px)) 16px 0; border-radius: 0 0 30px 30px; }
   body:not(.has-result) .side > header { margin: 0; }
-  .side > header::before { top: calc(60px + env(safe-area-inset-top, 0px)); width: 150%; }
   .side > header h1 { font-size: 22px; }
-  .banner { margin-top: 22px; }
-  .banner figcaption { font-size: clamp(22px, 7cqw, 28px); }
-  form.search { margin-top: 16px; }
+  .banner { margin-top: 10px; }
+  form.search { margin: 2px 0 16px; }
   form.search input { font-size: 17px !important; }
-  .skyline { height: 104px; margin-top: 12px; width: calc(100% + 32px); margin-inline: -16px; }
+  .skyline { margin-top: 6px; }
   body:not(.has-result) .mapwrap { margin: 12px 10px calc(10px + env(safe-area-inset-bottom, 0px)); border-radius: 26px; }
   /* Wechsel Start ↔ Ergebnis: Kopfinhalt blendet weich über statt zu springen */
   body:not(.has-result) .side > header > * { animation: kopf-start .32s var(--ease) both; }
   body.has-result .side > header > * { animation: kopf-klein .32s var(--ease) both; }
   /* Nach der Suche: schmale weiße Leiste mit Haus, Wortmarke, Suchfeld und Menü */
   body.has-result .side > header { grid-template-columns: auto auto minmax(0, 1fr) auto; grid-template-areas: "logo name search menu"; column-gap: 8px; padding: calc(10px + env(safe-area-inset-top, 0px)) 12px 10px; }
-  body.has-result .side > header::before, body.has-result .banner, body.has-result .skyline { display: none; }
+  body.has-result .banner, body.has-result .skyline { display: none; }
   body.has-result .side > header > div { cursor: pointer; }
   body.has-result .side > header h1 { font-size: 19px; }
   body.has-result .side > header :is(.logo, .menubtn) { width: 36px; height: 36px; border-radius: 11px; }
@@ -768,16 +760,16 @@ body.is3d .view3d { display: block; }
   body.detail .side > header { position: sticky; top: 0; z-index: 5; margin: 0 -12px; border-radius: 0 0 26px 26px; box-shadow: var(--shadow); }
   /* Übersicht im Blatt: groß und luftig */
   body.has-result .plan-name { font-size: 27px; }
-  .ov-plan { padding: 12px 16px; gap: 2px; }
+  .ov-plan { padding: 10px 16px 11px; gap: 2px; }
   .ov-name { font-size: 23px; }
   .ov-build > .ov-label { margin-bottom: 2px; }
   body.has-result #overview .ov-more { font-size: 15px; }
-  .ov-build { padding: 12px 14px 14px; gap: 5px; }
+  .ov-build { padding: 11px 14px 12px; gap: 5px; }
   .ov-build .big { gap: 6px; }
-  .ov-build .big > * { padding: 9px 12px; }
+  .ov-build .big > * { padding: 7px 12px; }
   .ov-build .big b { font-size: 19px; }
   .ov-build .big span, .ov-build .big small { font-size: 13px; }
-  .ov-row { padding: 14px 18px; }
+  .ov-row { padding: 11px 18px; }
   .ov-row .ov-label, .ov-build > .ov-label { font-size: 17px; }
 }
 
@@ -792,7 +784,7 @@ body.is3d .view3d { display: block; }
   body { color: #000; font-size: 9.5pt; line-height: 1.38; }
   .side { position: static; padding: 0; border: 0; }
   .side > header { position: relative; display: block; margin: 0; padding: 0 0 8px; box-shadow: none; border-radius: 0; }
-  .side > header::before, .skyline, .side > header .logo { display: none !important; }
+  .skyline, .side > header .logo { display: none !important; }
   .banner { margin: 4px 0 0; text-align: left; } .banner figcaption { font-size: 12pt; }
   .printonly { display: block; font-weight: 650; margin: 0 0 12px; }
   .side > .legal { display: block; font-weight: 400; font-size: 7pt; color: #444; margin: 8pt 0 0; }
@@ -828,7 +820,7 @@ body.is3d .view3d { display: block; }
   <button type="button" class="ghost close" id="drawerClose">Schließen ✕</button>
   <section class="card">
     <h2>So funktioniert es</h2>
-    <p class="hint">Adresse eingeben oder einen Punkt in der Karte antippen. Die App fasst den geltenden Bebauungsplan in einfachen Worten zusammen: was gebaut werden darf, wie hoch und wie viel Fläche.</p>
+    <p class="hint">Adresse eingeben oder einen Punkt in der Karte antippen. Die App fasst das Planungsrecht für den Ort in einfachen Worten zusammen: was der Bebauungsplan festsetzt, zum Beispiel Höhe und bebaubare Fläche. Ob und was gebaut werden darf, entscheidet allein das Bauamt (Bezirksamt).</p>
     <p class="hint">Nach der Suche sehen Sie oben das Wichtigste auf einen Blick und darunter die Karte. Über „Weitere Infos zur Bebaubarkeit“ oder die einzelnen Kästchen gelangen Sie zu allen Details.</p>
   </section>
 </nav>
@@ -838,20 +830,20 @@ body.is3d .view3d { display: block; }
       <button type="button" class="logo" id="homeBtn" aria-label="Zur Startseite" title="Zur Startseite"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M10 21v-6h4v6"/></svg></button>
       <div><h1>Moin<span>Plan</span></h1></div>
       <button type="button" class="menubtn" id="menuBtn" aria-label="Menü öffnen" aria-controls="drawer" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
-      <figure class="banner"><figcaption>…was darf ich in <b>Hamburg</b> bauen?</figcaption></figure>
+      <figure class="banner"><figcaption>Planungsrecht für mein Hamburger Grundstück</figcaption></figure>
       <form class="search" id="searchForm">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
         <input type="text" id="q" placeholder="z. B. Rathausmarkt 1" aria-label="Adresse oder Koordinate" autocomplete="off">
         <button type="submit">Suchen</button>
       </form>
-      <svg class="skyline" viewBox="0 0 1200 240" preserveAspectRatio="xMidYMax slice" aria-hidden="true"><g class="far"><rect x="0" y="150" width="60" height="56" fill="var(--sk0)"/><rect x="55" y="128" width="40" height="78" fill="var(--sk0)"/><rect x="190" y="140" width="50" height="66" fill="var(--sk0)"/><rect x="290" y="118" width="34" height="88" fill="var(--sk0)"/><rect x="420" y="132" width="46" height="74" fill="var(--sk0)"/><rect x="600" y="112" width="40" height="94" fill="var(--sk0)"/><rect x="640" y="150" width="36" height="56" fill="var(--sk0)"/><rect x="870" y="120" width="38" height="86" fill="var(--sk0)"/><rect x="1040" y="136" width="44" height="70" fill="var(--sk0)"/><rect x="1150" y="150" width="50" height="56" fill="var(--sk0)"/></g><g class="lines"><path d="M52 206 64 112M90 206 78 112M57 180 86 152M60 152 87 180M59 128 83 128" fill="none" class="t"/><rect x="60" y="92" width="26" height="22" rx="2" fill="var(--sk1)"/><path d="M73 92V60L176 84M86 96 176 84 176 90 86 106" fill="var(--skw)"/><path d="M160 87V128M155 128h10v8h-10z" fill="none" class="t"/><rect x="150" y="136" width="186" height="70" fill="var(--sk1)"/><path d="M150 136V124h7v-9h7v-9h7v-9h7v-7h6v7h7v9h7v9h7v9h7v12z" fill="var(--skw)"/><rect x="177" y="108" width="8" height="12" rx="4" fill="var(--sk3)"/><path d="M212 136V124h7v-9h7v-9h7v-9h7v-7h6v7h7v9h7v9h7v9h7v12z" fill="var(--skw)"/><rect x="239" y="108" width="8" height="12" rx="4" fill="var(--sk3)"/><path d="M274 136V124h7v-9h7v-9h7v-9h7v-7h6v7h7v9h7v9h7v9h7v12z" fill="var(--skw)"/><rect x="301" y="108" width="8" height="12" rx="4" fill="var(--sk3)"/><rect class="w" x="157" y="146" width="6" height="11" rx="3" fill="var(--sk3)"/><rect class="w" x="170" y="146" width="6" height="11" rx="3" fill="var(--sk3)"/><rect class="w" x="183" y="146" width="6" height="11" rx="3" fill="var(--sk3)"/><rect class="w" x="196" y="146" width="6" height="11" rx="3" fill="var(--sk3)"/><rect class="w" x="209" y="146" width="6" height="11" rx="3" fill="var(--sk3)"/><rect class="w" x="222" y="146" width="6" height="11" rx="3" fill="var(--sk3)"/><rect class="w" x="235" y="146" width="6" height="11" rx="3" fill="var(--sk3)"/><rect class="w" x="248" y="146" width="6" height="11" rx="3" fill="var(--sk3)"/><rect class="w" x="261" y="146" width="6" height="11" rx="3" fill="var(--sk3)"/><rect class="w" x="274" y="146" width="6" height="11" rx="3" fill="var(--sk3)"/><rect class="w" x="287" y="146" width="6" height="11" rx="3" fill="var(--sk3)"/><rect class="w" x="300" y="146" width="6" height="11" rx="3" fill="var(--sk3)"/><rect class="w" x="313" y="146" width="6" height="11" rx="3" fill="var(--sk3)"/><rect class="w" x="326" y="146" width="6" height="11" rx="3" fill="var(--sk3)"/><rect class="w" x="157" y="165" width="6" height="11" rx="3" fill="var(--sk3)"/><rect class="w" x="170" y="165" width="6" height="11" rx="3" fill="var(--sk3)"/><rect class="w" x="183" y="165" width="6" height="11" rx="3" fill="var(--sk3)"/><rect class="w" x="196" y="165" width="6" height="11" rx="3" fill="var(--sk3)"/><rect class="w" x="209" y="165" width="6" height="11" rx="3" fill="var(--sk3)"/><rect class="w" x="222" y="165" width="6" height="11" rx="3" fill="var(--sk3)"/><rect class="w" x="235" y="165" width="6" height="11" rx="3" fill="var(--sk3)"/><rect class="w" x="248" y="165" width="6" height="11" rx="3" fill="var(--sk3)"/><rect class="w" x="261" y="165" width="6" height="11" rx="3" fill="var(--sk3)"/><rect class="w" x="274" y="165" width="6" height="11" rx="3" fill="var(--sk3)"/><rect class="w" x="287" y="165" width="6" height="11" rx="3" fill="var(--sk3)"/><rect class="w" x="300" y="165" width="6" height="11" rx="3" fill="var(--sk3)"/><rect class="w" x="313" y="165" width="6" height="11" rx="3" fill="var(--sk3)"/><rect class="w" x="326" y="165" width="6" height="11" rx="3" fill="var(--sk3)"/><rect class="w" x="157" y="184" width="6" height="11" rx="3" fill="var(--sk3)"/><rect class="w" x="170" y="184" width="6" height="11" rx="3" fill="var(--sk3)"/><rect class="w" x="183" y="184" width="6" height="11" rx="3" fill="var(--sk3)"/><rect class="w" x="196" y="184" width="6" height="11" rx="3" fill="var(--sk3)"/><rect class="w" x="209" y="184" width="6" height="11" rx="3" fill="var(--sk3)"/><rect class="w" x="222" y="184" width="6" height="11" rx="3" fill="var(--sk3)"/><rect class="w" x="235" y="184" width="6" height="11" rx="3" fill="var(--sk3)"/><rect class="w" x="248" y="184" width="6" height="11" rx="3" fill="var(--sk3)"/><rect class="w" x="261" y="184" width="6" height="11" rx="3" fill="var(--sk3)"/><rect class="w" x="274" y="184" width="6" height="11" rx="3" fill="var(--sk3)"/><rect class="w" x="287" y="184" width="6" height="11" rx="3" fill="var(--sk3)"/><rect class="w" x="300" y="184" width="6" height="11" rx="3" fill="var(--sk3)"/><rect class="w" x="313" y="184" width="6" height="11" rx="3" fill="var(--sk3)"/><rect class="w" x="326" y="184" width="6" height="11" rx="3" fill="var(--sk3)"/><path d="M150 192H336" fill="none" class="t"/><g transform="translate(-126 0)"><rect x="470" y="138" width="190" height="68" fill="var(--skw)"/><path d="M466 138 480 122H650L664 138Z" fill="var(--sk1)"/><rect x="548" y="92" width="34" height="46" fill="var(--skw)"/><path d="M544 92 565 58 586 92Z" fill="var(--sk1)"/><rect x="560" y="46" width="10" height="12" fill="var(--skw)"/><path d="M565 46V20M561 26h8" fill="none" class="t"/><circle cx="565" cy="110" r="7" fill="var(--sk1)"/><rect class="w" x="480" y="148" width="7" height="16" rx="3" fill="var(--sk3)"/><rect class="w" x="493" y="148" width="7" height="16" rx="3" fill="var(--sk3)"/><rect class="w" x="506" y="148" width="7" height="16" rx="3" fill="var(--sk3)"/><rect class="w" x="519" y="148" width="7" height="16" rx="3" fill="var(--sk3)"/><rect class="w" x="532" y="148" width="7" height="16" rx="3" fill="var(--sk3)"/><rect class="w" x="480" y="174" width="7" height="16" rx="3" fill="var(--sk3)"/><rect class="w" x="493" y="174" width="7" height="16" rx="3" fill="var(--sk3)"/><rect class="w" x="506" y="174" width="7" height="16" rx="3" fill="var(--sk3)"/><rect class="w" x="519" y="174" width="7" height="16" rx="3" fill="var(--sk3)"/><rect class="w" x="532" y="174" width="7" height="16" rx="3" fill="var(--sk3)"/><rect class="w" x="592" y="148" width="7" height="16" rx="3" fill="var(--sk3)"/><rect class="w" x="605" y="148" width="7" height="16" rx="3" fill="var(--sk3)"/><rect class="w" x="618" y="148" width="7" height="16" rx="3" fill="var(--sk3)"/><rect class="w" x="631" y="148" width="7" height="16" rx="3" fill="var(--sk3)"/><rect class="w" x="644" y="148" width="7" height="16" rx="3" fill="var(--sk3)"/><rect class="w" x="592" y="174" width="7" height="16" rx="3" fill="var(--sk3)"/><rect class="w" x="605" y="174" width="7" height="16" rx="3" fill="var(--sk3)"/><rect class="w" x="618" y="174" width="7" height="16" rx="3" fill="var(--sk3)"/><rect class="w" x="631" y="174" width="7" height="16" rx="3" fill="var(--sk3)"/><rect class="w" x="644" y="174" width="7" height="16" rx="3" fill="var(--sk3)"/><path d="M556 206V174a9 9 0 0 1 18 0V206" fill="var(--sk1)"/><path d="M476 122V112h8v10M646 122V112h8v10" fill="var(--skw)"/></g><g transform="translate(228 0)"><rect x="392" y="150" width="52" height="56" fill="var(--skw)"/><path d="M392 150 418 128 444 150" fill="var(--sk1)"/><rect x="352" y="112" width="40" height="94" fill="var(--skw)"/><rect class="w" x="360" y="124" width="8" height="16" rx="4" fill="var(--sk3)"/><rect class="w" x="376" y="124" width="8" height="16" rx="4" fill="var(--sk3)"/><rect class="w" x="360" y="148" width="8" height="16" rx="4" fill="var(--sk3)"/><rect class="w" x="376" y="148" width="8" height="16" rx="4" fill="var(--sk3)"/><rect class="w" x="360" y="172" width="8" height="16" rx="4" fill="var(--sk3)"/><rect class="w" x="376" y="172" width="8" height="16" rx="4" fill="var(--sk3)"/><rect x="358" y="84" width="28" height="28" fill="var(--skw)"/><circle cx="372" cy="98" r="8" fill="var(--sk1)"/><path d="M372 98V93M372 98l4 3" fill="none" class="t"/><rect x="362" y="60" width="20" height="24" fill="var(--sk1)"/><path d="M366 60V84M372 60V84M378 60V84" fill="none" class="t"/><path d="M360 60Q372 40 384 60" fill="var(--sk2)"/><rect x="368" y="38" width="8" height="9" fill="var(--skw)"/><path d="M372 38V12M368 18h8" fill="none" class="t"/></g><rect x="712" y="140" width="226" height="66" fill="var(--sk1)"/><rect class="w" x="720" y="147" width="6" height="7" fill="var(--sk3)"/><rect class="w" x="733" y="147" width="6" height="7" fill="var(--sk3)"/><rect class="w" x="746" y="147" width="6" height="7" fill="var(--sk3)"/><rect class="w" x="759" y="147" width="6" height="7" fill="var(--sk3)"/><rect class="w" x="772" y="147" width="6" height="7" fill="var(--sk3)"/><rect class="w" x="785" y="147" width="6" height="7" fill="var(--sk3)"/><rect class="w" x="798" y="147" width="6" height="7" fill="var(--sk3)"/><rect class="w" x="811" y="147" width="6" height="7" fill="var(--sk3)"/><rect class="w" x="824" y="147" width="6" height="7" fill="var(--sk3)"/><rect class="w" x="837" y="147" width="6" height="7" fill="var(--sk3)"/><rect class="w" x="850" y="147" width="6" height="7" fill="var(--sk3)"/><rect class="w" x="863" y="147" width="6" height="7" fill="var(--sk3)"/><rect class="w" x="876" y="147" width="6" height="7" fill="var(--sk3)"/><rect class="w" x="889" y="147" width="6" height="7" fill="var(--sk3)"/><rect class="w" x="902" y="147" width="6" height="7" fill="var(--sk3)"/><rect class="w" x="915" y="147" width="6" height="7" fill="var(--sk3)"/><rect class="w" x="928" y="147" width="6" height="7" fill="var(--sk3)"/><rect class="w" x="720" y="161" width="6" height="7" fill="var(--sk3)"/><rect class="w" x="733" y="161" width="6" height="7" fill="var(--sk3)"/><rect class="w" x="746" y="161" width="6" height="7" fill="var(--sk3)"/><rect class="w" x="759" y="161" width="6" height="7" fill="var(--sk3)"/><rect class="w" x="772" y="161" width="6" height="7" fill="var(--sk3)"/><rect class="w" x="785" y="161" width="6" height="7" fill="var(--sk3)"/><rect class="w" x="798" y="161" width="6" height="7" fill="var(--sk3)"/><rect class="w" x="811" y="161" width="6" height="7" fill="var(--sk3)"/><rect class="w" x="824" y="161" width="6" height="7" fill="var(--sk3)"/><rect class="w" x="837" y="161" width="6" height="7" fill="var(--sk3)"/><rect class="w" x="850" y="161" width="6" height="7" fill="var(--sk3)"/><rect class="w" x="863" y="161" width="6" height="7" fill="var(--sk3)"/><rect class="w" x="876" y="161" width="6" height="7" fill="var(--sk3)"/><rect class="w" x="889" y="161" width="6" height="7" fill="var(--sk3)"/><rect class="w" x="902" y="161" width="6" height="7" fill="var(--sk3)"/><rect class="w" x="915" y="161" width="6" height="7" fill="var(--sk3)"/><rect class="w" x="928" y="161" width="6" height="7" fill="var(--sk3)"/><rect class="w" x="720" y="175" width="6" height="7" fill="var(--sk3)"/><rect class="w" x="733" y="175" width="6" height="7" fill="var(--sk3)"/><rect class="w" x="746" y="175" width="6" height="7" fill="var(--sk3)"/><rect class="w" x="759" y="175" width="6" height="7" fill="var(--sk3)"/><rect class="w" x="772" y="175" width="6" height="7" fill="var(--sk3)"/><rect class="w" x="785" y="175" width="6" height="7" fill="var(--sk3)"/><rect class="w" x="798" y="175" width="6" height="7" fill="var(--sk3)"/><rect class="w" x="811" y="175" width="6" height="7" fill="var(--sk3)"/><rect class="w" x="824" y="175" width="6" height="7" fill="var(--sk3)"/><rect class="w" x="837" y="175" width="6" height="7" fill="var(--sk3)"/><rect class="w" x="850" y="175" width="6" height="7" fill="var(--sk3)"/><rect class="w" x="863" y="175" width="6" height="7" fill="var(--sk3)"/><rect class="w" x="876" y="175" width="6" height="7" fill="var(--sk3)"/><rect class="w" x="889" y="175" width="6" height="7" fill="var(--sk3)"/><rect class="w" x="902" y="175" width="6" height="7" fill="var(--sk3)"/><rect class="w" x="915" y="175" width="6" height="7" fill="var(--sk3)"/><rect class="w" x="928" y="175" width="6" height="7" fill="var(--sk3)"/><rect class="w" x="720" y="189" width="6" height="7" fill="var(--sk3)"/><rect class="w" x="733" y="189" width="6" height="7" fill="var(--sk3)"/><rect class="w" x="746" y="189" width="6" height="7" fill="var(--sk3)"/><rect class="w" x="759" y="189" width="6" height="7" fill="var(--sk3)"/><rect class="w" x="772" y="189" width="6" height="7" fill="var(--sk3)"/><rect class="w" x="785" y="189" width="6" height="7" fill="var(--sk3)"/><rect class="w" x="798" y="189" width="6" height="7" fill="var(--sk3)"/><rect class="w" x="811" y="189" width="6" height="7" fill="var(--sk3)"/><rect class="w" x="824" y="189" width="6" height="7" fill="var(--sk3)"/><rect class="w" x="837" y="189" width="6" height="7" fill="var(--sk3)"/><rect class="w" x="850" y="189" width="6" height="7" fill="var(--sk3)"/><rect class="w" x="863" y="189" width="6" height="7" fill="var(--sk3)"/><rect class="w" x="876" y="189" width="6" height="7" fill="var(--sk3)"/><rect class="w" x="889" y="189" width="6" height="7" fill="var(--sk3)"/><rect class="w" x="902" y="189" width="6" height="7" fill="var(--sk3)"/><rect class="w" x="915" y="189" width="6" height="7" fill="var(--sk3)"/><rect class="w" x="928" y="189" width="6" height="7" fill="var(--sk3)"/><clipPath id="elbclip"><path d="M712 140V96Q736 70 760 84Q788 50 820 76Q850 40 884 70Q910 58 938 74V140Z"/></clipPath><path d="M712 140V96Q736 70 760 84Q788 50 820 76Q850 40 884 70Q910 58 938 74V140Z" fill="var(--skw)"/><g clip-path="url(#elbclip)"><path d="M712 98H938" fill="none" class="t thin"/><path d="M712 110H938" fill="none" class="t thin"/><path d="M712 122H938" fill="none" class="t thin"/><path class="w" d="M724 110V104a5 5 0 0 1 10 0V110z" fill="var(--sk2)"/><path class="w" d="M752 122V116a5 5 0 0 1 10 0V122z" fill="var(--sk3)"/><path class="w" d="M786 110V104a5 5 0 0 1 10 0V110z" fill="var(--sk3)"/><path class="w" d="M810 134V128a5 5 0 0 1 10 0V134z" fill="var(--sk2)"/><path class="w" d="M846 98V92a5 5 0 0 1 10 0V98z" fill="var(--sk3)"/><path class="w" d="M870 122V116a5 5 0 0 1 10 0V122z" fill="var(--sk3)"/><path class="w" d="M900 110V104a5 5 0 0 1 10 0V110z" fill="var(--sk2)"/><path class="w" d="M918 134V128a5 5 0 0 1 10 0V134z" fill="var(--sk3)"/><path class="w" d="M738 134V128a5 5 0 0 1 10 0V134z" fill="var(--sk3)"/><path class="w" d="M830 110V104a5 5 0 0 1 10 0V110z" fill="var(--sk2)"/></g><path d="M712 140V96Q736 70 760 84Q788 50 820 76Q850 40 884 70Q910 58 938 74V140" fill="none" class="t bold"/><path d="M712 140H938" fill="none" class="t"/><rect x="984" y="72" width="10" height="134" fill="var(--skw)"/><rect x="974" y="80" width="30" height="14" rx="5" fill="var(--sk1)"/><rect x="977" y="98" width="24" height="6" rx="3" fill="var(--skw)"/><rect x="980" y="112" width="18" height="5" rx="2" fill="var(--skw)"/><path d="M989 72V22" fill="none" class="t"/><path d="M1022 206V156L1030 128 1024 96 1060 90 1066 122 1058 154V206Z" fill="var(--skw)"/><path d="M1058 206V164L1064 146 1060 126 1088 120 1092 142 1086 166V206Z" fill="var(--sk1)"/><path d="M1027 108H1060" fill="none" class="t thin"/><path d="M1027 120H1060" fill="none" class="t thin"/><path d="M1027 132H1060" fill="none" class="t thin"/><path d="M1027 144H1060" fill="none" class="t thin"/><path d="M1027 156H1058" fill="none" class="t thin"/><path d="M1027 168H1058" fill="none" class="t thin"/><path d="M1027 180H1058" fill="none" class="t thin"/><path d="M1027 192H1058" fill="none" class="t thin"/><path d="M1116 206V112M1170 206V112M1116 150 1170 128M1116 128 1170 150" fill="none" class="t"/><rect x="1096" y="100" width="104" height="12" rx="2" fill="var(--sk1)"/><path d="M1104 100 1143 70 1182 100M1143 70V100" fill="none" class="t"/><rect x="1124" y="184" width="20" height="11" fill="var(--sk3)"/><rect x="1146" y="184" width="20" height="11" fill="var(--sk1)"/><rect x="1135" y="173" width="20" height="11" fill="var(--skw)"/><rect x="1124" y="195" width="42" height="11" fill="var(--sk2)"/><path d="M122 206V196" fill="none" class="t"/><path d="M122 172l-7 24h14z" fill="var(--skw)"/><path d="M552 206V196" fill="none" class="t"/><path d="M552 172l-7 24h14z" fill="var(--skw)"/><path d="M564 206V196" fill="none" class="t"/><path d="M564 172l-7 24h14z" fill="var(--skw)"/><path d="M690 206V196" fill="none" class="t"/><path d="M690 172l-7 24h14z" fill="var(--skw)"/><path d="M956 206V196" fill="none" class="t"/><path d="M956 172l-7 24h14z" fill="var(--skw)"/><path d="M1100 206V196" fill="none" class="t"/><path d="M1100 172l-7 24h14z" fill="var(--skw)"/><path d="M1008 206V186M1003 186a5 4 0 0 1 10 0" fill="none" class="t"/></g><path class="t" d="M0 206H1200"/><g class="t thin"><path d="M40 218q10.0 -4 20.0 0t20.0 0"/><path d="M200 226q6.5 -4 13.0 0t13.0 0"/><path d="M330 216q8.5 -4 17.0 0t17.0 0"/><path d="M480 230q5.5 -4 11.0 0t11.0 0"/><path d="M660 220q11.5 -4 23.0 0t23.0 0"/><path d="M860 228q7.5 -4 15.0 0t15.0 0"/><path d="M1010 218q9.0 -4 18.0 0t18.0 0"/><path d="M1150 228q7.5 -4 15.0 0t15.0 0"/></g><g class="lines"><path d="M560 220h66l-9 11h-48z" fill="var(--skw)"/><rect x="574" y="212" width="32" height="8" rx="2" fill="var(--sk1)"/><path d="M600 212V205M586 215h4M594 215h4" fill="none" class="t"/></g><path class="t thin" transform="translate(250 46) scale(1)" d="M0 14H48M8 14a8 8 0 0 1 10-8a12 12 0 0 1 22 2a6 6 0 0 1 6 6M-14 14H-4M52 14H60"/><path class="t thin" transform="translate(690 28) scale(0.9)" d="M0 14H48M8 14a8 8 0 0 1 10-8a12 12 0 0 1 22 2a6 6 0 0 1 6 6M-14 14H-4M52 14H60"/><path class="t thin" transform="translate(1080 44) scale(1.1)" d="M0 14H48M8 14a8 8 0 0 1 10-8a12 12 0 0 1 22 2a6 6 0 0 1 6 6M-14 14H-4M52 14H60"/><path class="t thin" transform="translate(130 70) scale(0.7)" d="M0 14H48M8 14a8 8 0 0 1 10-8a12 12 0 0 1 22 2a6 6 0 0 1 6 6M-14 14H-4M52 14H60"/><path class="t thin" d="M440 50q4 -5 8 0q4 -5 8 0"/><path class="t thin" d="M456 60q4 -5 8 0q4 -5 8 0"/><path class="t thin" d="M910 40q4 -5 8 0q4 -5 8 0"/></svg>
+      <svg class="skyline" viewBox="10 0 300 190" preserveAspectRatio="xMidYMax meet" aria-hidden="true"><defs><linearGradient id="skyFade" x1="0" y1="156" x2="0" y2="190" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#fff" stop-opacity=".42"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient><mask id="skyMask"><rect x="0" y="156" width="320" height="34" fill="url(#skyFade)"/></mask><g id="skyG"><path d="M19,152 21,150.7 23,149.73 25,148.86 27,148.05 29,147.28 31,146.54 33,145.83 35,145.14 37,144.46 39,143.81 41,143.16 43,142.53 45,141.91 47,141.3 49,140.71 51,140.12 53,139.54 55,138.97 57,138.41 59,137.86 61,137.31 63,136.77 65,136.24 67,135.72 69,135.2 71,134.69 73,134.19 75,133.69 77,133.2 79,132.72 81,132.24 83,131.77 85,131.31 87,130.85 89,130.4 91,129.95 93,129.51 95,129.08 97,128.65 99,128.23 101,127.81 103,127.4 105,127 107,126.6 109,126.21 111,125.82 113,125.44 115,125.07 117,124.7 119,124.34 121,123.98 123,123.63 125,123.29 127,122.95 129,122.62 131,122.29 133,121.97 135,121.66 137,121.35 139,121.05 141,120.75 143,120.46 145,120.18 147,119.9 149,119.63 151,119.36 153,119.1 155,118.85 157,118.6 159,118.36 161,118.13 163,117.9 165,117.68 167,117.47 169,117.26 171,117.06 173,116.86 175,116.67 177,116.49 179,116.31 181,116.14 183,115.98 185,115.82 187,115.67 189,115.52 191,115.39 193,115.25 195,115.13 197,115.01 199,114.9 201,114.79 203,114.69 205,114.6 207,114.52 209,114.44 211,114.36 213,114.3 215,114.24 217,114.19 219,114.14 221,114.1 223,114.07 225,114.04 227,114.02 229,114.01 231,114 233,114 233,118.2 231,118.2 229,118.21 227,118.22 225,118.24 223,118.27 221,118.3 219,118.34 217,118.39 215,118.44 213,118.5 211,118.56 209,118.64 207,118.72 205,118.8 203,118.89 201,118.99 199,119.1 197,119.21 195,119.33 193,119.45 191,119.59 189,119.72 187,119.87 185,120.02 183,120.18 181,120.34 179,120.51 177,120.69 175,120.87 173,121.06 171,121.26 169,121.46 167,121.67 165,121.88 163,122.1 161,122.33 159,122.56 157,122.8 155,123.05 153,123.3 151,123.56 149,123.83 147,124.1 145,124.38 143,124.66 141,124.95 139,125.25 137,125.55 135,125.86 133,126.17 131,126.49 129,126.82 127,127.15 125,127.49 123,127.83 121,128.18 119,128.54 117,128.9 115,129.27 113,129.64 111,130.02 109,130.41 107,130.8 105,131.2 103,131.6 101,132.01 99,132.43 97,132.85 95,133.28 93,133.71 91,134.15 89,134.6 87,135.05 85,135.51 83,135.97 81,136.44 79,136.92 77,137.4 75,137.89 73,138.39 71,138.89 69,139.4 67,139.92 65,140.44 63,140.97 61,141.51 59,142.06 57,142.61 55,143.17 53,143.74 51,144.32 49,144.91 47,145.5 45,146.11 43,146.73 41,147.36 39,148.01 37,148.66 35,149.34 33,150.03 31,150.74 29,151.48 27,152.25 25,153.06 23,153.93 21,154.9 19,156.2ZM38.5,146.482 41.5,146.482 41.5,156 38.5,156ZM89.25,132.732 94.75,132.732 94.75,156 89.25,156ZM102,130.2 106,130.2 106,156 102,156ZM66.3,74 68.7,74 77,138 74,138 67.5,86 61,138 58,138ZM59.5,136 75.5,136 72.5,156 62.5,156ZM116,36 119,36 119,66 116,66ZM114.5,40 120.5,40 120.5,41.6 114.5,41.6ZM114.5,46 120.5,46 120.5,47.6 114.5,47.6ZM114.5,52 120.5,52 120.5,53.6 114.5,53.6ZM114.5,58 120.5,58 120.5,59.6 114.5,59.6ZM108,70.5 C108,68.5 127,68.5 127,70.5 C127,73 123,75.5 117.5,75.5 C112,75.5 108,73 108,70.5ZM110.5,84 C110.5,82 124.5,82 124.5,84 C124.5,86.5 121.5,88 117.5,88 C113.5,88 110.5,86.5 110.5,84ZM115,66 120,66 120.6,156 114.4,156ZM141,52 144,52 145,60 140,60ZM137.5,73 C137.5,63 140,60 142.5,60 C145,60 147.5,63 147.5,73ZM136.5,72 148.5,72 148.5,84 136.5,84ZM134.5,84 150.5,84 151.5,100 153.5,104 153.5,128 131.5,128 131.5,104 133.5,100ZM126,156 126,132 131,128 153,128 158,124 166,124 170,129 176,126 180,129 181,116 197,116 198,112 214,112 214,126 219,130 223,128 226,132 226,156ZM187.5,72 190.5,72 191.5,80 186.5,80ZM184.5,92 C184.5,84 186.5,80 189,80 C191.5,80 193.5,84 193.5,92ZM183.5,91 194.5,91 195.5,104 197.5,108 197.5,120 180.5,120 180.5,108 182.5,104ZM206,47 208.2,70 213,101 199,101 203.8,70ZM198,100 214,100 214,114 198,114ZM222,136 223.2,136 223.2,156 222,156ZM226.5,136 227.7,136 227.7,156 226.5,156ZM231,98 C238,99 244,103 250,107 C255,104 262,103 268,107 C273,110 278,111 283,110 C289,108 295,110 303,114 L303,156 L231,156ZM16,153 306,153 306,156.6 16,156.6Z"/><g fill="none" stroke="currentColor" stroke-linecap="round"><path d="M25.5,154L29.5,110" stroke-width="1.6"/><path d="M33.5,154L29.5,110" stroke-width="1.6"/><path d="M26.5,141L32.5,141" stroke-width="1.2"/><path d="M29.5,113L36,145.298" stroke-width="0.45"/><path d="M29.5,116L40.5,143.821" stroke-width="0.45"/><path d="M29.5,119L45,142.412" stroke-width="0.45"/><path d="M29.5,122L49.5,141.059" stroke-width="0.45"/><path d="M29.5,125L54,139.754" stroke-width="0.45"/><path d="M67.5,78L40,143.982" stroke-width="0.45"/><path d="M67.5,78L95,129.579" stroke-width="0.45"/><path d="M67.5,80.6L42.6,143.156" stroke-width="0.45"/><path d="M67.5,80.6L92.4,130.144" stroke-width="0.45"/><path d="M67.5,83.2L45.2,142.35" stroke-width="0.45"/><path d="M67.5,83.2L89.8,130.719" stroke-width="0.45"/><path d="M67.5,85.8L47.8,141.564" stroke-width="0.45"/><path d="M67.5,85.8L87.2,131.305" stroke-width="0.45"/><path d="M67.5,88.4L50.4,140.794" stroke-width="0.45"/><path d="M67.5,88.4L84.6,131.901" stroke-width="0.45"/><path d="M67.5,91L53,140.04" stroke-width="0.45"/><path d="M67.5,91L82,132.508" stroke-width="0.45"/><path d="M67.5,93.6L55.6,139.301" stroke-width="0.45"/><path d="M67.5,93.6L79.4,133.125" stroke-width="0.45"/><path d="M117.5,0L117.5,40" stroke-width="1.1"/><path d="M142.5,41L142.5,54" stroke-width="1"/><path d="M140.8,45L144.2,45" stroke-width="0.8"/><path d="M189,59L189,74" stroke-width="0.9"/></g><g style="fill: var(--panel); stroke: var(--panel)"><circle cx="236" cy="110" r=".6"/><circle cx="241" cy="116" r=".6"/><circle cx="247" cy="112" r=".6"/><circle cx="255" cy="113" r=".6"/><circle cx="262" cy="118" r=".6"/><circle cx="268" cy="114" r=".6"/><circle cx="276" cy="120" r=".6"/><circle cx="283" cy="117" r=".6"/><circle cx="291" cy="121" r=".6"/><circle cx="298" cy="119" r=".6"/><circle cx="239" cy="124" r=".6"/><circle cx="251" cy="122" r=".6"/><circle cx="286" cy="126" r=".6"/><circle cx="272" cy="127" r=".6"/><circle cx="259" cy="128" r=".6"/><circle cx="244" cy="130" r=".6"/><circle cx="296" cy="128" r=".6"/><path d="M231,137.5H303" stroke-width=".8" fill="none"/><path d="M263,137.5c2-4 12-4 14,0z"/><path d="M231,103.5c8,1 14,5 19,8.5c6-3 12-3 18,1c5,3 10,4 15,3c6-2 12,0 20,4" stroke-width=".5" fill="none" opacity=".55"/></g></g></defs><use href="#skyG"/><g mask="url(#skyMask)"><use href="#skyG" transform="matrix(1 0 0 -1 0 312)"/></g></svg>
     </header>
     <div class="recent" id="recent" hidden></div>
     <div id="overview"></div>
     <div id="results">
       <section class="card">
         <h2>So funktioniert es</h2>
-        <p class="hint">Adresse eingeben oder einen Punkt in der Karte antippen. Die App fasst den geltenden Bebauungsplan in einfachen Worten zusammen: was gebaut werden darf, wie hoch und wie viel Fläche.</p>
+        <p class="hint">Adresse eingeben oder einen Punkt in der Karte antippen. Die App fasst das Planungsrecht für den Ort in einfachen Worten zusammen: was der Bebauungsplan festsetzt, zum Beispiel Höhe und bebaubare Fläche. Ob und was gebaut werden darf, entscheidet allein das Bauamt (Bezirksamt).</p>
       </section>
     </div>
     <ul class="status" id="diag" hidden></ul>
@@ -865,7 +857,8 @@ body.is3d .view3d { display: block; }
       <button type="button" id="mDone">Fertig</button>
     </div>
     <button type="button" class="compass" id="compass" aria-label="Nach Norden ausrichten" title="Nach Norden ausrichten"><svg viewBox="0 0 44 44" aria-hidden="true"><g class="needle"><text x="22" y="10.5" text-anchor="middle">N</text><path d="M22 12 27 22H17z" fill="#ff3b30"/><path d="M22 34 17 22h10z" fill="currentColor" opacity=".38"/></g></svg></button>
-    <button type="button" class="bfkey" id="bfKey" aria-pressed="true" title="Baufenster aus dem Bebauungsplan ein- oder ausblenden" hidden><i aria-hidden="true"></i><span>Baufenster<small>Baustufenplan: hier keine</small></span></button>
+    <button type="button" class="bfkey" id="bfKey" aria-pressed="true" title="Baufenster aus dem Bebauungsplan ein- oder ausblenden" hidden><i aria-hidden="true"></i><span>Baufenster</span></button>
+    <button type="button" class="bfkey dmkey" id="dmKey" aria-pressed="true" title="Baudenkmale (Denkmalliste Hamburg) ein- oder ausblenden" hidden><i aria-hidden="true"></i><span>Baudenkmal</span></button>
     <button type="button" class="btn3d" id="btn3d" aria-label="3D-Ansicht öffnen" title="Gebäude in 3D ansehen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 3 7v10l9 5 9-5V7z"/><path d="m3 7 9 5 9-5M12 12v10"/></svg>3D</button>
     <div class="lpring" id="lpRing" aria-hidden="true"></div>
     <p class="mtip" id="mTip" role="status"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="8" stroke-dasharray="3 3"/></svg><span></span></p>
@@ -1845,7 +1838,7 @@ const bgLayer = new ol.layer.Tile({source: new ol.source.XYZ({url: CFG.basemap("
 const boundsSrc = new ol.source.Vector({format: new ol.format.WFS(), strategy: ol.loadingstrategy.bbox, url: ext => wfsUrlBbox(CFG.bplanWfs, CFG.bplanTypes[0].type, ext, 500)});
 boundsSrc.on("featuresloaderror", () => diag("✗ B-Plan-Grenzen konnten nicht geladen werden", "fail"));
 // Baustufenpläne (BS…) haben keine Baufenster: das steht nah herangezoomt unter dem Namen
-const boundsText = p => { const n = planName(p); return /^BS/i.test(n) ? n + "\nBaustufenplan: keine Baufenster" : n; };
+const boundsText = p => planName(p);
 const boundsLayer = vec(boundsSrc, (f, res) => St({stroke: Sk(css("--plan"), 1.5), fill: Fl("rgba(0,0,0,0)"),
   text: res < 2.5 ? new ol.style.Text({text: boundsText(f.getProperties()), font: "600 12px " + css("--sans"), fill: Fl(css("--plan")), stroke: Sk("#fff", 3), overflow: false}) : undefined}),
   {maxResolution: CFG.boundsMaxRes});
@@ -1869,7 +1862,13 @@ const bfLayer = vec(bfSrc, (f, res) => {
   return St({stroke: Sk(bf, mine ? 3 : 2), fill: Fl(mine ? css("--bf-fill") : css("--bf-fill2")),
     text: mine && res < 0.6 ? new ol.style.Text({text: bfLabel(f.get("attrs")), font: "700 13px " + css("--sans"), fill: Fl(bf), stroke: Sk("#fff", 3), overflow: true, offsetY: 16}) : undefined});
 }, {zIndex: 10, maxResolution: BF_MAXRES});
-const map = new ol.Map({target: "map", layers: [bgLayer, boundsLayer, selLayer, plotLayer, bfLayer, measureLayer, markerLayer],
+// Baudenkmale (Gebäude aus der Denkmalliste) rot, wie in der Bebauungsplan-Karte; nah herangezoomt für den ganzen Ausschnitt
+const DM_MAXRES = BF_MAXRES;
+const dmSrc = new ol.source.Vector({format: new ol.format.WFS(), strategy: ol.loadingstrategy.bbox, url: ext => wfsUrlBbox("https://geodienste.hamburg.de/HH_WFS_Denkmalschutz", "de.hh.up:gebaeude", ext, 1500)});
+dmSrc.on("featuresloaderror", () => diag("✗ Baudenkmale konnten nicht geladen werden", "fail"));
+const dmStyle = St({stroke: Sk("#ff3b30", 1.5), fill: Fl("rgba(255,59,48,.42)")});
+const dmLayer = vec(dmSrc, () => body.contains("has-result") ? dmStyle : null, {zIndex: 9, maxResolution: DM_MAXRES}); // erst nach der Suche, dann mit Schalter
+const map = new ol.Map({target: "map", layers: [bgLayer, boundsLayer, selLayer, dmLayer, plotLayer, bfLayer, measureLayer, markerLayer],
   view: new ol.View({projection: UTM, ...CFG.start, maxResolution: 300, minResolution: 0.1}),
   controls: ol.control.defaults.defaults({attributionOptions: {collapsible: true}}).extend([new ol.control.ScaleLine({units: "metric"})])});
 const view = map.getView();
@@ -1902,6 +1901,7 @@ function openDetail(checkId) {
 function closeDetail() { vt(() => { body.remove("detail"); side.scrollTop = 0; }, "zurueck"); relayout(); }
 $("drawer").inert = true;
 on("menuBtn", "click", () => toggleDrawer(true));
+on("dmKey", "click", () => { const v = !dmLayer.getVisible(); dmLayer.setVisible(v); $("dmKey").setAttribute("aria-pressed", v); });
 on("bfKey", "click", () => {
   const v = !bfLayer.getVisible(); bfLayer.setVisible(v); $("bfKey").setAttribute("aria-pressed", v); map.render(); loadBaufenster();
   if (v && bfSrc.getFeatures().length) { // Baufenster am Grundstück ins Bild holen, falls sie außerhalb des (auf dem Handy kleinen) Ausschnitts liegen
@@ -1931,7 +1931,7 @@ function placeSearch(clear) {
 addEventListener("resize", () => placeSearch()); placeSearch();
 for (const el of document.querySelectorAll(".side > header :is(h1, .banner)")) el.addEventListener("click", () => { if (body.contains("has-result")) $("homeBtn").click(); });
 on("homeBtn", "click", () => {
-  clearMeasure(); close3d(); toggleDrawer(false); body.remove("has-result", "detail"); clearMap(); plotArea = null;
+  clearMeasure(); close3d(); toggleDrawer(false); body.remove("has-result", "detail"); clearMap(); plotArea = null; dmLayer.changed();
   placeSearch(); queryId++; $("overview").innerHTML = ""; $("results").innerHTML = startResults; $("q").value = ""; curPlace = null; cur = {sum: null, zone: null}; side.scrollTop = 0;
   requestAnimationFrame(() => { map.updateSize(); view.cancelAnimations(); view.animate({...CFG.start, duration: 500}); });
 });
@@ -2020,10 +2020,9 @@ function markMine(geom) {
 }
 // Liegt das Grundstück (sonst die Kartenmitte) in einem Baustufenplan, sagt der Schalter, dass es hier keine Baufenster gibt
 const bfKeyUpdate = () => {
-  const k = $("bfKey"), pf = plotSrc.getFeatures()[0], at = pf ? ol.extent.getCenter(pf.getGeometry().getExtent()) : view.getCenter();
-  const names = boundsSrc.getFeaturesAtCoordinate(at).map(f => planName(f.getProperties()));
+  const k = $("bfKey");
   k.hidden = view.getResolution() > BF_MAXRES; k.setAttribute("aria-pressed", bfLayer.getVisible());
-  k.classList.toggle("bs", names.length > 0 && names.every(n => /^BS/i.test(n)));
+  const d = $("dmKey"); d.hidden = view.getResolution() > DM_MAXRES; d.setAttribute("aria-pressed", dmLayer.getVisible());
 };
 boundsSrc.on("featuresloadend", bfKeyUpdate);
 map.on("moveend", () => { bfKeyUpdate(); loadBaufenster(); });
@@ -2057,18 +2056,19 @@ const linkBtns = p => `<div class="linkbtns">${pdfLinks(p).map(l => `<a class="b
 const li = a => a.map(x => `<li>${esc(x)}</li>`).join("");
 function renderResult(coord, placeName, plans, plot) {
   const r = $("results"), first = !body.contains("has-result"); r.innerHTML = "";
-  body.add("has-result"); body.remove("detail"); placeSearch(true);
+  body.add("has-result"); body.remove("detail"); placeSearch(true); dmLayer.changed();
   r.append(Object.assign(document.createElement("div"), {className: "backbar noprint", innerHTML: `<button type="button" class="ghost" id="backBtn">‹ Zurück zur Übersicht</button>`}));
   const found = findSummary(plans), valid = plans.filter(p => p.status === "festgestellt");
   const main = found?.plan || valid[0] || plans[0], sum = found?.sum || null, flst = plotNumber(plot);
   cur = {sum, zone: sum ? (sum.zones.find(z => flst && z.flst.includes(flst)) || null) : null};
+  cur.bs = !!main && /^BS/i.test(planName(main.props));
   if (!main) {
     r.append(card("Kein Bebauungsplan gefunden", `<p class="hint">${esc(placeName)}</p>
       <p>Hier gilt vermutlich kein Bebauungsplan. Dann darf so gebaut werden, wie es sich in die Umgebung einfügt (§ 34 BauGB): ähnliche Höhe, Größe und Bauweise wie die Nachbarhäuser.</p>
       <p class="hint">Falls ein Dienst gerade nicht erreichbar war, kann eine Angabe fehlen. Dann bitte später noch einmal suchen.</p>`), calcCard(), generalCard());
   } else {
     const gilt = main.status === "festgestellt";
-    r.append(card("", `<div class="meta"><span class="pill ${gilt ? "" : "draft"}">${gilt ? "Bebauungsplan gilt" : "Bebauungsplan im Verfahren"}</span>${sum?.auto ? `<span class="pill none">automatisch erstellt</span>` : ""}</div>
+    r.append(card("", `${!gilt || sum?.auto ? `<div class="meta">${gilt ? "" : `<span class="pill draft">Bebauungsplan im Verfahren</span>`}${sum?.auto ? `<span class="pill none">automatisch erstellt</span>` : ""}</div>` : ""}
       <p class="plan-name">${esc(sum?.name || planTitle(planName(main.props)) || "Bebauungsplan").replace(/(Baustufen|Teilbebauungs|Durchführungs|Bebauungs)(plan)/, "$1&shy;$2")}</p>
       <p class="hint">${esc(placeName)}</p>
       <div class="meta">${flst ? `<span>Flurstück ${flst}</span>` : ""}${plot?.area ? `<span>${fmt(plot.area)} m²${plot.areaAmtlich ? " amtlich" : ""}</span>` : ""}${sum ? `<span>festgestellt ${esc(sum.festgestellt)}</span>` : ""}</div>`, "hero"));
@@ -2106,7 +2106,7 @@ function renderOverview(main, sum, placeName) {
   const gilt = main?.status === "festgestellt", name = main ? sum?.name || planTitle(planName(main.props)) || "Bebauungsplan" : "Kein Bebauungsplan";
   $("overview").classList.add("neu"); setTimeout(() => $("overview").classList.remove("neu"), 800); // nur frische Ergebnisse bauen sich auf, nicht die Rückkehr aus den Details
   $("overview").innerHTML = `<button type="button" class="ov-plan" data-go="">
-      <span class="pill ${main ? (gilt ? "" : "draft") : "none"}">${main ? (gilt ? "Bebauungsplan gilt" : "Bebauungsplan im Verfahren") : "§ 34 BauGB: Einfügen in die Umgebung"}</span>
+      ${main && gilt ? "" : `<span class="pill ${main ? "draft" : "none"}">${main ? "Bebauungsplan im Verfahren" : "§ 34 BauGB: Einfügen in die Umgebung"}</span>`}
       <span class="ov-name">${esc(name).replace(/(Baustufen|Teilbebauungs|Durchführungs|Bebauungs)(plan)/, "$1&shy;$2")}</span>
       <span class="ov-more">Weitere Infos zur Bebaubarkeit ›</span></button>
     ${typeof CHECKS === "undefined" ? "" : `<button type="button" class="ov-box ov-row" data-go="denkmal"><span class="ov-label">Denkmalschutz</span><b class="ov-val">wird geprüft …</b><span class="ov-more">›</span></button>`}
@@ -2174,7 +2174,7 @@ const generalCard = () => typeof HAMBURG_ALLGEMEIN === "undefined" ? "" : card("
   </details><p class="hint">Allgemeine Hinweise ohne Gewähr. Was für Ihr Grundstück gilt, sagt verbindlich das Bezirksamt.</p>`, "general ext");
 const calcCard = () => card("Was darf ich bauen?", `<div class="calc"><label for="plotArea">Grundstücksfläche</label><input type="number" id="plotArea" min="0" step="1" value="${plotArea ?? ""}"> m²</div>
   <div class="tools"><button type="button" class="ghost" id="mArea2">Grundfläche in der Karte messen</button></div>
-  <div id="calcOut" class="big"></div><p class="hint" id="calcNote"></p>`);
+  <div id="calcOut" class="big"></div><p class="hint" id="calcNote"></p>${cur.bs ? `<p class="bs34"><b>Lage auf dem Grundstück:</b> Baustufenpläne legen keine Baufenster fest. Wo auf dem Grundstück gebaut werden darf, wird nach §&nbsp;34 BauGB beurteilt: Das Gebäude muss sich in die nähere Umgebung einfügen.</p>` : ""}`);
 
 // ---------- Flurstück (ALKIS) ----------
 let alkisSvc = null;
