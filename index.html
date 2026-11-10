@@ -2975,10 +2975,45 @@ function mapImage() {
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   try { return cv.toDataURL("image/jpeg", .86); } catch { return ""; }
 }
+// Karte für das Deckblatt in Druckqualität: eigene unsichtbare Karte im Querformat 3:1, dreifache Pixeldichte, auf das Grundstück eingepasst
+function mapImageHi() {
+  const g = lastPlot?.geometry; if (!g) return Promise.resolve("");
+  const W = 960, H = 320, pr = 3, el = Object.assign(document.createElement("div"), {className: "mapshot"});
+  el.style.cssText = `position:fixed;left:-${W + 2000}px;top:0;width:${W}px;height:${H}px;pointer-events:none`; document.body.append(el);
+  const twin = l => l instanceof ol.layer.Tile ? new ol.layer.Tile({source: l.getSource()}) : vec(l.getSource(), l.getStyle(), {zIndex: l.getZIndex(), maxResolution: l.getMaxResolution()});
+  const m = new ol.Map({target: el, pixelRatio: pr, controls: [], interactions: [], layers: [bgLayer, boundsLayer, selLayer, dmLayer, plotLayer, bfLayer].map(twin),
+    view: new ol.View({projection: UTM, minResolution: 0.05, maxResolution: 300})});
+  const e = g.getExtent(), pad = Math.max(ol.extent.getWidth(e), ol.extent.getHeight(e)) * 0.45 + 12;
+  m.getView().fit(ol.extent.buffer(e, pad), {size: [W, H]});
+  return new Promise(res => {
+    const finish = () => {
+      clearTimeout(t); let url = "";
+      try {
+        const cv = Object.assign(document.createElement("canvas"), {width: W * pr, height: H * pr}), ctx = cv.getContext("2d");
+        ctx.fillStyle = "#e9eef3"; ctx.fillRect(0, 0, cv.width, cv.height);
+        el.querySelectorAll(".ol-layer canvas, canvas.ol-layer").forEach(c => {
+          if (!c.width) return;
+          const op = c.parentNode.style.opacity || c.style.opacity; ctx.globalAlpha = op === "" ? 1 : +op;
+          const mt = c.style.transform.match(/^matrix\(([^(]*)\)$/);
+          ctx.setTransform(pr, 0, 0, pr, 0, 0); ctx.transform(...(mt ? mt[1].split(",").map(Number) : [W / c.width, 0, 0, H / c.height, 0, 0]));
+          ctx.drawImage(c, 0, 0);
+        });
+        url = cv.toDataURL("image/jpeg", .9);
+      } catch { /* Kacheln ohne Freigabe: dann das kleine Bild */ }
+      m.setTarget(null); el.remove(); res(url);
+    };
+    const t = setTimeout(finish, 9000); // spätestens dann, auch wenn eine Kachel fehlt
+    m.once("rendercomplete", finish);
+  });
+}
+function captureMap() { // erst das Bild der sichtbaren Karte, dann das scharfe nachreichen
+  const mine = rep; if (!body.contains("detail")) rep.img = mapImage();
+  mapImageHi().then(u => { if (u && mine === rep) rep.img = u; }).catch(() => {});
+}
 // Vorschau-Kauf: freischalten und den vollständigen Bericht öffnen
 function unlock(quiet) {
-  if (quiet) { const mine = rep; setTimeout(() => { if (mine === rep && !body.contains("detail")) rep.img = mapImage(); }, 2500); }
-  else rep.img = mapImage(); // Karte jetzt sichern: in den Details ist sie auf dem Handy nicht zu sehen
+  if (quiet) { const mine = rep; setTimeout(() => { if (mine === rep) captureMap(); }, 2500); }
+  else captureMap(); // Karte jetzt sichern: in den Details ist sie auf dem Handy nicht zu sehen
   bezahlt = true; body.add("bezahlt"); extended = true; extSet?.();
   const c = qs("#results .procard");
   if (c) c.innerHTML = `<h2>${icon("file")}Bericht als PDF</h2><p class="hint">Zum Speichern, Drucken oder Weitergeben.</p>
