@@ -811,6 +811,31 @@ dialog.pro[open] { animation: rise .28s var(--ease) both; }
 .pro pre { white-space: pre-wrap; font: 12.5px/1.45 ui-monospace, Menlo, monospace; background: var(--fill); padding: 10px 12px; border-radius: 12px; margin: 0; max-height: 34vh; overflow: auto; }
 #repCover { display: none; }
 
+
+/* ---------- Zusatzkarten im gekauften Bericht ---------- */
+.v3shot { position: fixed; left: -4000px; top: 0; width: 840px; height: 525px; overflow: hidden; pointer-events: none; }
+.v3shot canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.rep-x .rimg, .rep-x svg.skizze { display: block; width: 100%; height: auto; border-radius: 14px; background: #fff; }
+.rep-x.loading .hint::before { content: ""; display: inline-block; width: 12px; height: 12px; margin-right: 8px; vertical-align: -1px; border-radius: 50%; border: 2px solid var(--line); border-top-color: var(--accent); animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.rtab { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+.rtab th { text-align: left; font-weight: 550; color: var(--muted); width: 44%; }
+.rtab :is(th, td) { padding: 8px 8px 8px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+.rtab tr:last-child :is(th, td) { border-bottom: 0; }
+.rtab b.ok { color: var(--ok); } .rtab b.warn { color: var(--warn); }
+.rscroll { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 0 -4px; padding: 0 4px; }
+.rtab.nbt { min-width: 520px; font-size: 13.5px; } .rtab.nbt th { width: auto; font-size: 12px; white-space: nowrap; } .rtab.nbt td { white-space: nowrap; } .rtab.nbt td:first-child { white-space: normal; min-width: 120px; }
+.rbar { position: relative; height: 14px; border-radius: 99px; background: var(--fill); overflow: visible; margin: 2px 0 6px; }
+.rbar i { position: absolute; inset: 0 auto 0 0; border-radius: 99px; background: var(--muted); }
+.rbar u { position: absolute; top: -4px; bottom: -4px; width: 3px; margin-left: -1.5px; border-radius: 2px; background: var(--accent); }
+.rbar-key { display: flex; gap: 14px; margin: 0 0 6px; } .rbar-key span { display: inline-flex; align-items: center; gap: 6px; }
+.rbar-key i { width: 12px; height: 8px; border-radius: 4px; background: var(--muted); } .rbar-key u { width: 3px; height: 12px; border-radius: 2px; background: var(--accent); }
+.skey { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 8px 0 4px; }
+.skey span { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; } .skey i { width: 14px; height: 10px; border-radius: 3px; box-sizing: border-box; }
+.k-plot { background: #fff4d1; border: 2px solid #d79a00; } .k-bf { background: rgba(10,108,255,.25); border: 1.5px dashed #0a5fe0; } .k-own { background: #9aa0ab; } .k-nb { background: #e3e5ea; }
+ol.steps { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 8px; line-height: 1.45; }
+.pro button[disabled] { opacity: .55; cursor: default; }
+
 /* ---------- Merkblatt (Drucken): kompakt, höchstens drei Seiten ---------- */
 .printonly { display: none; }
 @media print {
@@ -858,6 +883,17 @@ dialog.pro[open] { animation: rise .28s var(--ease) both; }
   body.bezahlt #results details.okfold > summary, .calc, .tools { display: none !important; }
   #calcOut.big { grid-template-columns: repeat(2, 1fr); }
   dl.rules dd { break-before: avoid; }
+  .rep-x.loading, .v3shot { display: none !important; }
+  #results > section.card { display: block; } #results > section.card > * + * { margin-top: 4pt; } /* Block statt Flex: nur so hält der Browser Überschrift und Text zusammen */
+  h2, dl.rules dt { break-after: avoid; page-break-after: avoid; }
+  #results > section.card:has(> dl.rules) { break-before: page; } /* lange Regel-Liste beginnt oben auf einer neuen Seite */
+  #results > section.rep-x { break-inside: avoid; }
+  .rep-x .rimg, .rep-x svg.skizze { border: .5pt solid #bbb; border-radius: 0; max-height: 120mm; width: auto; max-width: 100%; margin: 0 auto; }
+  .rtab, .rtab.nbt { font-size: 8.5pt; min-width: 0; } .rtab :is(th, td) { padding: 2.5pt 5pt 2.5pt 0; border-color: #bbb; } .rtab.nbt th { font-size: 7.5pt; }
+  .rscroll { overflow: visible; }
+  .rbar { background: #eee !important; border: .5pt solid #bbb; } .rbar i { background: #888 !important; } .rbar u { background: #1f4fa3 !important; }
+  .rbar, .rbar *, .rbar-key *, .skey i, svg.skizze, svg.skizze * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  ol.steps { gap: 3pt; }
 
   body.report #repCover { display: block; break-after: page; }
   #repCover h1 { font: 700 22pt/1.1 var(--sans); margin: 0 0 2pt; }
@@ -1490,9 +1526,9 @@ const View3D = (() => {
     const scene = viewer.scene;
     // Schärfer: in voller Bildschirmauflösung rechnen (Retina/iPhone), höchstens doppelt, damit es flüssig bleibt; feinere Kacheln
     viewer.useBrowserRecommendedResolution = false;
-    viewer.resolutionScale = Math.min(1, 2 / (devicePixelRatio || 1));
+    viewer.resolutionScale = opt.shot ? Math.min(1, 1.5 / (devicePixelRatio || 1)) : Math.min(1, 2 / (devicePixelRatio || 1)); // Foto für den Bericht: kleiner, schont Speicher
     scene.globe.maximumScreenSpaceError = 1.33;
-    if (scene.msaaSupported) scene.msaaSamples = phone ? 2 : 4;
+    if (scene.msaaSupported) scene.msaaSamples = opt.shot || phone ? 2 : 4;
     scene.globe.depthTestAgainstTerrain = true;
     viewer.clock.currentTime = C.JulianDate.fromIso8601("2026-06-21T11:00:00Z"); viewer.clock.shouldAnimate = false; // immer helles Mittagslicht
     scene.fog.enabled = true; scene.fog.density = 0.0002;
@@ -1518,7 +1554,7 @@ const View3D = (() => {
       viewer.entities.add({polygon: {hierarchy: deg(r), material: C.Color.fromCssColorString("#ffbe1a").withAlpha(0.28), classificationType: C.ClassificationType.TERRAIN}});
       viewer.entities.add({polyline: {positions: deg(r), width: 5, clampToGround: true, material: C.Color.fromCssColorString("#ffbe1a")}});
     }
-    streetLabels(me, lon, lat);
+    if (!opt.shot) streetLabels(me, lon, lat);
     // Blick schräg auf das Grundstück
     let h = me.gz;
     try { const [c] = await C.sampleTerrainMostDetailed(terrainProvider, [C.Cartographic.fromDegrees(lon, lat)]); if (isFinite(c.height)) h = c.height; } catch { /* Sockelhöhe aus LoD2 */ }
@@ -1689,7 +1725,41 @@ const View3D = (() => {
     me.box?.remove();
     me.gl?.getExtension("WEBGL_lose_context")?.loseContext(); me.canvas?.remove();
   }
-  const api = {open, close, north, zoom, isOpen: () => !!st, onHeading: null};
+  // Foto der 3D-Ansicht für den Bericht: wartet, bis Gebäude, Gelände und Baufenster geladen sind
+  async function snapshot(maxMs = 30000) {
+    const me = st, t0 = Date.now(); if (!me) return "";
+    while (st === me && Date.now() - t0 < maxMs) {
+      const v = me.viewer;
+      if (v && me.lon != null && me.tileset?.tilesLoaded && (!me.bfTileset || me.bfTileset.tilesLoaded) && v.scene.globe.tilesLoaded && Date.now() - t0 > 2500) break;
+      if (v) v.scene.requestRender();
+      if (!v && Date.now() - t0 > 12000 && !window.Cesium) return ""; // ohne Cesium (z. B. Datei vom Rechner) gibt es kein Foto
+      await new Promise(r => setTimeout(r, 300));
+    }
+    if (st !== me || !me.viewer) return "";
+    try { me.sel = -1; restyle(me); me.viewer.render(); return me.viewer.canvas.toDataURL("image/jpeg", 0.88); } catch { return ""; }
+  }
+  // Gebäude aus dem 3D-Stadtmodell (LoD2) im Umkreis: Lage (Ost/Nord in Metern ab der Mitte), Höhe und Angaben wie Dachform
+  const tileCache = new Map();
+  async function buildings(center, r = 70) {
+    const [lon, lat] = toLonLat(center), frame = enuFrame(lon, lat);
+    const t0 = tileOf(...toLonLat([center[0] - r, center[1] + r])), t1 = tileOf(...toLonLat([center[0] + r, center[1] - r])), out = [];
+    for (let x = t0[0]; x <= t1[0]; x++) for (let y = t0[1]; y <= t1[1]; y++) {
+      const u = `${LOD2}${x}/${y}.b3dm`;
+      if (!tileCache.has(u)) tileCache.set(u, fetch(u).then(q => q.ok ? q.arrayBuffer() : null).catch(() => null));
+      const b = await tileCache.get(u), t = b && readB3dm(b, frame);
+      if (!t) continue;
+      for (const part of t.parts) {
+        const info = new Map();
+        for (let k = 0; k < part.P.length / 3; k++) {
+          const id = part.bid[k], i = info.get(id) || info.set(id, {sx: 0, sy: 0, n: 0, minZ: 1e9, maxZ: -1e9}).get(id), z = part.P[k * 3 + 2];
+          i.sx += part.P[k * 3]; i.sy += part.P[k * 3 + 1]; i.n++; i.minZ = Math.min(i.minZ, z); i.maxZ = Math.max(i.maxZ, z);
+        }
+        for (const [id, i] of info) { const cx = i.sx / i.n, cy = i.sy / i.n; if (Math.hypot(cx, cy) <= r + 30) out.push({attrs: t.attrs[id] || {}, cx, cy, h: i.maxZ - i.minZ}); }
+      }
+    }
+    return out;
+  }
+  const api = {open, close, north, zoom, snapshot, buildings, isOpen: () => !!st, onHeading: null};
   return api;
 })();
 </script>
@@ -1813,6 +1883,228 @@ const Baufenster = (() => {
     return parts.flat().filter(f => !f.id || !seen.has(f.id) && seen.add(f.id));
   }
   return {load};
+})();
+</script>
+<script>// Zusatzinhalte für den gekauften Bericht: Rechnung „bebaut und noch frei“, Skizze mit Maßen, 3D-Bild,
+// Nachbarhäuser, Ausschnitt aus dem Originalplan und nächste Schritte.
+// Daten: ALKIS (Gebäude), 3D-Stadtmodell LoD2 (Höhen), Baufenster aus dem B-Plan, Rasterplan-WMS.
+// Freie und Hansestadt Hamburg, LGV (Datenlizenz Deutschland Namensnennung 2.0).
+// Nutzt Helfer aus index.html (card, esc, fmt, readGml, wfsUrlBbox, findAlkis, View3D, Baufenster).
+"use strict";
+const Bericht = (() => {
+  const RASTER = "https://geodienste.hamburg.de/HH_WMS_Cache_Rasterplan";
+  const NEBEN = /garage|carport|schuppen|gartenhaus|stall|überdachung|ueberdachung|gewächshaus|nebengebäude|umformer|trafo/i;
+  const polysOf = g => !g ? [] : g.getType() === "MultiPolygon" ? g.getPolygons() : g.getType() === "Polygon" ? [g] : [];
+  const inAny = (ps, c) => ps.some(p => p.intersectsCoordinate(c));
+  const m1 = v => fmt(v, 1), m0 = v => fmt(Math.round(v));
+  const de = t => { const m = String(t || "").replace(/\./g, "").replace(",", ".").match(/\d+(\.\d+)?/); return m ? parseFloat(m[0]) : null; };
+  const segDist = (p, a, b) => { // Abstand Punkt–Strecke
+    const dx = b[0] - a[0], dy = b[1] - a[1], l = dx * dx + dy * dy, t = l ? Math.max(0, Math.min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / l)) : 0;
+    return Math.hypot(p[0] - a[0] - t * dx, p[1] - a[1] - t * dy);
+  };
+  const ringDist = (p, rings) => { let d = 1e9; for (const r of rings) for (let i = 0; i + 1 < r.length; i++) d = Math.min(d, segDist(p, r[i], r[i + 1])); return d; };
+  // Fast gerade Knicke zusammenfassen, damit jede Grundstücksseite nur ein Maß bekommt
+  function sides(ring, tol = 4) {
+    const r = ring.slice(0, -1), n = r.length, keep = [];
+    for (let i = 0; i < n; i++) {
+      const a = r[(i + n - 1) % n], b = r[i], c = r[(i + 1) % n];
+      let d = Math.abs(Math.atan2(c[1] - b[1], c[0] - b[0]) - Math.atan2(b[1] - a[1], b[0] - a[0])) * 180 / Math.PI;
+      if (d > 180) d = 360 - d;
+      if (d > tol) keep.push(b);
+    }
+    const k = keep.length >= 3 ? keep : r;
+    return k.map((p, i) => [p, k[(i + 1) % k.length]]);
+  }
+
+  // ---------- Daten holen ----------
+  async function alkisBuildings(ext) {
+    const svc = await findAlkis(); if (!svc) return [];
+    const type = svc.type.replace(/[^:]+$/, "GebaeudeBauwerk");
+    const t = await fetch(wfsUrlBbox(svc.url, type, ext, 400)).then(r => r.ok ? r.text() : "").catch(() => "");
+    return t ? readGml(t).filter(f => f.geometry && /geb/i.test(f.props.gebnutzbez || "Gebaeude")) : [];
+  }
+  async function lodHeights(center, alk) { // Höhe, Dachform und Adresse aus dem 3D-Stadtmodell den ALKIS-Gebäuden zuordnen
+    const list = await View3D.buildings(center, 80).catch(() => []);
+    const n0 = proj4("EPSG:4326", "EPSG:25832", (([lo, la]) => [lo, la + 1e-4])(proj4("EPSG:25832", "EPSG:4326", center)));
+    const ny = [n0[0] - center[0], n0[1] - center[1]], l = Math.hypot(...ny), nx = [ny[1] / l, -ny[0] / l]; ny[0] /= l; ny[1] /= l; // Gitter-Nord gegen echtes Nord
+    for (const b of list) {
+      const c = [center[0] + b.cx * nx[0] + b.cy * ny[0], center[1] + b.cx * nx[1] + b.cy * ny[1]];
+      const hit = alk.find(a => a.polys.some(p => p.intersectsCoordinate(c)));
+      if (hit && (!hit.lod || b.h > hit.lod.h)) hit.lod = {h: b.h, dach: b.attrs.Dachform, adr: b.attrs.Adresse, vg: b.attrs.storeysAboveGround};
+    }
+  }
+  const loadImg = (src, cors) => new Promise(res => { const i = new Image(); if (cors) i.crossOrigin = "anonymous"; i.onload = () => res(i); i.onerror = () => res(null); i.src = src; });
+
+  // ---------- Zeichnung: Grundstück, Baufenster, Gebäude mit Maßen ----------
+  function sketch(plotPs, bfPs, own, others) {
+    const ext = ol.extent.buffer(plotPs.reduce((e, p) => ol.extent.extend(e, p.getExtent()), ol.extent.createEmpty()), 7);
+    const W = 640, sc = W / (ext[2] - ext[0]), H = Math.round((ext[3] - ext[1]) * sc);
+    const X = c => ((c[0] - ext[0]) * sc).toFixed(1), Y = c => ((ext[3] - c[1]) * sc).toFixed(1);
+    const path = ps => ps.map(p => p.getCoordinates().map(r => "M" + r.map(c => X(c) + " " + Y(c)).join("L") + "Z").join("")).join("");
+    const fs = 17, labels = [];
+    const label = (a, b, cls, inside, ps) => {
+      const len = Math.hypot(b[0] - a[0], b[1] - a[1]), mid = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+      let nx = -(b[1] - a[1]) / len, ny = (b[0] - a[0]) / len;
+      const off = 13 / sc, t = [mid[0] + nx * 0.3, mid[1] + ny * 0.3];
+      if (inAny(ps, t) !== inside) { nx = -nx; ny = -ny; } // Maß des Grundstücks außen, des Baufensters innen
+      const p = [mid[0] + nx * off, mid[1] + ny * off];
+      let ang = -Math.atan2(b[1] - a[1], b[0] - a[0]) * 180 / Math.PI; if (ang > 90) ang -= 180; if (ang < -90) ang += 180;
+      labels.push(`<text class="${cls}" x="${X(p)}" y="${Y(p)}" transform="rotate(${ang.toFixed(1)} ${X(p)} ${Y(p)})" text-anchor="middle" dominant-baseline="middle">${m1(len)} m</text>`);
+    };
+    const minLen = Math.max(3, (ext[2] - ext[0]) * 0.07);
+    plotPs.flatMap(p => sides(p.getCoordinates()[0])).filter(([a, b]) => Math.hypot(b[0] - a[0], b[1] - a[1]) >= minLen)
+      .sort((s, t) => Math.hypot(t[1][0] - t[0][0], t[1][1] - t[0][1]) - Math.hypot(s[1][0] - s[0][0], s[1][1] - s[0][1])).slice(0, 10).forEach(([a, b]) => label(a, b, "mp", false, plotPs));
+    bfPs.flatMap(p => sides(p.getCoordinates()[0]).map(s => [...s, p])).filter(([a, b]) => Math.hypot(b[0] - a[0], b[1] - a[1]) >= minLen && inAny(plotPs, [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]))
+      .sort((s, t) => Math.hypot(t[1][0] - t[0][0], t[1][1] - t[0][1]) - Math.hypot(s[1][0] - s[0][0], s[1][1] - s[0][1])).slice(0, 6).forEach(([a, b, p]) => label(a, b, "mb", true, [p]));
+    const bar = [5, 10, 20, 50].find(v => v * sc >= 60) || 100;
+    return `<svg class="skizze" viewBox="0 0 ${W} ${H}" role="img" aria-label="Skizze: Grundstück mit Baufenster und Maßen" font-family="-apple-system, system-ui, 'Segoe UI', sans-serif" font-size="${fs}">
+      <rect width="${W}" height="${H}" fill="#fff"/>
+      <path d="${path(others)}" fill="#e3e5ea" stroke="#b9bdc6" stroke-width="1"/>
+      <path d="${path(plotPs)}" fill="#fff4d1" stroke="#d79a00" stroke-width="3" stroke-linejoin="round"/>
+      <path d="${path(bfPs)}" fill="rgba(10,108,255,.16)" stroke="#0a5fe0" stroke-width="2" stroke-dasharray="7 4" fill-rule="evenodd"/>
+      <path d="${path(own)}" fill="#9aa0ab" stroke="#5c626d" stroke-width="1.2"/>
+      <g fill="#7a5200" font-weight="600" stroke="#fff" stroke-width="3.5" paint-order="stroke">${labels.filter(l => l.includes('"mp"')).join("")}</g>
+      <g fill="#0a4fc0" font-weight="600" stroke="#fff" stroke-width="3.5" paint-order="stroke">${labels.filter(l => l.includes('"mb"')).join("")}</g>
+      <g transform="translate(${W - 34} 34)"><circle r="18" fill="#fff" stroke="#b9bdc6"/><path d="M0 -13 5 6 0 2 -5 6Z" fill="#1c1c1e"/><text y="-21" text-anchor="middle" font-size="11" font-weight="700" fill="#1c1c1e" stroke="#fff" stroke-width="3" paint-order="stroke">N</text></g>
+      <g transform="translate(14 ${H - 16})" fill="#1c1c1e"><rect width="${(bar * sc).toFixed(1)}" height="4"/><text x="${(bar * sc + 6).toFixed(1)}" y="5" font-size="12" stroke="#fff" stroke-width="3" paint-order="stroke">${bar} m</text></g>
+    </svg>`;
+  }
+
+  // ---------- Karten des Berichts ----------
+  const place = (r, el, afterSel) => { const a = [...r.querySelectorAll(afterSel)].pop(); a ? a.after(el) : r.append(el); return el; };
+  const rowsHtml = rows => `<table class="rtab">${rows.map(([k, v, cls]) => `<tr class="${cls || ""}"><th>${esc(k)}</th><td>${v}</td></tr>`).join("")}</table>`;
+
+  async function build(r, plot, rep) {
+    r.querySelectorAll(".rep-x").forEach(x => x.remove());
+    const geom = plot?.geometry, plotPs = polysOf(geom);
+    const steps = card("Nächste Schritte", `<ol class="steps">
+      <li><b>Originalplan lesen.</b> Verbindlich ist nur der Plan mit seiner Verordnung. Die Links stehen in diesem Bericht.</li>
+      <li><b>Bauberatung im Bezirksamt.</b> Dort erfahren Sie, was für Ihr Vorhaben gilt. Am besten vorher einen Termin vereinbaren und diesen Bericht mitbringen.</li>
+      <li><b>Fachleute einbinden.</b> Für einen Bauantrag brauchen Sie in der Regel eine Architektin, einen Architekten oder eine andere bauvorlageberechtigte Person.</li>
+      <li><b>Vorbescheid beantragen.</b> Damit klären Sie einzelne Fragen verbindlich, zum Beispiel Größe oder Lage des Hauses, bevor Sie viel Geld für die Planung ausgeben.</li>
+      <li><b>Bauantrag stellen.</b> Gebaut wird erst mit Genehmigung. Manche kleinen Vorhaben brauchen keine, müssen den Plan aber trotzdem einhalten.</li>
+    </ol><p class="hint">Vorbescheid und Baugenehmigung kosten Gebühren. Die Höhe nennt Ihnen das Bezirksamt.</p>`, "ext rep-x");
+    place(r, steps, ".procard"); // unter „Bericht als PDF“, über dem Ansprechpartner
+    if (!plotPs.length) return;
+
+    const ext = geom.getExtent(), center = ol.extent.getCenter(ext);
+    const calcSec = r.querySelector("#calcOut")?.closest("section");
+    const mk = (title, cls) => { const c = card(title, `<p class="hint">wird erstellt …</p>`, "ext rep-x loading " + cls); return c; };
+    const cRech = mk("Bebaut und noch frei", "rep-rech"), cSk = mk("Grundstück mit Maßen", "rep-sk"), c3d = mk("3D-Ansicht mit Baufenster", "rep-3d"), cNb = mk("Nachbarhäuser", "rep-nb"), cPlan = mk("Ausschnitt aus dem Originalplan", "rep-plan");
+    if (calcSec) calcSec.after(cRech, cSk, c3d); else r.append(cRech, cSk, c3d);
+    const orig = [...r.querySelectorAll("section.card")].find(s => /Originalplan|Kurzfassung/.test(s.querySelector("h2")?.textContent || ""));
+    orig ? orig.after(cPlan) : c3d.after(cPlan);
+    steps.before(cNb);
+    const done = (c, html) => { if (html) { c.classList.remove("loading"); c.querySelector("h2").nextElementSibling.outerHTML = html; } else c.remove(); };
+
+    // Gebäude und Baufenster
+    const dataP = (async () => {
+      const [alkRaw, bfRaw] = await Promise.all([alkisBuildings(ol.extent.buffer(ext, 45)), typeof Baufenster === "undefined" ? [] : Baufenster.load(ol.extent.buffer(ext, 30)).catch(() => [])]);
+      const alk = alkRaw.map(f => ({f, polys: polysOf(f.geometry), area: polysOf(f.geometry).reduce((s, p) => s + p.getArea(), 0), fn: f.props.funktion || "Gebäude", vg: parseInt(f.props.anzahlgs, 10) || null}));
+      const bfPs = bfRaw.flatMap(b => b.polys.map(p => new ol.geom.Polygon(p))).filter(p => ol.extent.intersects(p.getExtent(), ext));
+      // Flächen über ein Punktraster: Grundstück, bebaut, im Baufenster
+      const A = plotPs.reduce((s, p) => s + p.getArea(), 0), step = Math.max(0.25, Math.sqrt(A / 60000));
+      let n = 0, nBf = 0, nBfBuilt = 0; alk.forEach(a => a.on = 0);
+      const cand = alk.filter(a => ol.extent.intersects(a.f.geometry.getExtent(), ext));
+      for (let x = ext[0] + step / 2; x < ext[2]; x += step) for (let y = ext[1] + step / 2; y < ext[3]; y += step) {
+        const c = [x, y]; if (!inAny(plotPs, c)) continue;
+        n++; const inBf = inAny(bfPs, c); if (inBf) nBf++;
+        const b = cand.find(a => inAny(a.polys, c)); if (b) { b.on++; if (inBf) nBfBuilt++; }
+      }
+      const k = n ? A / n : 0; alk.forEach(a => { a.onArea = a.on * k; a.own = a.onArea > Math.max(2, a.area * 0.5); });
+      return {alk, bfPs, A, bf: nBf * k, bfBuilt: nBfBuilt * k, own: alk.filter(a => a.own), rest: alk.filter(a => !a.own)};
+    })().catch(() => null);
+
+    const rech = dataP.then(d => {
+      if (!d) return done(cRech, "");
+      const amt = plot.area || d.A, haus = d.own.filter(a => !NEBEN.test(a.fn)).reduce((s, a) => s + a.onArea, 0), all = d.own.reduce((s, a) => s + a.onArea, 0);
+      const tiles = [...document.querySelectorAll("#calcOut > *")].map(t => [de(t.querySelector("b")?.textContent), t.querySelector(":scope > span")?.textContent || ""]);
+      const gr = tiles.find(([v, l]) => v && /^Grundfläche/.test(l))?.[0], gr2 = tiles.find(([v, l]) => v && /Garage/.test(l))?.[0];
+      const frei = (soll, ist) => soll - ist >= 0 ? `<b class="ok">${m0(soll - ist)} m²</b> noch frei` : `<b class="warn">${m0(ist - soll)} m²</b> mehr als heute erlaubt`;
+      const rows = [["Grundstück", `<b>${m0(amt)} m²</b>`], ["Heute bebaut", `<b>${m0(all)} m²</b> (${m0(all / amt * 100)} %)${d.own.length ? `<br><span class="hint">${d.own.map(a => `${esc(a.fn)} ${m0(a.onArea)} m²`).join(", ")}</span>` : ""}`]];
+      if (gr) rows.push(["Haus: erlaubt " + m0(gr) + " m²", `bebaut ${m0(haus)} m², ${frei(gr, haus)}`]);
+      if (gr2) rows.push(["Mit Garage und Nebengebäuden: erlaubt " + m0(gr2) + " m²", `bebaut ${m0(all)} m², ${frei(gr2, all)}`]);
+      if (d.bfPs.length) rows.push(["Baufenster auf dem Grundstück", `<b>${m0(d.bf)} m²</b>, davon bebaut ${m0(d.bfBuilt)} m², <b class="ok">${m0(d.bf - d.bfBuilt)} m²</b> frei`]);
+      else rows.push(["Baufenster", `<span class="hint">Für diesen Plan liegen keine Baufenster als Daten vor.</span>`]);
+      const pct = Math.min(100, all / amt * 100), soll = gr2 || gr;
+      done(cRech, `<div><div class="rbar"><i style="width:${pct.toFixed(1)}%"></i>${soll ? `<u style="left:${Math.min(100, soll / amt * 100).toFixed(1)}%"></u>` : ""}</div>
+        <p class="hint rbar-key"><span><i></i>heute bebaut</span>${soll ? `<span><u></u>erlaubt</span>` : ""}</p>${rowsHtml(rows)}
+        <p class="hint">Überschlag aus den Gebäuden im Liegenschaftskataster. Zufahrten, Terrassen und Stellplätze sind dort nicht erfasst, zählen aber oft mit. Was schon steht, hat meist Bestandsschutz.</p></div>`);
+    });
+
+    const sk = dataP.then(d => {
+      if (!d) return done(cSk, "");
+      const rings = plotPs.flatMap(p => p.getCoordinates()), plotPts = plotPs.flatMap(p => p.getCoordinates()[0]);
+      const mine = d.bfPs.filter(p => p.getCoordinates()[0].some(c => inAny(plotPs, c)) || plotPts.some(c => p.intersectsCoordinate(c))); // nur Baufenster, die das Grundstück berühren
+      const inside = mine.flatMap(p => p.getCoordinates()[0]).filter(c => inAny(plotPs, c));
+      const over = mine.some(p => p.getCoordinates()[0].some(c => !inAny(plotPs, c) && ringDist(c, rings) > 0.3));
+      const dmin = inside.length ? Math.min(...inside.map(c => ringDist(c, rings))) : null;
+      const note = !mine.length ? "Für diesen Plan liegen keine Baufenster als Daten vor. Die Skizze zeigt Grundstück und Gebäude."
+        : `Blau gestrichelt ist das Baufenster: Nur dort darf das Haus stehen.${dmin != null && dmin > 0.3 ? ` Es liegt mindestens ${m1(dmin)} m von der Grundstücksgrenze entfernt.` : ""}${over ? " Es reicht über die Grundstücksgrenze hinaus und gilt dort für die Nachbarn." : ""}`;
+      done(cSk, `<div>${sketch(plotPs, d.bfPs, d.own.flatMap(a => a.polys), d.rest.flatMap(a => a.polys))}
+        <p class="hint skey"><span><i class="k-plot"></i>Grundstück</span><span><i class="k-bf"></i>Baufenster</span><span><i class="k-own"></i>Gebäude</span><span><i class="k-nb"></i>Nachbarn</span></p>
+        <p class="hint">${esc(note)} Maße aus den Daten der Stadt gerechnet, nicht vermessen.</p></div>`);
+    });
+
+    const nb = dataP.then(async d => {
+      if (!d) return done(cNb, "");
+      const rings = plotPs.flatMap(p => p.getCoordinates());
+      await lodHeights(center, d.alk).catch(() => {});
+      const list = d.rest.filter(a => a.area >= 30 && !NEBEN.test(a.fn)).map(a => ({...a, dist: Math.min(...a.polys.flatMap(p => p.getCoordinates()[0]).map(c => ringDist(c, rings)))}))
+        .filter(a => a.dist <= 40).sort((a, b) => a.dist - b.dist).slice(0, 8);
+      if (!list.length) return done(cNb, "");
+      const span = (vals, f = m0) => { const v = vals.filter(x => x != null && isFinite(x)); if (!v.length) return null; const a = Math.min(...v), b = Math.max(...v); return f(a) === f(b) ? f(a) : `${f(a)} bis ${f(b)}`; };
+      const vgs = span(list.map(a => a.lod?.vg || a.vg)), hs = span(list.map(a => a.lod?.h), m1), gs = span(list.map(a => a.area));
+      const sum = [vgs && `${vgs} Geschosse`, hs && `${hs} m hoch`, gs && `${gs} m² Grundfläche`].filter(Boolean).join(", ");
+      done(cNb, `<div><p>Die Häuser im Umkreis von 40 m haben: <b>${esc(sum)}</b>.</p>
+        <div class="rscroll"><table class="rtab nbt"><thead><tr><th>Haus</th><th>Abstand</th><th>Grundfläche</th><th>Geschosse</th><th>Höhe</th><th>Dach</th></tr></thead><tbody>${list.map(a =>
+          `<tr><td>${esc(a.lod?.adr?.split(";")[0] || a.fn)}</td><td>${m0(a.dist)} m</td><td>${m0(a.area)} m²</td><td>${a.lod?.vg || a.vg || "–"}</td><td>${a.lod?.h ? m1(a.lod.h) + " m" : "–"}</td><td>${esc(a.lod?.dach || "–")}</td></tr>`).join("")}</tbody></table></div>
+        <p class="hint">Wichtig, wenn sich ein Neubau in die Umgebung einfügen muss (§ 34 BauGB) oder das Amt über Ausnahmen entscheidet. Höhe: Gelände bis höchster Punkt des Dachs, aus dem 3D-Stadtmodell.</p></div>`);
+    });
+
+    // Ausschnitt aus der Planzeichnung, Grundstück gelb umrandet
+    const planImg = (async () => {
+      const w = Math.max(ext[2] - ext[0], (ext[3] - ext[1]) * 1.5) + 60, h = w / 1.5, bb = [center[0] - w / 2, center[1] - h / 2, center[0] + w / 2, center[1] + h / 2];
+      const src = `${RASTER}?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&LAYERS=bp_raster&STYLES=&CRS=EPSG:25832&BBOX=${bb.map(v => v.toFixed(2))}&WIDTH=1200&HEIGHT=800&FORMAT=image/png`;
+      const img = await loadImg(src, true) || await new Promise(res => setTimeout(res, 1500)).then(() => loadImg(src + "&_=2", true)); // der Dienst antwortet manchmal erst beim zweiten Mal
+      if (!img) return done(cPlan, "");
+      const cv = Object.assign(document.createElement("canvas"), {width: 1200, height: 800}), ctx = cv.getContext("2d");
+      ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, 1200, 800); ctx.drawImage(img, 0, 0, 1200, 800);
+      let url = "";
+      try { // leeres Bild (kein gescannter Plan an dieser Stelle) erkennen
+        const px = ctx.getImageData(0, 0, 1200, 800).data; let diff = 0, cnt = 0;
+        for (let i = 0; i < px.length; i += 4 * 97) { cnt++; if (Math.abs(px[i] - px[0]) + Math.abs(px[i + 1] - px[1]) + Math.abs(px[i + 2] - px[2]) > 24) diff++; }
+        if (diff / cnt < 0.02) return done(cPlan, "");
+        const sx = 1200 / w, P = c => [(c[0] - bb[0]) * sx, (bb[3] - c[1]) * sx];
+        for (const [lw, col] of [[14, "rgba(255,255,255,.9)"], [7, "#e6a700"]]) { ctx.lineWidth = lw; ctx.strokeStyle = col; ctx.lineJoin = "round"; ctx.beginPath(); for (const p of plotPs) for (const ring of p.getCoordinates()) { ring.forEach((c, i) => ctx[i ? "lineTo" : "moveTo"](...P(c))); ctx.closePath(); } ctx.stroke(); }
+        url = cv.toDataURL("image/jpeg", 0.85);
+      } catch { return done(cPlan, ""); }
+      done(cPlan, `<div><img class="rimg" src="${url}" alt="Ausschnitt aus der Planzeichnung, Grundstück gelb umrandet">
+        <p class="hint">Gescannte Planzeichnung der Stadt, Ihr Grundstück ist gelb umrandet. Die Zeichen erklärt die Legende im Originalplan (Link in diesem Bericht).</p></div>`);
+    })().catch(() => done(cPlan, ""));
+
+    // Foto aus der 3D-Ansicht: unsichtbar öffnen, warten bis alles geladen ist, fotografieren, schließen
+    const img3d = dataP.then(async d => {
+      if (typeof View3D === "undefined" || location.protocol === "file:" || window.__no3d) return done(c3d, "");
+      if (typeof close3d === "function") close3d();
+      const el = Object.assign(document.createElement("div"), {className: "v3shot"}); document.body.append(el);
+      const ringsOf = ps => ps.map(p => p.getCoordinates()[0]);
+      let url = "";
+      try {
+        const sel = typeof selSrc === "undefined" ? [] : selSrc.getFeatures().flatMap(f => ringsOf(polysOf(f.getGeometry())));
+        View3D.open({el, center, plot: ringsOf(plotPs), plan: sel, bf: ringsOf(d?.bfPs || []), showBf: true, shot: true, onInfo: () => {}, onStatus: () => {}});
+        url = await View3D.snapshot();
+      } catch { /* ohne Bild weiter */ }
+      if (!document.body.classList.contains("is3d")) View3D.close(); // nicht schließen, falls inzwischen die echte 3D-Ansicht offen ist
+      el.remove();
+      done(c3d, url ? `<div><img class="rimg" src="${url}" alt="3D-Ansicht: Grundstück gelb, Baufenster blau">
+        <p class="hint">Gelb: Ihr Grundstück. Blau: das Baufenster aus dem Bebauungsplan${d?.bfPs.length ? "" : " (für diesen Plan liegen keine Baufenster als Daten vor)"}. Grau: Gebäude aus dem 3D-Stadtmodell der Stadt Hamburg.</p></div>` : "");
+    });
+
+    await Promise.race([Promise.allSettled([rech, sk, nb, planImg, img3d]), new Promise(res => setTimeout(res, 40000))]);
+    r.querySelectorAll(".rep-x.loading").forEach(x => x.remove()); // was nach 40 s nicht da ist, entfällt
+  }
+  return {build};
 })();
 </script>
 <script>
@@ -2163,6 +2455,7 @@ function renderResult(coord, placeName, plans, plot) {
   renderOverview(main, sum, placeName);
   appendExtras(r, coord, plot, sum, placeName);
   updateCalc();
+  if (kept()[keyOf()]) unlock(true); // in den letzten 30 Tagen auf diesem Gerät gekauft
   if (first) requestAnimationFrame(() => { map.updateSize(); fitPlot(); }); // Kopf wird kleiner, Karte größer; weich weiterzoomen statt springen
 }
 // Erste Ergebnisseite: Planname, Denkmalschutz ja/nein und gleich, was gebaut werden darf; alles Weitere auf der Detailseite
@@ -2554,7 +2847,7 @@ const ICO = {
 };
 const TITLE_ICO = {"Bitte beachten": "alert", "Mein Grundstück": "home", "Was darf ich bauen?": "ruler", "Weitere Prüfungen am Grundstück": "shield",
   "Originalplan": "file", "Kurzfassung": "file", "Das sollten Sie wissen": "book", "Nicht in diesem Plan geregelt": "minus",
-  "Gilt außerdem in ganz Hamburg": "city", "Vollständigen Bericht anfordern?": "file", "Ihr Ansprechpartner": "phone", "Kein Bebauungsplan gefunden": "search"};
+  "Gilt außerdem in ganz Hamburg": "city", "Vollständigen Bericht anfordern?": "file", "Bebaut und noch frei": "ruler", "Grundstück mit Maßen": "ruler", "3D-Ansicht mit Baufenster": "home", "Nachbarhäuser": "city", "Ausschnitt aus dem Originalplan": "file", "Nächste Schritte": "book", "Ihr Ansprechpartner": "phone", "Kein Bebauungsplan gefunden": "search"};
 const icon = n => `<span class="ico ico-${n || "info"}" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICO[n] || ICO.info}</svg></span>`;
 function card(title, html, cls = "") { const s = document.createElement("section"); s.className = "card " + cls; s.innerHTML = (title ? `<h2>${icon(TITLE_ICO[title])}${esc(title)}</h2>` : "") + html; return s; }
 function showCard(title, msg) { body.remove("detail"); $("overview").innerHTML = ""; $("overview").append(card(title, `<p class="hint">${esc(msg)}</p>`, title === "Bitte warten" ? "busy" : "")); }
@@ -2573,7 +2866,7 @@ const PRO_VIEWS = {
     <p class="legal">Ob gebaut werden darf, entscheidet allein das Bauamt. Verbindliche Sicherheit gibt ein Bauvorbescheid beim Bezirksamt.</p>`,
   report: () => `${proHead("Vollständiger Bericht")}
     <p class="pro-d">Der Bericht gilt für dieses Grundstück. Sie können ihn sofort lesen und als PDF speichern. Enthalten sind:</p>
-    <ul class="pro-list"><li>Was darf ich bauen: Fläche, Geschosse, Bauweise, Nutzung</li><li>Alle Regeln aus dem Plan in einfachen Worten</li><li>Prüfungen am Grundstück, zum Beispiel Denkmalschutz</li><li>Regeln, die in ganz Hamburg gelten</li><li>Karte, Links zu den Originalplänen, Ansprechpartner im Bezirksamt</li></ul>
+    <ul class="pro-list"><li>Was darf ich bauen: Fläche, Geschosse, Bauweise, Nutzung</li><li>Alle Regeln aus dem Plan in einfachen Worten</li><li>Prüfungen am Grundstück, zum Beispiel Denkmalschutz</li><li>Regeln, die in ganz Hamburg gelten</li><li>Rechnung: wie viel ist bebaut, wie viel noch frei</li><li>Skizze mit Maßen, 3D-Bild mit Baufenster, Ausschnitt aus dem Originalplan</li><li>Nachbarhäuser: Höhe, Geschosse, Grundfläche</li><li>Nächste Schritte, Links zu den Originalplänen, Ansprechpartner im Bezirksamt</li></ul>
     <div class="pro-price"><span>Preis einmalig</span><b>${PRO.preis}</b></div>
     <p class="pro-note">Vorschau: Die Bezahlung ist noch nicht eingebaut. Hier wird der Bericht kostenlos freigeschaltet.</p>
     <button type="button" class="wide" data-pro="kaufen">Für ${PRO.preis} kaufen</button>
@@ -2592,7 +2885,7 @@ const PRO_VIEWS = {
     <p class="legal">MoinPlan vermittelt nur. Die Einschätzung und den Preis macht das Büro. Ob gebaut werden darf, entscheidet allein das Bauamt.</p>
     <button type="button" class="ghost" data-pro="start">‹ Zurück</button>`,
   frei: () => `${proHead("Bericht freigeschaltet")}
-    <p class="pro-d">Der vollständige Bericht ist jetzt geöffnet. Sie können ihn hier lesen oder als PDF speichern.</p>
+    <p class="pro-d">Der vollständige Bericht ist jetzt geöffnet. Sie können ihn hier lesen oder als PDF speichern. Auf diesem Gerät bleibt er 30 Tage freigeschaltet.</p>
     <button type="button" class="wide" data-pro="pdf">Als PDF speichern</button>
     <button type="button" class="ghost wide" data-pro="close">Bericht ansehen</button>`,
   fertig: txt => `${proHead("Danke!")}
@@ -2633,17 +2926,26 @@ function mapImage() {
   try { return cv.toDataURL("image/jpeg", .86); } catch { return ""; }
 }
 // Vorschau-Kauf: freischalten und den vollständigen Bericht öffnen
-function unlock() {
-  rep.img = mapImage(); // Karte jetzt sichern: in den Details ist sie auf dem Handy nicht zu sehen
+function unlock(quiet) {
+  if (quiet) { const mine = rep; setTimeout(() => { if (mine === rep && !body.contains("detail")) rep.img = mapImage(); }, 2500); }
+  else rep.img = mapImage(); // Karte jetzt sichern: in den Details ist sie auf dem Handy nicht zu sehen
   bezahlt = true; body.add("bezahlt"); extended = true; extSet?.();
   const c = qs("#results .procard");
   if (c) c.innerHTML = `<h2>${icon("file")}Bericht als PDF</h2><p class="hint">Zum Speichern, Drucken oder Weitergeben.</p>
     <div class="pro-btns"><button type="button" data-pro="pdf">Als PDF speichern</button><button type="button" class="ghost" data-pro="frage">Fachfrage an Architekten</button></div>`;
   const o = qs("#overview .ov-pro"); // Übersicht: aus dem Angebot wird der Weg zum gekauften Bericht
   if (o) { delete o.dataset.pro; o.dataset.go = ""; o.querySelector(".ov-label").innerHTML = "Vollständiger Bericht<small>Freigeschaltet: lesen oder als PDF speichern</small>"; }
-  if (!body.contains("detail")) openDetail("");
-  proView("frei");
+  if (!quiet && !body.contains("detail")) openDetail("");
+  rep.ready = false; const mine = rep;
+  Bericht.build($("results"), lastPlot, rep).catch(() => {}).then(() => { mine.ready = true; if (mine === rep) document.querySelectorAll('[data-pro="pdf"]').forEach(b => { b.disabled = false; b.textContent = "Als PDF speichern"; }); });
+  remember();
+  if (!quiet) proView("frei");
+  document.querySelectorAll('[data-pro="pdf"]').forEach(b => { b.disabled = !rep.ready; if (!rep.ready) b.textContent = "Bericht wird fertiggestellt …"; });
 }
+// Kauf 30 Tage auf diesem Gerät merken (Vorschau: ohne Konto und ohne Zahlung)
+const KEEP = "moinplan-berichte", keyOf = () => { const g = lastPlot?.geometry; return g ? ol.extent.getCenter(g.getExtent()).map(Math.round).join(",") : ""; };
+const kept = () => { try { const o = JSON.parse(localStorage.getItem(KEEP) || "{}"), now = Date.now(); for (const k in o) if (o[k] < now) delete o[k]; return o; } catch { return {}; } };
+function remember() { const k = keyOf(); if (!k) return; try { const o = kept(); o[k] ||= Date.now() + 30 * 864e5; localStorage.setItem(KEEP, JSON.stringify(o)); rep.bis = o[k]; } catch { /* privates Fenster: dann eben nicht */ } }
 // Deckblatt füllen; läuft vor jedem Druck des bezahlten Berichts (auch über das Browser-Menü)
 function prepareReport() {
   const nr = rep.nr ||= "MP-" + Date.now().toString(36).toUpperCase().slice(-6), date = new Date().toLocaleDateString("de-DE");
