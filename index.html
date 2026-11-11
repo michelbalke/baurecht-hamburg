@@ -3041,7 +3041,8 @@ function unlock(quiet) {
   document.querySelectorAll('[data-pro="pdf"]').forEach(b => { b.disabled = !rep.ready; if (!rep.ready) b.textContent = "Bericht wird fertiggestellt …"; });
 }
 // Kauf 30 Tage auf diesem Gerät merken (Vorschau: ohne Konto und ohne Zahlung)
-const KEEP = "moinplan-berichte", keyOf = () => { const g = lastPlot?.geometry; return g ? ol.extent.getCenter(g.getExtent()).map(Math.round).join(",") : ""; };
+try { localStorage.removeItem("moinplan-berichte"); } catch { /* egal */ } // alte Vorschau-Käufe vom 10.11. zurückgesetzt
+const KEEP = "moinplan-berichte-2", keyOf = () => { const g = lastPlot?.geometry; return g ? ol.extent.getCenter(g.getExtent()).map(Math.round).join(",") : ""; };
 const kept = () => { try { const o = JSON.parse(localStorage.getItem(KEEP) || "{}"), now = Date.now(); for (const k in o) if (o[k] < now) delete o[k]; return o; } catch { return {}; } };
 function remember() { const k = keyOf(); if (!k) return; try { const o = kept(); o[k] ||= Date.now() + 30 * 864e5; localStorage.setItem(KEEP, JSON.stringify(o)); rep.bis = o[k]; } catch { /* privates Fenster: dann eben nicht */ } }
 // Deckblatt füllen; läuft vor jedem Druck des bezahlten Berichts (auch über das Browser-Menü)
