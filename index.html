@@ -3009,7 +3009,7 @@ function showCard(title, msg) { body.remove("detail"); $("overview").innerHTML =
 let printTitle = "";
 
 // ---------- Vollständiger Bericht (Vorschau, noch ohne Bezahlung) ----------
-const PRO = {preis: "35 €"};
+const PRO = {preis: "34,99 €"};
 let rep = {}, lastPlot = null, bezahlt = false, extSet = null; // bezahlt: Vorschau, gilt nur bis zum Neuladen
 const proDlg = $("pro"), proIn = $("proIn");
 const proHead = t => `<div class="pro-top"><h3 id="proH">${esc(t)}</h3><button type="button" class="ghost" data-pro="close">Schließen</button></div>${rep.place ? `<p class="pro-for">Für ${esc(rep.place)}${rep.flst ? " · Flurstück " + esc(rep.flst) : ""}</p>` : ""}`;
