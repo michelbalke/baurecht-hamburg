@@ -8,6 +8,8 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="MoinPlan">
 <title>MoinPlan</title>
+<link rel="preconnect" href="https://geodienste.hamburg.de" crossorigin>
+<link rel="preconnect" href="https://www.daten-hamburg.de" crossorigin>
 <style>:root,
 :host {
   --ol-background-color: white;
@@ -396,7 +398,8 @@ button, .btn { padding: 9px 16px; border-radius: 99px; border: 1px solid var(--n
 button:hover, .btn:hover { filter: brightness(1.08); }
 button:active, .btn:active { transform: scale(.94); }
 button.ghost, a.ghostbtn { background: var(--accent-soft); color: var(--accent); border-color: transparent; border-radius: 99px; }
-button.ghost { padding: 7px 12px; font-size: 13px; font-weight: 550; }
+button.ghost { padding: 7px 12px; font-size: 13px; font-weight: 600; }
+.tools button.ghost { padding: 9px 16px; font-size: inherit; } /* Aktionen in Karten so groß wie die Plan-Links */
 button.ghost:hover { border-color: var(--accent); filter: none; }
 a.ghostbtn::before { content: ""; width: 14px; height: 14px; background: currentColor; -webkit-mask: var(--ico-file) center/contain no-repeat; mask: var(--ico-file) center/contain no-repeat; }
 button:focus-visible, input:focus-visible, a:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -425,7 +428,7 @@ body.searching .recent:not(.leer) { opacity: 1; visibility: visible; pointer-eve
 .side > header .logo { grid-area: logo; width: 40px; height: 40px; padding: 0; border: 0; border-radius: 12px; background: var(--navy); color: #fff; display: grid; place-items: center; }
 .side > header .logo svg { width: 22px; height: 22px; }
 .side > header > div { grid-area: name; min-width: 0; }
-.side > header h1 { margin: 0; font: 750 23px/1 var(--display); letter-spacing: -.03em; color: #fff; white-space: nowrap; }
+.side > header h1 { margin: 0; font: 700 23px/1 var(--display); letter-spacing: -.03em; color: #fff; white-space: nowrap; }
 .side > header h1 span { color: inherit; }
 .menubtn { grid-area: menu; display: none; width: 40px; height: 40px; padding: 0; border: 0; border-radius: 12px; background: var(--fill); color: #fff; place-items: center; }
 .menubtn svg { width: 22px; height: 22px; }
@@ -457,16 +460,16 @@ h2 .ico svg { width: 17px; height: 17px; }
 h2 .ico-alert { background: #ff9500; } h2 .ico-home { background: #0a7aff; } h2 .ico-ruler { background: #34c759; } h2 .ico-shield { background: #5856d6; }
 h2 .ico-file { background: #ff3b30; } h2 .ico-book { background: #ff9f0a; } h2 .ico-city { background: #30b0c7; } h2 .ico-phone { background: #34c759; }
 .plan-name { font: 700 28px/1.1 var(--display); letter-spacing: .005em; margin: 2px 0 0; text-wrap: balance; }
-.pill { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; padding: 3px 10px; border-radius: 99px; background: var(--ok-soft); color: var(--ok); font-weight: 650; width: fit-content; }
+.pill { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; padding: 3px 10px; border-radius: 99px; background: var(--ok-soft); color: var(--ok); font-weight: 600; width: fit-content; }
 .pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
 .pill.draft { background: var(--warn-soft); color: var(--warn); }
 .pill.none { background: var(--accent-soft); color: var(--accent); }
 .pill.none::before { display: none; }
 .meta span:not(.pill) { font-size: 12.5px; background: var(--fill); border-radius: 10px; padding: 3px 10px; }
-.contact { display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; align-items: baseline; }
+.contact { display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; align-items: first baseline; }
 .contact dt { color: var(--muted); font-size: 12.5px; }
 .contact dd { margin: 0; }
-dl.contact a { display: inline-block; padding: 8px 0; }
+dl.contact a { display: block; width: fit-content; padding: 8px 0; }
 /* Kacheln mit Werten */
 .big { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
 .big > * { background: var(--fill); border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 2px; }
@@ -480,7 +483,7 @@ dl.contact a { display: inline-block; padding: 8px 0; }
 .calc input { max-width: 130px; font-size: 16px; font-weight: 600; }
 ul.warn-list, ul.plain { margin: 0; padding-left: 18px; display: grid; gap: 6px; }
 dl.rules { display: grid; }
-dl.rules dt { font-weight: 650; padding-top: 10px; margin-top: 10px; border-top: 1px solid var(--line); }
+dl.rules dt { font-weight: 600; padding-top: 10px; margin-top: 10px; border-top: 1px solid var(--line); }
 dl.rules dt:first-child { margin-top: 0; padding-top: 0; border-top: 0; }
 dl.rules dd { margin: 2px 0 0; }
 details > summary { cursor: pointer; color: var(--accent); font-size: 13px; }
@@ -491,12 +494,12 @@ details.more > dl.rules { padding-top: 10px; border-top: 1px solid var(--line); 
 .srcline { display: flex; flex-direction: column; gap: 4px; padding: 0 4px; }
 ul.facts { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; font-size: 13.5px; }
 ul.facts li { display: grid; gap: 1px; padding-left: 12px; border-left: 3px solid var(--accent-soft); }
-ul.facts b { font-size: 12px; color: var(--muted); font-weight: 650; }
+ul.facts b { font-size: 12px; color: var(--muted); font-weight: 600; }
 .backbar { display: flex; padding: 0 0 2px; }
 .backbar button { font-size: 14.5px; padding: 8px 14px; }
 
 /* Prüfungen am Grundstück */
-.checksum span { font-size: 12.5px; font-weight: 650; border-radius: 99px; padding: 3px 10px; }
+.checksum span { font-size: 12.5px; font-weight: 600; border-radius: 99px; padding: 3px 10px; }
 .checksum .s-ok { background: var(--ok-soft); color: var(--ok); }
 .checksum .s-hit { background: var(--warn-soft); color: var(--warn); }
 .checksum .s-unk { background: var(--bg); color: var(--muted); }
@@ -509,7 +512,7 @@ ul.facts b { font-size: 12px; color: var(--muted); font-weight: 650; }
 .checks li.hit::before { content: "!"; background: var(--warn); color: #fff; }
 .checks li.unk::before { content: "?"; background: var(--muted); color: #fff; }
 .checks li.flash { animation: flash 1.6s ease; }
-details.okfold > summary { font-weight: 550; color: var(--ok); }
+details.okfold > summary { font-weight: 600; color: var(--ok); }
 details.okfold .checks { margin-top: 6px; }
 
 /* ---------- Übersicht nach der Suche: Planname, Denkmalschutz, Was darf ich bauen? ---------- */
@@ -525,10 +528,10 @@ details.okfold .checks { margin-top: 6px; }
 .ov-name { font: 700 22px/1.15 var(--display); letter-spacing: .005em; text-wrap: balance; overflow-wrap: break-word; margin-top: 4px; }
 .ov-place { font-size: 13px; color: var(--muted); }
 .ov-more { color: var(--accent); font-weight: 600; font-size: 14.5px; margin-top: 4px; }
-.ov-label { font-size: 12px; line-height: 1.25; color: var(--muted); font-weight: 550; overflow-wrap: break-word; flex: 1; }
+.ov-label { font-size: 12px; line-height: 1.25; color: var(--muted); font-weight: 600; overflow-wrap: break-word; flex: 1; }
 .ov-val { font: 700 20px/1.1 var(--display); color: var(--muted); display: flex; align-items: center; gap: 6px; margin-top: 4px; }
 .ov-val::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: currentColor; flex: none; }
-.ov-box:not(.ok, .hit, .unk) .ov-val { font-size: 13px; font-weight: 550; }
+.ov-box:not(.ok, .hit, .unk) .ov-val { font-size: 13px; font-weight: 600; }
 .ov-box:not(.ok, .hit, .unk) .ov-val::before { display: none; }
 .ov-box.ok .ov-val { color: var(--ok); } .ov-box.hit .ov-val { color: var(--warn); }
 .ov-row { flex-direction: row; align-items: center; gap: 10px; padding: 12px 16px; }
@@ -587,7 +590,7 @@ body:not(.has-result) .bfkey { display: none !important; }
 .mbar { position: absolute; z-index: 7; left: 50%; bottom: 34px; transform: translateX(-50%); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: center;
   width: max-content; max-width: calc(100% - 24px); padding: 8px 8px 8px 16px; border-radius: 26px; background: var(--panel); }
 .mbar[hidden] { display: none; }
-.mbar p { margin: 0; font-size: 13.5px; font-weight: 550; flex: 1 1 200px; }
+.mbar p { margin: 0; font-size: 13.5px; font-weight: 600; flex: 1 1 200px; }
 body.measuring .btn3d, body.measuring .compass { display: none; }
 body.measuring #map { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
 .mtip { display: none; position: absolute; z-index: 7; left: 50%; top: 12px; transform: translateX(-50%); margin: 0; align-items: center; gap: 8px; max-width: calc(100% - 140px);
@@ -614,7 +617,7 @@ body.is3d .view3d { display: block; }
 .v3status { position: absolute; z-index: 2; left: 50%; top: 45%; transform: translate(-50%, -50%); margin: 0; padding: 10px 18px; border-radius: 99px; font-weight: 600; text-align: center; max-width: calc(100% - 40px); background: var(--panel); }
 .v3info { position: absolute; z-index: 2; left: 12px; bottom: calc(30px + env(safe-area-inset-bottom, 0px)); width: min(300px, calc(100% - 24px)); padding: 14px 16px; border-radius: 22px; background: var(--panel); }
 .v3info:empty, .v3info[hidden] { display: none; }
-.v3title { margin: 0 0 8px; font: 650 16px/1.2 var(--display); }
+.v3title { margin: 0 0 8px; font: 600 16px/1.2 var(--display); }
 .v3title span { display: block; font: 500 13px/1.3 var(--sans); color: var(--muted); margin-top: 2px; }
 .v3info dl { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 14px; margin: 0; }
 .v3info dt { font-size: 11.5px; color: var(--muted); }
@@ -754,7 +757,7 @@ body.is3d .view3d { display: block; }
   body.has-result .ov-plan .ov-more { display: none; }
   body.has-result .ov-peek:not(:empty) { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 7px; }
   .ov-peek > span { padding: 5px 8px; border-radius: 999px; background: var(--fill); font-size: 12.5px; font-weight: 500; color: var(--muted); white-space: nowrap; }
-  .ov-peek b { color: var(--fg); font-weight: 650; }
+  .ov-peek b { color: var(--fg); font-weight: 600; }
   .ov-peek .hit b { color: var(--warn); }
   .ov-peek .ok b { color: var(--ok); }
   /* Kartenebenen: ein kleiner Knopf statt zwei großer Schilder; antippen zeigt die Schalter */
@@ -776,7 +779,7 @@ body.is3d .view3d { display: block; }
 
 /* ---------- Vollständiger Bericht (Vorschau) ---------- */
 .ov-pro { box-shadow: inset 4px 0 0 var(--navy), var(--shadow); }
-.ov-pro .ov-label small { display: block; font-size: 12.5px; color: var(--muted); font-weight: 450; margin-top: 2px; }
+.ov-pro .ov-label small { display: block; font-size: 12.5px; color: var(--muted); font-weight: 400; margin-top: 2px; }
 .pro-btns { display: flex; flex-wrap: wrap; gap: 8px; }
 dialog.pro { border: 0; padding: 0; background: var(--panel); color: var(--fg); border-radius: 24px; width: min(460px, calc(100vw - 32px)); max-height: calc(100dvh - 48px); box-shadow: var(--shadow-lg); overscroll-behavior: contain; }
 dialog.pro::backdrop { background: rgba(0,0,0,.6); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
@@ -805,12 +808,21 @@ dialog.pro[open] { animation: rise .28s var(--ease) both; }
 .rep-x.loading .hint::before { content: ""; display: inline-block; width: 12px; height: 12px; margin-right: 8px; vertical-align: -1px; border-radius: 50%; border: 2px solid var(--line); border-top-color: var(--accent); animation: spin 1s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .rtab { width: 100%; border-collapse: collapse; font-size: 14.5px; }
-.rtab th { text-align: left; font-weight: 550; color: var(--muted); width: 44%; }
+.rtab th { text-align: left; font-weight: 600; color: var(--muted); width: 44%; }
 .rtab :is(th, td) { padding: 8px 8px 8px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
 .rtab tr:last-child :is(th, td) { border-bottom: 0; }
 .rtab b.ok { color: var(--ok); } .rtab b.warn { color: var(--warn); }
 .rscroll { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 0 -4px; padding: 0 4px; }
 .rtab.nbt { min-width: 520px; font-size: 13.5px; } .rtab.nbt th { width: auto; font-size: 12px; white-space: nowrap; } .rtab.nbt td { white-space: nowrap; } .rtab.nbt td:first-child { white-space: normal; min-width: 120px; }
+@media screen and (max-width: 760px) { /* Nachbarhäuser: je Haus Adresse und Abstand, darunter die Werte, nichts abgeschnitten */
+  .rtab.nbt { min-width: 0; } .rtab.nbt, .rtab.nbt tbody { display: block; } .rtab.nbt thead { display: none; }
+  .rtab.nbt tr { display: flex; flex-wrap: wrap; column-gap: 6px; padding: 9px 0; border-bottom: 1px solid var(--line); } .rtab.nbt tr:last-child { border-bottom: 0; }
+  .rtab.nbt td { padding: 0; border: 0; color: var(--muted); font-size: 13px; } .rtab.nbt td.leer { display: none; }
+  .rtab.nbt td:first-child { flex: 1 1 0; color: var(--fg); font-size: 14.5px; font-weight: 600; } .rtab.nbt td:nth-child(2) { color: var(--fg); font-size: 14.5px; }
+  .rtab.nbt td:nth-child(n+3) { order: 2; } .rtab.nbt tr::after { content: ""; flex-basis: 100%; order: 1; } /* Werte in der zweiten Zeile */
+  .rtab.nbt td:nth-child(n+4)::before { content: "·"; margin-right: 6px; }
+  .rtab.nbt td[data-l]::after { content: " " attr(data-l); }
+}
 .rbar { position: relative; height: 14px; border-radius: 99px; background: var(--fill); overflow: visible; margin: 2px 0 6px; }
 .rbar i { position: absolute; inset: 0 auto 0 0; border-radius: 99px; background: var(--muted); }
 .rbar u { position: absolute; top: -4px; bottom: -4px; width: 3px; margin-left: -1.5px; border-radius: 2px; background: var(--accent); }
@@ -835,7 +847,7 @@ ol.steps { margin: 0; padding-left: 22px; display: flex; flex-direction: column;
   .side > header { position: relative; display: block; margin: 0; padding: 0 0 8px; box-shadow: none; border-radius: 0; }
   .skyline, .side > header .logo { display: none !important; }
   .banner { margin: 4px 0 0; text-align: left; } .banner figcaption { font-size: 12pt; }
-  .printonly { display: block; font-weight: 650; margin: 0 0 12px; }
+  .printonly { display: block; font-weight: 600; margin: 0 0 12px; }
   .side > .legal { display: block; font-weight: 400; font-size: 7pt; color: #444; margin: 8pt 0 0; }
   #results { display: block; }
   #results > section.card { padding: 0 0 7pt; margin: 0 0 7pt; border-bottom: .5pt solid #bbb; border-radius: 0; gap: 4pt; break-inside: auto; }
@@ -1574,7 +1586,7 @@ const View3D = (() => {
     return out;
   }
   const buildings = (center, r = 70) => gather(center, r + 30);
-  const api = {open, close, north, zoom, snapshot, buildings, isOpen: () => !!st, onHeading: null};
+  const api = {open, close, north, zoom, snapshot, buildings, preload: loadCesium, isOpen: () => !!st, onHeading: null};
   return api;
 })();
 </script>
@@ -1704,7 +1716,7 @@ const Baufenster = (() => {
 // Nachbarhäuser, Ausschnitt aus dem Originalplan und nächste Schritte.
 // Daten: ALKIS (Gebäude), 3D-Stadtmodell LoD2 (Höhen), Baufenster aus dem B-Plan, Rasterplan-WMS.
 // Freie und Hansestadt Hamburg, LGV (Datenlizenz Deutschland Namensnennung 2.0).
-// Nutzt Helfer aus index.html (card, esc, fmt, readGml, wfsUrlBbox, findAlkis, View3D, Baufenster).
+// Nutzt Helfer aus index.html (card, esc, fmt, readGml, wfsUrlBbox, alkisSvc/CFG.alkis, View3D, Baufenster).
 "use strict";
 const Bericht = (() => {
   const RASTER = "https://geodienste.hamburg.de/HH_WMS_Cache_Rasterplan";
@@ -1733,7 +1745,7 @@ const Bericht = (() => {
 
   // ---------- Daten holen ----------
   async function alkisBuildings(ext) {
-    const svc = await findAlkis(); if (!svc) return [];
+    const svc = alkisSvc || CFG.alkis;
     const type = svc.type.replace(/[^:]+$/, "GebaeudeBauwerk");
     const t = await fetch(wfsUrlBbox(svc.url, type, ext, 400)).then(r => r.ok ? r.text() : "").catch(() => "");
     return t ? readGml(t).filter(f => f.geometry && /geb/i.test(f.props.gebnutzbez || "Gebaeude")) : [];
@@ -1923,7 +1935,8 @@ const Bericht = (() => {
       const sum = [vgs && `${vgs} Geschosse`, hs && `${hs} m hoch`, gs && `${gs} m² Grundfläche`].filter(Boolean).join(", ");
       done(cNb, `<div><p>Die Häuser im Umkreis von 40 m haben: <b>${esc(sum)}</b>.</p>
         <div class="rscroll"><table class="rtab nbt"><thead><tr><th>Haus</th><th>Abstand</th><th>Grundfläche</th><th>Geschosse</th><th>Höhe</th><th>Dach</th></tr></thead><tbody>${list.map(a =>
-          `<tr><td>${esc(a.lod?.adr?.split(";")[0] || a.fn)}</td><td>${m0(a.dist)} m</td><td>${m0(a.area)} m²</td><td>${a.lod?.vg || a.vg || "–"}</td><td>${a.lod?.h ? m1(a.lod.h) + " m" : "–"}</td><td>${esc(a.lod?.dach || "–")}</td></tr>`).join("")}</tbody></table></div>
+          { const vg = a.lod?.vg || a.vg, leer = v => v ? "" : ` class="leer"`; // Handy: zweizeilig, Geschosse mit Wort
+            return `<tr><td>${esc(a.lod?.adr?.split(";")[0] || a.fn)}</td><td>${m0(a.dist)} m</td><td>${m0(a.area)} m²</td><td${vg ? ` data-l="${+vg === 1 ? "Geschoss" : "Geschosse"}"` : leer()}>${vg || "–"}</td><td${leer(a.lod?.h)}>${a.lod?.h ? m1(a.lod.h) + " m" : "–"}</td><td${leer(a.lod?.dach)}>${esc(a.lod?.dach || "–")}</td></tr>`; }).join("")}</tbody></table></div>
         <p class="hint">Wichtig, wenn sich ein Neubau in die Umgebung einfügen muss (§ 34 BauGB) oder das Amt über Ausnahmen entscheidet. Höhe: Gelände bis höchster Punkt des Dachs, aus dem 3D-Stadtmodell.</p></div>`);
     });
 
@@ -1951,7 +1964,8 @@ const CFG = {
   bplanWfs: HH + "HH_WFS_Bebauungsplaene",
   boundsMaxRes: 6, // B-Plan-Grenzen erst ab dieser Auflösung (m/Pixel) laden
   bplanTypes: [{type: "app:hh_hh_festgestellt", label: "festgestellt"}, {type: "app:prosin_imverfahren", label: "im Verfahren"}],
-  alkisWfs: [HH + "WFS_HH_ALKIS_vereinfacht", HH + "HH_WFS_ALKIS_vereinfacht"], // Objektart wird aus GetCapabilities gelesen
+  alkis: {url: HH + "WFS_HH_ALKIS_vereinfacht", type: "ave:Flurstueck"}, // bekannt, spart GetCapabilities
+  alkisWfs: [HH + "WFS_HH_ALKIS_vereinfacht", HH + "HH_WFS_ALKIS_vereinfacht"], // Rückfall: Objektart aus GetCapabilities
   start: {center: [565700, 5933930], resolution: 1.2} // Startkarte: Rathausmarkt
 };
 // Festsetzungen nach XPlanung / BauNVO ("Maß der baulichen Nutzung")
@@ -2052,7 +2066,8 @@ const DM_MAXRES = BF_MAXRES;
 const dmSrc = new ol.source.Vector({format: new ol.format.WFS(), strategy: ol.loadingstrategy.bbox, url: ext => wfsUrlBbox("https://geodienste.hamburg.de/HH_WFS_Denkmalschutz", "de.hh.up:gebaeude", ext, 1500)});
 dmSrc.on("featuresloaderror", () => diag("Baudenkmale konnten nicht geladen werden"));
 const dmStyle = St({stroke: Sk("#ff3b30", 1.5), fill: Fl("rgba(255,59,48,.42)")});
-const dmLayer = vec(dmSrc, () => body.contains("has-result") ? dmStyle : null, {zIndex: 9, maxResolution: DM_MAXRES}); // erst nach der Suche, dann mit Schalter
+const dmLayer = vec(dmSrc, dmStyle, {zIndex: 9, maxResolution: DM_MAXRES, visible: false}); // erst nach der Suche (vorher nicht laden), dann mit Schalter
+let dmOn = true; const dmShow = () => dmLayer.setVisible(dmOn && body.contains("has-result"));
 const map = new ol.Map({target: "map", layers: [bgLayer, boundsLayer, selLayer, dmLayer, plotLayer, bfLayer, measureLayer, markerLayer],
   view: new ol.View({projection: UTM, ...CFG.start, maxResolution: 300, minResolution: 0.1}),
   controls: ol.control.defaults.defaults({attributionOptions: {collapsible: true}}).extend([new ol.control.ScaleLine({units: "metric"})])});
@@ -2087,7 +2102,7 @@ function openDetail(checkId) {
 function closeDetail() { vt(() => { body.remove("detail"); side.scrollTop = 0; }, "zurueck"); relayout(); }
 $("drawer").inert = true;
 on("menuBtn", "click", () => toggleDrawer(true));
-on("dmKey", "click", () => { const v = !dmLayer.getVisible(); dmLayer.setVisible(v); $("dmKey").setAttribute("aria-pressed", v); });
+on("dmKey", "click", () => { dmOn = !dmOn; dmShow(); $("dmKey").setAttribute("aria-pressed", dmOn); });
 on("bfKey", "click", () => {
   const v = !bfLayer.getVisible(); bfLayer.setVisible(v); $("bfKey").setAttribute("aria-pressed", v); map.render(); loadBaufenster();
   if (v && bfSrc.getFeatures().length) { // Baufenster am Grundstück ins Bild holen, falls sie außerhalb des (auf dem Handy kleinen) Ausschnitts liegen
@@ -2117,7 +2132,7 @@ function placeSearch(clear) {
 addEventListener("resize", () => placeSearch()); placeSearch();
 for (const el of document.querySelectorAll(".side > header :is(h1, .banner)")) el.addEventListener("click", () => { if (body.contains("has-result")) $("homeBtn").click(); });
 on("homeBtn", "click", () => {
-  clearMeasure(); close3d(); toggleDrawer(false); body.remove("has-result", "detail"); clearMap(); plotArea = null; dmLayer.changed();
+  clearMeasure(); close3d(); toggleDrawer(false); body.remove("has-result", "detail"); clearMap(); plotArea = null; dmShow();
   placeSearch(); queryId++; $("overview").innerHTML = ""; $("results").innerHTML = startResults; $("q").value = ""; curPlace = null; cur = {sum: null, zone: null}; side.scrollTop = 0;
   requestAnimationFrame(() => { map.updateSize(); view.cancelAnimations(); view.animate({...CFG.start, duration: 500}); });
 });
@@ -2208,7 +2223,7 @@ function markMine(geom) {
 const bfKeyUpdate = () => {
   const k = $("bfKey");
   k.hidden = view.getResolution() > BF_MAXRES; k.setAttribute("aria-pressed", bfLayer.getVisible());
-  const d = $("dmKey"); d.hidden = view.getResolution() > DM_MAXRES; d.setAttribute("aria-pressed", dmLayer.getVisible());
+  const d = $("dmKey"); d.hidden = view.getResolution() > DM_MAXRES; d.setAttribute("aria-pressed", dmOn);
 };
 boundsSrc.on("featuresloadend", bfKeyUpdate);
 map.on("moveend", () => { bfKeyUpdate(); loadBaufenster(); });
@@ -2223,7 +2238,7 @@ async function queryAt(coord, placeName) {
       const txt = await getText(wfsUrl(CFG.bplanWfs, t.type, coord), "Bebauungspläne " + t.label);
       return txt ? readGml(txt).map(f => ({...f, status: t.label})) : [];
     })).then(a => a.flat()),
-    queryPlot(coord)]);
+    queryPlot(coord).then(p => { if (id === queryId) checkFetch(coord, p); return p; })]);
   if (id !== queryId) return;
   for (const p of plans) if (p.geometry) selSrc.addFeature(new ol.Feature(p.geometry));
   if (plot?.geometry) {
@@ -2244,7 +2259,7 @@ function renderResult(coord, placeName, plans, plot) {
   lastPlot = plot;
   bezahlt = false; body.remove("bezahlt"); // Kauf gilt je Grundstück
   const r = $("results"), first = !body.contains("has-result"); r.innerHTML = "";
-  body.add("has-result"); body.remove("detail"); placeSearch(true); dmLayer.changed();
+  body.add("has-result"); body.remove("detail"); placeSearch(true); dmShow();
   r.append(Object.assign(document.createElement("div"), {className: "backbar noprint", innerHTML: `<button type="button" class="ghost" id="backBtn">‹ Zurück zur Übersicht</button>`}));
   const found = findSummary(plans), valid = plans.filter(p => p.status === "festgestellt");
   const main = found?.plan || valid[0] || plans[0], sum = found?.sum || null, flst = plotNumber(plot);
@@ -2448,7 +2463,10 @@ async function findAlkis() { // erreichbaren Dienst und Namen der Objektart „F
   return null;
 }
 async function queryPlot(coord) {
-  const svc = await findAlkis(), t = svc && await getText(wfsUrl(svc.url, svc.type, coord), "Flurstücke"), f = t && readGml(t)[0];
+  const get = svc => svc && getText(wfsUrl(svc.url, svc.type, coord), "Flurstücke");
+  let t = await get(alkisSvc || CFG.alkis); // erst den bekannten Dienst, nur bei Fehler neu suchen
+  if (t == null && !alkisSvc) t = await get(await findAlkis());
+  const f = t && readGml(t)[0];
   if (!f) return null;
   const k = Object.keys(f.props).find(k => /^(amtlflsfl|amtlicheflaeche|flaeche)$/i.test(k)); // amtliche Fläche bevorzugen
   const amtl = k ? parseFloat(String(f.props[k]).replace(",", ".")) : NaN;
@@ -2578,6 +2596,7 @@ function open3d() {
 }
 function close3d() { if (!body.contains("is3d")) return; View3D.close(); body.remove("is3d"); }
 on("btn3d", "click", open3d);
+for (const ev of ["pointerenter", "pointerdown", "focus"]) $("btn3d").addEventListener(ev, () => View3D.preload(), {passive: true}); // Cesium schon beim Antippen/Überfahren laden
 on("v3close", "click", close3d);
 on("v3in", "click", () => View3D.zoom(0.7));
 on("v3out", "click", () => View3D.zoom(1.4));
@@ -2687,16 +2706,26 @@ function touches(geom, pg, ext) {
   return false;
 }
 const shortName = n => { n = String(n).replace(/^Verordnung über (die )?/i, "").split(/ vom | \(|;/)[0].trim(); return n.length > 70 ? n.slice(0, 67) + " …" : n; };
-async function runChecks(coord, plot, id) {
+// Abfragen starten, sobald das Flurstück da ist (noch vor der Anzeige); gleiche Daten nur einmal holen (größter Puffer)
+let chk = {};
+function checkFetch(coord, plot) {
+  if (typeof CHECKS === "undefined" || (chk.coord === coord && chk.plot === plot)) return chk;
   const ty = plot?.geometry?.getType?.(), pg = ty === "Polygon" ? plot.geometry : ty === "MultiPolygon" ? plot.geometry.getPolygon(0) : null;
+  const base = pg ? pg.getExtent() : [coord[0] - 1, coord[1] - 1, coord[0] + 1, coord[1] + 1], req = {};
+  for (const k of CHECKS) { const key = k.url + " " + k.type; req[key] = Math.max(req[key] ?? 0, k.buffer || 0); }
+  for (const key in req) { const [u, t] = key.split(" "); req[key] = getText(wfsUrlBbox(u, t, ol.extent.buffer(base, req[key]), 50), "Prüfung " + t); }
+  return (chk = {coord, plot, pg, base, req});
+}
+async function runChecks(coord, plot, id) {
+  const {pg, base, req} = checkFetch(coord, plot);
   await Promise.all(CHECKS.map(async k => {
-    const buf = k.buffer || 0, ext = ol.extent.buffer(pg ? pg.getExtent() : [coord[0] - 1, coord[1] - 1, coord[0] + 1, coord[1] + 1], buf);
-    const t = await getText(wfsUrlBbox(k.url, k.type, ext, 50), "Prüfung " + k.label);
+    const buf = k.buffer || 0, ext = ol.extent.buffer(base, buf);
+    const t = await req[k.url + " " + k.type];
     const el = qs(`#checksList li[data-id="${CSS.escape(k.id)}"]`);
     if (!el || id !== queryId) return;
     const set = (cls, html) => { el.className = cls; el.innerHTML = `<b>${esc(k.label)}</b>: ${html}`; ovSet(k.id, cls); };
     if (t == null) return set("unk", `<span class="hint">Dienst nicht erreichbar, bitte selbst beim Bezirksamt erfragen.</span>`);
-    const hits = readGml(t).filter(f => buf > 0 || touches(f.geometry, pg, ext));
+    const hits = readGml(t).filter(f => buf > 0 ? !f.geometry || f.geometry.intersectsExtent(ext) : touches(f.geometry, pg, ext));
     if (!hits.length) return set("ok", esc(k.none));
     const names = [...new Set(hits.map(f => (k.nameAttrs || []).map(a => f.props[a]).find(Boolean)).filter(Boolean).map(shortName))].slice(0, 3);
     set("hit", esc(k.hit) + (names.length ? ` <span class="hint">(${esc(names.join(", "))})</span>` : ""));
