@@ -744,8 +744,6 @@ body.is3d .view3d { display: block; }
   .ol-attribution, .ol-scale-line { border-radius: 10px; }
 }
 @media screen and (max-width: 760px) {
-  /* Baufenster-Schalter oben rechts, damit er bei kleiner Karte nicht auf dem Maßstab liegt */
-  body.has-result:not(.mapfull):not(.is3d) .mapwrap .bfkey { top: 12px; left: auto; right: 12px; }
   html, body { overscroll-behavior: none; }
   .side { overscroll-behavior: contain; }
   /* Nach der Suche: weiße Leiste schwebt oben, Karte darunter, Infos als hellblaues Blatt */
@@ -774,7 +772,44 @@ body.is3d .view3d { display: block; }
 }
 
 
-/* ---------- Genauer wissen: Grundstücks-Report und Fachfrage (Vorschau) ---------- */
+/* ---------- Handy-Ergebnis: Karte groß, Infos als Blatt zum Hochziehen (wie Apple Karten) ---------- */
+.grab, .ov-peek, .keysbtn { display: none; }
+.keys, .keyspop { display: contents; }
+@media screen and (max-width: 760px) {
+  body.has-result .app { grid-template-rows: minmax(0, 1fr); }
+  body.has-result:not(.detail) .side { position: fixed; left: 0; right: 0; top: auto; bottom: calc(-1 * var(--unten, 0px)); margin: 0; max-height: 78dvh; padding-top: 0; z-index: 4; transition: bottom .42s cubic-bezier(.32, .72, 0, 1); }
+  body.has-result.blatt-zu:not(.detail) .side { overflow: hidden; }
+  body.has-result:not(.detail) #overview > :not(.ov-plan) { transition: opacity .3s; }
+  body.has-result.blatt-zu:not(.detail) #overview > :not(.ov-plan) { opacity: 0; }
+  body.has-result:not(.mapfull):not(.is3d) .mapwrap { z-index: 1; } /* Kartenknöpfe bleiben unter dem Blatt */
+  body.has-result.ziehen:not(.detail) .side { transition: none; }
+  body.has-result:not(.detail) .grab { display: block; all: unset; flex: none; position: sticky; top: 0; z-index: 3; height: 22px; margin: 0 -12px -8px; background: var(--sheet); cursor: grab; -webkit-tap-highlight-color: transparent; }
+  body.has-result:not(.detail) .grab::before { content: ""; position: absolute; left: 50%; top: 8px; width: 38px; height: 5px; margin-left: -19px; border-radius: 3px; background: var(--muted); opacity: .55; }
+  body.has-result .mapwrap :is(.ol-scale-line, .ol-attribution) { margin-bottom: 0; bottom: calc(var(--blatt, 170px) + 8px); transition: bottom .42s cubic-bezier(.32, .72, 0, 1); }
+  body.has-result .ov-plan .ov-more { display: none; }
+  body.has-result .ov-peek:not(:empty) { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 7px; }
+  .ov-peek > span { padding: 5px 8px; border-radius: 999px; background: var(--fill); font-size: 12.5px; font-weight: 500; color: var(--muted); white-space: nowrap; }
+  .ov-peek b { color: var(--fg); font-weight: 650; }
+  .ov-peek .hit b { color: var(--warn); }
+  .ov-peek .ok b { color: var(--ok); }
+  /* Kartenebenen: ein kleiner Knopf statt zwei großer Schilder; antippen zeigt die Schalter */
+  body.has-result .keys { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; position: absolute; z-index: 7; top: 12px; right: 12px; }
+  body.has-result:is(.mapfull, .is3d) .keys { top: calc(12px + env(safe-area-inset-top, 0px)); }
+  .keys:not(:has(.bfkey:not([hidden]))) { display: none !important; }
+  body.has-result .keysbtn { display: grid; place-items: center; position: relative; width: 40px; height: 40px; padding: 0; border: 0; border-radius: 12px; background: var(--panel); color: var(--fg); box-shadow: var(--shadow-lg); -webkit-tap-highlight-color: transparent; }
+  .keysbtn svg { width: 21px; height: 21px; }
+  .keysbtn i { position: absolute; bottom: 6px; width: 6px; height: 6px; border-radius: 2px; }
+  .keysbtn .kb { right: 6px; background: var(--bf); }
+  .keysbtn .kd { right: 14px; background: var(--dm); }
+  .keysbtn:active { transform: scale(.94); }
+  .keys.open .keysbtn { background: var(--accent); color: #fff; }
+  .keys .keyspop { display: none; }
+  .keys.open .keyspop { display: flex; flex-direction: column; gap: 2px; padding: 6px; border-radius: 16px; background: var(--panel); box-shadow: var(--shadow-lg); animation: rise .2s var(--ease) both; }
+  .mapwrap .keys .bfkey { position: static; margin: 0; min-width: 150px; height: 40px; background: none; box-shadow: none; border-radius: 10px; font-size: 15px; }
+  .mapwrap .keys .bfkey:active { background: var(--fill); transform: none; }
+}
+
+/* ---------- Vollständiger Bericht (Vorschau) ---------- */
 .ov-pro { box-shadow: inset 4px 0 0 var(--navy), var(--shadow); }
 .ov-pro .ov-label small { display: block; font-size: 12.5px; color: var(--muted); font-weight: 450; margin-top: 2px; }
 .pro-btns { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -787,12 +822,7 @@ dialog.pro[open] { animation: rise .28s var(--ease) both; }
 .pro-top h3 { flex: 1; margin: 0; font: 700 21px/1.2 var(--display); }
 .pro-top button.ghost { flex: none; }
 .pro-for { margin: -4px 0 0; font-size: 13.5px; color: var(--muted); }
-.pro-opt { all: unset; box-sizing: border-box; cursor: pointer; display: flex; flex-direction: column; gap: 4px; padding: 14px 16px; border-radius: 18px; background: var(--fill); -webkit-tap-highlight-color: transparent; transition: transform .2s var(--ease); }
-.pro-opt:active { transform: scale(.98); }
-.pro-opt:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.pro-t { font-weight: 650; font-size: 16px; }
 .pro-d { font-size: 13.5px; line-height: 1.4; color: var(--muted); }
-.pro-p { margin-top: 4px; font-weight: 650; color: var(--accent); font-size: 14.5px; }
 .pro ul.pro-list { margin: 0; padding-left: 20px; font-size: 14px; line-height: 1.5; }
 .pro-price { display: flex; align-items: baseline; justify-content: space-between; padding: 12px 14px; border-radius: 14px; background: var(--fill); font-weight: 600; }
 .pro-price b { font: 700 22px/1 var(--display); }
@@ -800,15 +830,6 @@ dialog.pro[open] { animation: rise .28s var(--ease) both; }
 .pro-in > button.ghost:is([data-pro="start"], .pro-free) { align-self: flex-start; }
 .pro .pro-d { margin: 0; }
 .pro button.wide { justify-content: center; width: 100%; box-sizing: border-box; padding: 12px 16px; font-size: 16px; }
-.pro form { display: flex; flex-direction: column; gap: 10px; }
-.pro form label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; font-weight: 600; color: var(--muted); }
-.pro form :is(input:not([type=checkbox]), select, textarea) { font: inherit; font-size: 16px; color: var(--fg); background: var(--fill); border: 1px solid transparent; border-radius: 12px; padding: 10px 12px; }
-.pro form textarea { min-height: 96px; resize: vertical; }
-.pro form label.consent { flex-direction: row; align-items: flex-start; gap: 8px; font-weight: 450; line-height: 1.4; }
-.pro form label.consent input { margin-top: 3px; flex: none; }
-.pro-ctx { font-size: 13px; color: var(--muted); padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line); }
-.pro-ctx b { color: var(--fg); }
-.pro pre { white-space: pre-wrap; font: 12.5px/1.45 ui-monospace, Menlo, monospace; background: var(--fill); padding: 10px 12px; border-radius: 12px; margin: 0; max-height: 34vh; overflow: auto; }
 #repCover { display: none; }
 
 
@@ -955,6 +976,7 @@ ol.steps { margin: 0; padding-left: 22px; display: flex; flex-direction: column;
       <svg class="skyline" viewBox="10 0 300 190" preserveAspectRatio="xMidYMax meet" aria-hidden="true"><defs><linearGradient id="skyFade" x1="0" y1="156" x2="0" y2="190" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#fff" stop-opacity=".42"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient><mask id="skyMask"><rect x="0" y="156" width="320" height="34" fill="url(#skyFade)"/></mask><g id="skyG"><path d="M19,152 21,150.7 23,149.73 25,148.86 27,148.05 29,147.28 31,146.54 33,145.83 35,145.14 37,144.46 39,143.81 41,143.16 43,142.53 45,141.91 47,141.3 49,140.71 51,140.12 53,139.54 55,138.97 57,138.41 59,137.86 61,137.31 63,136.77 65,136.24 67,135.72 69,135.2 71,134.69 73,134.19 75,133.69 77,133.2 79,132.72 81,132.24 83,131.77 85,131.31 87,130.85 89,130.4 91,129.95 93,129.51 95,129.08 97,128.65 99,128.23 101,127.81 103,127.4 105,127 107,126.6 109,126.21 111,125.82 113,125.44 115,125.07 117,124.7 119,124.34 121,123.98 123,123.63 125,123.29 127,122.95 129,122.62 131,122.29 133,121.97 135,121.66 137,121.35 139,121.05 141,120.75 143,120.46 145,120.18 147,119.9 149,119.63 151,119.36 153,119.1 155,118.85 157,118.6 159,118.36 161,118.13 163,117.9 165,117.68 167,117.47 169,117.26 171,117.06 173,116.86 175,116.67 177,116.49 179,116.31 181,116.14 183,115.98 185,115.82 187,115.67 189,115.52 191,115.39 193,115.25 195,115.13 197,115.01 199,114.9 201,114.79 203,114.69 205,114.6 207,114.52 209,114.44 211,114.36 213,114.3 215,114.24 217,114.19 219,114.14 221,114.1 223,114.07 225,114.04 227,114.02 229,114.01 231,114 233,114 233,118.2 231,118.2 229,118.21 227,118.22 225,118.24 223,118.27 221,118.3 219,118.34 217,118.39 215,118.44 213,118.5 211,118.56 209,118.64 207,118.72 205,118.8 203,118.89 201,118.99 199,119.1 197,119.21 195,119.33 193,119.45 191,119.59 189,119.72 187,119.87 185,120.02 183,120.18 181,120.34 179,120.51 177,120.69 175,120.87 173,121.06 171,121.26 169,121.46 167,121.67 165,121.88 163,122.1 161,122.33 159,122.56 157,122.8 155,123.05 153,123.3 151,123.56 149,123.83 147,124.1 145,124.38 143,124.66 141,124.95 139,125.25 137,125.55 135,125.86 133,126.17 131,126.49 129,126.82 127,127.15 125,127.49 123,127.83 121,128.18 119,128.54 117,128.9 115,129.27 113,129.64 111,130.02 109,130.41 107,130.8 105,131.2 103,131.6 101,132.01 99,132.43 97,132.85 95,133.28 93,133.71 91,134.15 89,134.6 87,135.05 85,135.51 83,135.97 81,136.44 79,136.92 77,137.4 75,137.89 73,138.39 71,138.89 69,139.4 67,139.92 65,140.44 63,140.97 61,141.51 59,142.06 57,142.61 55,143.17 53,143.74 51,144.32 49,144.91 47,145.5 45,146.11 43,146.73 41,147.36 39,148.01 37,148.66 35,149.34 33,150.03 31,150.74 29,151.48 27,152.25 25,153.06 23,153.93 21,154.9 19,156.2ZM38.5,146.482 41.5,146.482 41.5,156 38.5,156ZM89.25,132.732 94.75,132.732 94.75,156 89.25,156ZM102,130.2 106,130.2 106,156 102,156ZM66.3,74 68.7,74 77,138 74,138 67.5,86 61,138 58,138ZM59.5,136 75.5,136 72.5,156 62.5,156ZM116,36 119,36 119,66 116,66ZM114.5,40 120.5,40 120.5,41.6 114.5,41.6ZM114.5,46 120.5,46 120.5,47.6 114.5,47.6ZM114.5,52 120.5,52 120.5,53.6 114.5,53.6ZM114.5,58 120.5,58 120.5,59.6 114.5,59.6ZM108,70.5 C108,68.5 127,68.5 127,70.5 C127,73 123,75.5 117.5,75.5 C112,75.5 108,73 108,70.5ZM110.5,84 C110.5,82 124.5,82 124.5,84 C124.5,86.5 121.5,88 117.5,88 C113.5,88 110.5,86.5 110.5,84ZM115,66 120,66 120.6,156 114.4,156ZM141,52 144,52 145,60 140,60ZM137.5,73 C137.5,63 140,60 142.5,60 C145,60 147.5,63 147.5,73ZM136.5,72 148.5,72 148.5,84 136.5,84ZM134.5,84 150.5,84 151.5,100 153.5,104 153.5,128 131.5,128 131.5,104 133.5,100ZM126,156 126,132 131,128 153,128 158,124 166,124 170,129 176,126 180,129 181,116 197,116 198,112 214,112 214,126 219,130 223,128 226,132 226,156ZM187.5,72 190.5,72 191.5,80 186.5,80ZM184.5,92 C184.5,84 186.5,80 189,80 C191.5,80 193.5,84 193.5,92ZM183.5,91 194.5,91 195.5,104 197.5,108 197.5,120 180.5,120 180.5,108 182.5,104ZM206,47 208.2,70 213,101 199,101 203.8,70ZM198,100 214,100 214,114 198,114ZM222,136 223.2,136 223.2,156 222,156ZM226.5,136 227.7,136 227.7,156 226.5,156ZM231,98 C238,99 244,103 250,107 C255,104 262,103 268,107 C273,110 278,111 283,110 C289,108 295,110 303,114 L303,156 L231,156ZM16,153 306,153 306,156.6 16,156.6Z"/><g fill="none" stroke="currentColor" stroke-linecap="round"><path d="M25.5,154L29.5,110" stroke-width="1.6"/><path d="M33.5,154L29.5,110" stroke-width="1.6"/><path d="M26.5,141L32.5,141" stroke-width="1.2"/><path d="M29.5,113L36,145.298" stroke-width="0.45"/><path d="M29.5,116L40.5,143.821" stroke-width="0.45"/><path d="M29.5,119L45,142.412" stroke-width="0.45"/><path d="M29.5,122L49.5,141.059" stroke-width="0.45"/><path d="M29.5,125L54,139.754" stroke-width="0.45"/><path d="M67.5,78L40,143.982" stroke-width="0.45"/><path d="M67.5,78L95,129.579" stroke-width="0.45"/><path d="M67.5,80.6L42.6,143.156" stroke-width="0.45"/><path d="M67.5,80.6L92.4,130.144" stroke-width="0.45"/><path d="M67.5,83.2L45.2,142.35" stroke-width="0.45"/><path d="M67.5,83.2L89.8,130.719" stroke-width="0.45"/><path d="M67.5,85.8L47.8,141.564" stroke-width="0.45"/><path d="M67.5,85.8L87.2,131.305" stroke-width="0.45"/><path d="M67.5,88.4L50.4,140.794" stroke-width="0.45"/><path d="M67.5,88.4L84.6,131.901" stroke-width="0.45"/><path d="M67.5,91L53,140.04" stroke-width="0.45"/><path d="M67.5,91L82,132.508" stroke-width="0.45"/><path d="M67.5,93.6L55.6,139.301" stroke-width="0.45"/><path d="M67.5,93.6L79.4,133.125" stroke-width="0.45"/><path d="M117.5,0L117.5,40" stroke-width="1.1"/><path d="M142.5,41L142.5,54" stroke-width="1"/><path d="M140.8,45L144.2,45" stroke-width="0.8"/><path d="M189,59L189,74" stroke-width="0.9"/></g><g style="fill: var(--panel); stroke: var(--panel)"><circle cx="236" cy="110" r=".6"/><circle cx="241" cy="116" r=".6"/><circle cx="247" cy="112" r=".6"/><circle cx="255" cy="113" r=".6"/><circle cx="262" cy="118" r=".6"/><circle cx="268" cy="114" r=".6"/><circle cx="276" cy="120" r=".6"/><circle cx="283" cy="117" r=".6"/><circle cx="291" cy="121" r=".6"/><circle cx="298" cy="119" r=".6"/><circle cx="239" cy="124" r=".6"/><circle cx="251" cy="122" r=".6"/><circle cx="286" cy="126" r=".6"/><circle cx="272" cy="127" r=".6"/><circle cx="259" cy="128" r=".6"/><circle cx="244" cy="130" r=".6"/><circle cx="296" cy="128" r=".6"/><path d="M231,137.5H303" stroke-width=".8" fill="none"/><path d="M263,137.5c2-4 12-4 14,0z"/><path d="M231,103.5c8,1 14,5 19,8.5c6-3 12-3 18,1c5,3 10,4 15,3c6-2 12,0 20,4" stroke-width=".5" fill="none" opacity=".55"/></g></g></defs><use href="#skyG"/><g mask="url(#skyMask)"><use href="#skyG" transform="matrix(1 0 0 -1 0 312)"/></g></svg>
     </header>
     <div class="recent" id="recent" hidden></div>
+    <button type="button" class="grab" id="grab" aria-label="Infos ein- oder ausklappen" aria-expanded="false"></button>
     <div id="overview"></div>
     <div id="results">
       <section class="card">
@@ -973,8 +995,12 @@ ol.steps { margin: 0; padding-left: 22px; display: flex; flex-direction: column;
       <button type="button" id="mDone">Fertig</button>
     </div>
     <button type="button" class="compass" id="compass" aria-label="Nach Norden ausrichten" title="Nach Norden ausrichten"><svg viewBox="0 0 44 44" aria-hidden="true"><g class="needle"><text x="22" y="10.5" text-anchor="middle">N</text><path d="M22 12 27 22H17z" fill="#ff3b30"/><path d="M22 34 17 22h10z" fill="currentColor" opacity=".38"/></g></svg></button>
+    <div class="keys" id="keys">
+    <button type="button" class="keysbtn" id="keysBtn" aria-expanded="false" aria-label="Kartenebenen: Baufenster und Baudenkmale" title="Kartenebenen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 9 5-9 5-9-5z"/><path d="m3 13 9 5 9-5" stroke-linecap="round"/></svg><i class="kb" aria-hidden="true"></i><i class="kd" aria-hidden="true"></i></button>
+    <div class="keyspop">
     <button type="button" class="bfkey" id="bfKey" aria-pressed="true" title="Baufenster aus dem Bebauungsplan ein- oder ausblenden" hidden><i aria-hidden="true"></i><span>Baufenster</span></button>
     <button type="button" class="bfkey dmkey" id="dmKey" aria-pressed="true" title="Baudenkmale (Denkmalliste Hamburg) ein- oder ausblenden" hidden><i aria-hidden="true"></i><span>Baudenkmal</span></button>
+    </div></div>
     <button type="button" class="btn3d" id="btn3d" aria-label="3D-Ansicht öffnen" title="Gebäude in 3D ansehen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 3 7v10l9 5 9-5V7z"/><path d="m3 7 9 5 9-5M12 12v10"/></svg>3D</button>
     <div class="lpring" id="lpRing" aria-hidden="true"></div>
     <p class="mtip" id="mTip" role="status"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="8" stroke-dasharray="3 3"/></svg><span></span></p>
@@ -2295,7 +2321,9 @@ function fitPlot(duration = 600) {
   const f = plotSrc.getFeatures()[0]; if (!f) return;
   view.cancelAnimations();
   // Zoom etwas näher als früher (Puffer 15 → 8 m, bis 0,18 m/Pixel statt 0,25); links mehr Rand, dort liegen Zoom- und 3D-Knopf
-  view.fit(ol.extent.buffer(f.getGeometry().getExtent(), 8), {padding: isPhone() ? [40, 24, 44, 72] : [40, 40, 40, 100], minResolution: 0.18, duration});
+  // Handy: unten so viel Rand, wie das Infoblatt von der Karte verdeckt
+  const unten = isPhone() && body.contains("has-result") && !body.contains("mapfull") ? blattVis + 16 : 44;
+  view.fit(ol.extent.buffer(f.getGeometry().getExtent(), 8), {padding: isPhone() ? [40, 60, unten, 72] : [40, 40, 40, 100], minResolution: 0.18, duration});
 }
 const relayout = () => requestAnimationFrame(() => { map.updateSize(); fitPlot(0); });
 function toggleDrawer(v) { $("drawer").classList.toggle("open", v); $("drawer").inert = !v; $("backdrop").hidden = !v; $("menuBtn").setAttribute("aria-expanded", v); }
@@ -2458,7 +2486,7 @@ async function queryAt(coord, placeName) {
   for (const p of plans) if (p.geometry) selSrc.addFeature(new ol.Feature(p.geometry));
   if (plot?.geometry) {
     plotSrc.addFeature(new ol.Feature({geometry: plot.geometry, label: "Mein Grundstück" + (plot.area ? "\n" + fmt(plot.area) + " m²" : "")}));
-    fitPlot(); // automatisch auf das Grundstück zoomen
+    if (!blattOffen) fitPlot(); // automatisch auf das Grundstück zoomen (bei aufgeklapptem Blatt erst nach dem Zuklappen)
     markMine(plot.geometry);
   }
   for (const p of [...plans, ...(plot ? [plot] : [])].map(f => f.props))
@@ -2518,7 +2546,8 @@ function renderResult(coord, placeName, plans, plot) {
   appendExtras(r, coord, plot, sum, placeName);
   updateCalc();
   if (kept()[keyOf()]) unlock(true); // in den letzten 30 Tagen auf diesem Gerät gekauft
-  if (first) requestAnimationFrame(() => { map.updateSize(); fitPlot(); }); // Kopf wird kleiner, Karte größer; weich weiterzoomen statt springen
+  const offen = blattOffen; side.scrollTop = 0; setBlatt(false); // Handy: neues Ergebnis erst nur mit Planname und Eckdaten, Karte groß
+  if (first || offen) requestAnimationFrame(() => { map.updateSize(); fitPlot(); }); // Kopf wird kleiner, Karte größer; weich weiterzoomen statt springen
 }
 // Erste Ergebnisseite: Planname, Denkmalschutz ja/nein und gleich, was gebaut werden darf; alles Weitere auf der Detailseite
 function renderOverview(main, sum, placeName) {
@@ -2527,10 +2556,11 @@ function renderOverview(main, sum, placeName) {
   $("overview").innerHTML = `<button type="button" class="ov-plan" data-go="">
       ${main && gilt ? "" : `<span class="pill ${main ? "draft" : "none"}">${main ? "Bebauungsplan im Verfahren" : "§ 34 BauGB: Einfügen in die Umgebung"}</span>`}
       <span class="ov-name">${esc(name).replace(/(Baustufen|Teilbebauungs|Durchführungs|Bebauungs)(plan)/, "$1&shy;$2")}</span>
+      <span class="ov-peek" id="ovPeek"></span>
       <span class="ov-more">Weitere Infos zur Bebaubarkeit ›</span></button>
     ${typeof CHECKS === "undefined" ? "" : `<button type="button" class="ov-box ov-row" data-go="denkmal"><span class="ov-label">Denkmalschutz</span><b class="ov-val">wird geprüft …</b><span class="ov-more">›</span></button>`}
     <button type="button" class="ov-build" data-go="calc" id="ovBuild"></button>
-    <button type="button" class="ov-box ov-row ov-pro" data-pro="start"><span class="ov-label">Vollständigen Bericht anfordern?<small>Alle Details als PDF oder Frage an Architekten</small></span><span class="ov-more">›</span></button>`;
+    <button type="button" class="ov-box ov-row ov-pro" data-pro="start"><span class="ov-label">Vollständigen Bericht anfordern?<small>Alle Details zum Grundstück als PDF</small></span><span class="ov-more">›</span></button>`;
   cur.hasPlan = !!main;
   rep = {place: placeName, plan: main ? name : "Kein Bebauungsplan (§ 34 BauGB)", status: !main ? "" : gilt ? "festgestellt" + (sum?.festgestellt ? " " + sum.festgestellt : "") : "im Verfahren", flst: plotNumber(lastPlot), area: lastPlot?.area, links: main ? pdfLinks(main) : []};
 }
@@ -2542,6 +2572,7 @@ function renderOvBuild(tiles) {
   const [t1, t2] = tiles.slice(0, 2).map(([b, l]) => [b, short[l] || l]); // auf dem Handy nur die ersten zwei: Fläche und Geschosse
   const t = [t1, ...(z ? [[vgText(z), "Vollgeschosse"]] : []), t2, ...(z ? [[z.bauweise, "Bauweise"], [z.art, (n?.split(":")[0] || "Nutzung").replace(/ \(.*\)$/, "")]] : [])].filter(Boolean)
     .concat(z ? [] : Object.entries(lastMass).map(([k, v]) => [v, MASS[k]])).filter(([b]) => b && b !== "–").slice(0, 4);
+  cur.peek = t.slice(0, 2); renderPeek();
   const msg = !cur.hasPlan ? "Hier gilt kein Bebauungsplan. Gebaut werden darf, was sich in die Umgebung einfügt: ähnliche Höhe, Größe und Bauweise wie die Nachbarhäuser."
     : cur.sum && !z ? "Bitte die Lage Ihres Grundstücks wählen, dann zeigt die App die Werte." : !t.length ? "Für diesen Plan liegen noch keine Werte in der App vor. Der Originalplan ist in den Details verlinkt." : "";
   el.innerHTML = `<span class="ov-label">Was darf ich bauen?</span>${t.length ? `<span class="big">${t.map(x => tile(x)).join("")}</span>` : ""}${msg ? `<span class="ov-place">${esc(msg)}</span>` : ""}${cur.sum && !z && cur.hasPlan ? `<span class="ov-more">Lage wählen ›</span>` : ""}`;
@@ -2549,7 +2580,68 @@ function renderOvBuild(tiles) {
 function ovSet(id, cls) {
   const b = qs(`#overview [data-go="${id}"]`); if (!b) return;
   b.classList.remove("ok", "hit", "unk"); b.classList.add(cls); b.querySelector(".ov-val").textContent = {hit: "Ja", ok: "Nein", unk: "Unbekannt"}[cls];
+  if (id === "denkmal") { cur.dm = cls; renderPeek(); }
 }
+// Eckdaten für das zugeklappte Blatt auf dem Handy: Fläche, Geschosse, Denkmal
+function renderPeek() {
+  const el = $("ovPeek"); if (!el) return;
+  const kurz = l => /grundfläche/i.test(l) ? "Grundfläche" : /^Vollgeschoss/.test(l) ? "Geschosse" : /^Geschossfläche/.test(l) ? "Geschossfläche" : /^mit Garage/.test(l) ? "mit Garage" : l;
+  el.innerHTML = (cur.peek || []).map(([b, l]) => `<span><b>${esc(String(b).replace(/^höchstens /, "max. "))}</b> ${esc(kurz(l))}</span>`).join("")
+    + (cur.dm ? `<span class="${cur.dm}">${{hit: "<b>Baudenkmal</b>", ok: "<b>✓</b> kein Denkmal", unk: "Denkmal <b>?</b>"}[cur.dm]}</span>` : "");
+}
+
+// ---------- Handy: Infos als Blatt über der Karte, zugeklappt nur Planname und Eckdaten; hochziehen oder antippen zeigt alles ----------
+let blattOffen = false, blattVis = 170;
+const sab = Object.assign(document.createElement("div"), {style: "position:fixed;bottom:0;height:env(safe-area-inset-bottom,0px);visibility:hidden;pointer-events:none"});
+document.body.append(sab);
+const blattAn = () => isPhone() && body.contains("has-result") && !body.contains("detail");
+function blattMass() { // sichtbare Höhe zugeklappt (bis unter die Planname-Karte) und aufgeklappt
+  const pl = qs("#overview .ov-plan"), peek = pl ? Math.round(pl.getBoundingClientRect().bottom - side.getBoundingClientRect().top + 14 + sab.offsetHeight) : 170;
+  return {peek, full: Math.max(peek, side.offsetHeight)};
+}
+function setBlatt(open) {
+  if (!blattAn()) return;
+  const {peek, full} = blattMass();
+  if (open !== blattOffen && !open) side.scrollTop = 0;
+  blattOffen = open; blattVis = open ? full : peek;
+  side.style.setProperty("--unten", `${full - blattVis}px`); document.body.style.setProperty("--blatt", `${blattVis}px`);
+  body.toggle("blatt-zu", !open); $("grab").setAttribute("aria-expanded", open);
+}
+new ResizeObserver(() => { if (blattAn() && !body.contains("ziehen")) setBlatt(blattOffen); }).observe($("overview"));
+addEventListener("resize", () => setBlatt(blattOffen));
+on("grab", "click", e => { e.stopPropagation(); setBlatt(!blattOffen); });
+side.addEventListener("click", e => { // zugeklappt: Antippen klappt auf, statt gleich eine Seite zu öffnen
+  if (!blattAn() || blattOffen || e.target.closest("header, .recent, .grab")) return;
+  e.preventDefault(); e.stopPropagation(); setBlatt(true);
+}, true);
+let zug = null;
+side.addEventListener("touchstart", e => {
+  zug = null; if (!blattAn() || e.touches.length > 1 || e.target.closest("header, .recent")) return;
+  const y = e.touches[0].clientY; zug = {y0: y, y, t: e.timeStamp, v: 0, an: false, m: blattMass(), u0: parseFloat(side.style.getPropertyValue("--unten")) || 0};
+}, {passive: true});
+side.addEventListener("touchmove", e => {
+  if (!zug) return;
+  const y = e.touches[0].clientY, dy = y - zug.y0;
+  if (!zug.an) {
+    if (Math.abs(dy) < 6) return;
+    if (blattOffen && (dy < 0 || side.scrollTop > 0)) { zug = null; return; } // offen: normal scrollen, nur oben angekommen nach unten ziehen
+    zug.an = true; body.add("ziehen");
+  }
+  e.preventDefault();
+  const max = zug.m.full - zug.m.peek; let u = zug.u0 + dy;
+  u = u < 0 ? u / 3 : u > max ? max + (u - max) / 3 : u; // über die Enden hinaus nur gedämpft
+  zug.v = (y - zug.y) / Math.max(1, e.timeStamp - zug.t); zug.y = y; zug.t = e.timeStamp; zug.u = u;
+  side.style.setProperty("--unten", `${u}px`);
+}, {passive: false});
+const zugEnde = () => {
+  const z = zug; zug = null; if (!z?.an) return;
+  body.remove("ziehen"); const max = z.m.full - z.m.peek;
+  setBlatt(z.v < -.35 ? true : z.v > .35 ? false : z.u < max / 2);
+};
+side.addEventListener("touchend", zugEnde); side.addEventListener("touchcancel", zugEnde);
+// Kartenebenen-Knopf (Handy): klappt die Schalter für Baufenster und Baudenkmale auf
+on("keysBtn", "click", e => { e.stopPropagation(); const k = $("keys"), v = !k.classList.contains("open"); k.classList.toggle("open", v); $("keysBtn").setAttribute("aria-expanded", v); });
+document.addEventListener("click", e => { if (!e.target.closest("#keys")) { $("keys").classList.remove("open"); $("keysBtn").setAttribute("aria-expanded", "false"); } });
 
 // Hamburger Planarten am Namensanfang (BS…, TB…, D…)
 const PLAN_KINDS = [
@@ -2916,46 +3008,26 @@ function showCard(title, msg) { body.remove("detail"); $("overview").innerHTML =
 
 let printTitle = "";
 
-// ---------- Genauer wissen: Grundstücks-Report und Fachfrage (Vorschau, noch ohne Bezahlung und ohne Versand) ----------
-const PRO = {preis: "19,90 €", anfrageAn: ""}; // anfrageAn: E-Mail des Partner-Büros; leer = Vorschau
+// ---------- Vollständiger Bericht (Vorschau, noch ohne Bezahlung) ----------
+const PRO = {preis: "35 €"};
 let rep = {}, lastPlot = null, bezahlt = false, extSet = null; // bezahlt: Vorschau, gilt nur bis zum Neuladen
 const proDlg = $("pro"), proIn = $("proIn");
 const proHead = t => `<div class="pro-top"><h3 id="proH">${esc(t)}</h3><button type="button" class="ghost" data-pro="close">Schließen</button></div>${rep.place ? `<p class="pro-for">Für ${esc(rep.place)}${rep.flst ? " · Flurstück " + esc(rep.flst) : ""}</p>` : ""}`;
 const PRO_VIEWS = {
-  start: () => `${proHead("Vollständigen Bericht anfordern?")}
-    <button type="button" class="pro-opt" data-pro="report"><span class="pro-t">Vollständiger Bericht mit PDF</span><span class="pro-d">Alle Regeln, Prüfungen und Hinweise zu diesem Grundstück. Dazu der Bericht als PDF mit Werten, Karte, Denkmalschutz und Links zu den Originalplänen. Gut für Gespräche mit Bauamt, Bank oder Architekt.</span><span class="pro-p">${PRO.preis}</span></button>
-    <button type="button" class="pro-opt" data-pro="frage"><span class="pro-t">Fachfrage an Architekten</span><span class="pro-d">Beschreiben Sie Ihr Vorhaben, zum Beispiel einen Anbau. Ein unabhängiges Architekturbüro aus Hamburg schätzt es ein und nennt Ihnen vorher den Preis.</span><span class="pro-p">Anfrage kostenlos und unverbindlich</span></button>
-    <p class="legal">Ob gebaut werden darf, entscheidet allein das Bauamt. Verbindliche Sicherheit gibt ein Bauvorbescheid beim Bezirksamt.</p>`,
-  report: () => `${proHead("Vollständiger Bericht")}
+  report: (t = "Vollständiger Bericht") => `${proHead(t)}
     <p class="pro-d">Der Bericht gilt für dieses Grundstück. Sie können ihn sofort lesen und als PDF speichern. Enthalten sind:</p>
     <ul class="pro-list"><li>Was darf ich bauen: Fläche, Geschosse, Bauweise, Nutzung</li><li>Alle Regeln aus dem Plan in einfachen Worten</li><li>Prüfungen am Grundstück, zum Beispiel Denkmalschutz</li><li>Regeln, die in ganz Hamburg gelten</li><li>Rechnung: wie viel ist bebaut, wie viel noch frei</li><li>Skizze mit Maßen, 3D-Bild mit Baufenster, Ausschnitt aus dem Originalplan</li><li>Nachbarhäuser: Höhe, Geschosse, Grundfläche</li><li>Nächste Schritte, Links zu den Originalplänen, Ansprechpartner im Bezirksamt</li></ul>
     <div class="pro-price"><span>Preis einmalig</span><b>${PRO.preis}</b></div>
     <p class="pro-note">Vorschau: Die Bezahlung ist noch nicht eingebaut. Hier wird der Bericht kostenlos freigeschaltet.</p>
     <button type="button" class="wide" data-pro="kaufen">Für ${PRO.preis} kaufen</button>
-    <button type="button" class="ghost" data-pro="start">‹ Zurück</button>`,
-  frage: () => `${proHead("Fachfrage an Architekten")}
-    <div class="pro-ctx">Wird mitgeschickt: <b>${esc(rep.place || "")}</b>${rep.flst ? `, Flurstück ${esc(rep.flst)}` : ""}<br>${esc(rep.plan || "")}${rep.status ? ` (${esc(rep.status)})` : ""}</div>
-    <form id="proForm">
-      <label>Was haben Sie vor?<select name="vorhaben" required><option value="">Bitte wählen</option><option>Anbau oder Erweiterung</option><option>Neubau Einfamilienhaus</option><option>Aufstockung oder Dachausbau</option><option>Carport, Garage oder Gartenhaus</option><option>Grundstück teilen oder zweites Haus</option><option>Kauf eines Grundstücks prüfen</option><option>Etwas anderes</option></select></label>
-      <label>Beschreibung<textarea name="text" required placeholder="z. B. Wir möchten an der Gartenseite ca. 25 m² anbauen, eingeschossig mit Flachdach."></textarea></label>
-      <label>Name<input name="name" required autocomplete="name"></label>
-      <label>E-Mail<input name="mail" type="email" required autocomplete="email"></label>
-      <label>Telefon (freiwillig)<input name="tel" type="tel" autocomplete="tel"></label>
-      <label class="consent"><input type="checkbox" name="ok" required>Ich bin einverstanden, dass meine Angaben an ein unabhängiges Architekturbüro weitergegeben werden, damit es mir ein Angebot machen kann.</label>
-      <button type="submit" class="wide">Anfrage senden</button>
-    </form>
-    <p class="legal">MoinPlan vermittelt nur. Die Einschätzung und den Preis macht das Büro. Ob gebaut werden darf, entscheidet allein das Bauamt.</p>
-    <button type="button" class="ghost" data-pro="start">‹ Zurück</button>`,
+    <p class="legal">Ob gebaut werden darf, entscheidet allein das Bauamt. Verbindliche Sicherheit gibt ein Bauvorbescheid beim Bezirksamt.</p>`,
+  start: () => PRO_VIEWS.report("Vollständigen Bericht anfordern?"),
   frei: () => `${proHead("Bericht freigeschaltet")}
     <p class="pro-d">Der vollständige Bericht ist jetzt geöffnet. Sie können ihn hier lesen oder als PDF speichern. Auf diesem Gerät bleibt er 30 Tage freigeschaltet.</p>
     <button type="button" class="wide" data-pro="pdf">Als PDF speichern</button>
-    <button type="button" class="ghost wide" data-pro="close">Bericht ansehen</button>`,
-  fertig: txt => `${proHead("Danke!")}
-    <p>Ihre Anfrage ist angekommen. Ein Architekturbüro meldet sich in der Regel innerhalb von zwei Werktagen per E-Mail.</p>
-    <p class="pro-note">Vorschau: Es wurde nichts verschickt. So sähe die Anfrage an das Büro aus:</p><pre>${esc(txt)}</pre>
-    <button type="button" class="wide" data-pro="close">Fertig</button>`
+    <button type="button" class="ghost wide" data-pro="close">Bericht ansehen</button>`
 };
-function proView(v, arg) { if (!bezahlt && (v === "start" || v === "report")) try { Bericht.warm(lastPlot, v === "report"); } catch { /* Vorladen ist nur Tempo */ }
+function proView(v, arg) { if (!bezahlt && (v === "start" || v === "report")) try { Bericht.warm(lastPlot, true); } catch { /* Vorladen ist nur Tempo */ }
   proIn.innerHTML = PRO_VIEWS[v](arg); proIn.parentElement.scrollTop = 0; if (!proDlg.open) proDlg.showModal(); }
 proDlg.addEventListener("click", e => { if (e.target === proDlg) proDlg.close(); }); // Tipp neben das Fenster schließt
 document.addEventListener("click", e => {
@@ -2965,13 +3037,6 @@ document.addEventListener("click", e => {
   if (v === "kaufen") { proDlg.close(); return unlock(); }
   if (v === "pdf") return makeReport();
   proView(v);
-});
-proIn.addEventListener("submit", e => {
-  e.preventDefault(); const f = new FormData(e.target);
-  const txt = [`Anfrage über MoinPlan vom ${new Date().toLocaleDateString("de-DE")}`, "", `Ort: ${rep.place || "–"}`, `Flurstück: ${rep.flst || "–"}${rep.area ? ` (${fmt(rep.area)} m²)` : ""}`, `Plan: ${rep.plan || "–"}${rep.status ? ` (${rep.status})` : ""}`,
-    "", `Vorhaben: ${f.get("vorhaben")}`, f.get("text"), "", `Name: ${f.get("name")}`, `E-Mail: ${f.get("mail")}`, f.get("tel") ? `Telefon: ${f.get("tel")}` : ""].filter(x => x != null).join("\n").trim();
-  if (PRO.anfrageAn) location.href = `mailto:${PRO.anfrageAn}?subject=${encodeURIComponent("MoinPlan-Anfrage: " + f.get("vorhaben"))}&body=${encodeURIComponent(txt)}`;
-  proView("fertig", txt);
 });
 // Kartenbild aus den OpenLayers-Ebenen; fremde Kacheln ohne CORS machen das Bild unlesbar, dann ohne Karte
 function mapImage() {
@@ -3030,7 +3095,7 @@ function unlock(quiet) {
   bezahlt = true; body.add("bezahlt"); extended = true; extSet?.();
   const c = qs("#results .procard");
   if (c) c.innerHTML = `<h2>${icon("file")}Bericht als PDF</h2><p class="hint">Zum Speichern, Drucken oder Weitergeben.</p>
-    <div class="pro-btns"><button type="button" data-pro="pdf">Als PDF speichern</button><button type="button" class="ghost" data-pro="frage">Fachfrage an Architekten</button></div>`;
+    <div class="pro-btns"><button type="button" data-pro="pdf">Als PDF speichern</button></div>`;
   const o = qs("#overview .ov-pro"); // Übersicht: aus dem Angebot wird der Weg zum gekauften Bericht
   if (o) { delete o.dataset.pro; o.dataset.go = ""; o.querySelector(".ov-label").innerHTML = "Vollständiger Bericht<small>Freigeschaltet: lesen oder als PDF speichern</small>"; }
   if (!quiet && !body.contains("detail")) openDetail("");
