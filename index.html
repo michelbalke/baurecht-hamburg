@@ -540,6 +540,8 @@ details.okfold .checks { margin-top: 6px; }
 .ov-row .ov-more { margin: 0; font-size: 20px; color: var(--muted); }
 .ov-build { gap: 6px; padding: 12px 14px; }
 .ov-build:empty { display: none; }
+.ov-zone { display: flex; flex-direction: column; gap: 8px; background: var(--panel); box-shadow: var(--shadow); border-radius: 22px; padding: 12px 14px; }
+.ov-zone .ov-label { font-size: 15px; font-weight: 600; }
 .ov-build > .ov-label { flex: none; }
 .ov-build .big { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .ov-build .big > * { padding: 6px 10px; gap: 0; }
@@ -2254,11 +2256,17 @@ function amtZone(a) {
     wohnungen: wo, hoehe, zusatz: [a.Gliederungsnummer && `Fläche ${a.Gliederungsnummer}`, a.textliche_Erlaeuterungen].filter(Boolean).join(", "),
     texte, jahr: parseInt(datum.slice(0, 4), 10) || null, datum: /^\d{8}$/.test(datum) ? `${datum.slice(6)}.${datum.slice(4, 6)}.${datum.slice(0, 4)}` : ""};
 }
+// Kurzfassungs-Lage um GRZ/GFZ aus den amtlichen Daten ergänzen, wenn es dasselbe Baufenster ist (gleiche Geschosszahl)
+function mitAmt(x) {
+  const a = cur.amt;
+  if (!x || !a || x.amtlich || x.vg !== a.vg || (x.grz != null && x.gfz != null)) return x;
+  return {...x, grz: x.grz ?? a.grz, gfz: x.gfz ?? a.gfz, amtErg: x.grz == null || x.gfz == null};
+}
 async function ladeAmtlich(main, valid, plot) {
   if (typeof Baufenster === "undefined") return;
   const mine = plot, namen = new Set([main, ...valid].map(p => normKey(planName(p.props))));
   const list = await Baufenster.load(ol.extent.buffer(plot.geometry.getExtent(), 5)).catch(() => []);
-  if (lastPlot !== mine || cur.sum) return;
+  if (lastPlot !== mine) return;
   const g = plot.geometry.getType() === "MultiPolygon" ? plot.geometry.getPolygons() : [plot.geometry];
   const inner = g.map(p => p.getInteriorPoint().getCoordinates());
   const treffer = [];
@@ -2274,8 +2282,21 @@ async function ladeAmtlich(main, valid, plot) {
   treffer.sort((a, b) => b.rang - a.rang);
   const sig = z => JSON.stringify([z.art, z.vg, z.vgArt, z.grz, z.gfz, z.bauweise, z.hoehe, z.wohnungen]);
   const zonen = [...new Map(treffer.map(t => [sig(t.z), t.z])).values()];
-  cur.zone = zonen[0];
-  const z = zonen[0], nz = NUTZUNG[z.art], komma = v => String(v).replace(".", ",");
+  const z = zonen[0];
+  if (cur.sum) { // Plan mit Kurzfassung: amtliche Werte des Baufensters auf dem Grundstück ergänzen bzw. ohne erkannte Lage gleich zeigen
+    cur.amt = z;
+    const passt = cur.sum.zones.filter(x => x.vg === z.vg && (!z.art || !x.art || x.art[0] === z.art[0]) && (z.grz == null || x.grz == null || x.grz === z.grz) && (z.gfz == null || x.gfz == null || x.gfz === z.gfz));
+    cur.zone = cur.zone ? mitAmt(cur.zone) : passt.length === 1 ? mitAmt(passt[0]) : z;
+    const sel = $("zoneSel");
+    if (sel) {
+      if (!sel.querySelector('option[value="amtlich"]')) sel.insertAdjacentHTML("beforeend", `<option value="amtlich">Baufenster laut amtlichen Plandaten der Stadt</option>`);
+      sel.value = cur.zone.amtlich ? "amtlich" : cur.zone.id;
+      const lb = qs('label[for="zoneSel"]'); if (lb && !cur.zone.flstErkannt) lb.textContent = "Erkannt über die amtlichen Plandaten der Stadt. Falls falsch, bitte auswählen:";
+    }
+    renderGlance(); updateCalc(); return;
+  }
+  cur.zone = z;
+  const nz = NUTZUNG[z.art], komma = v => String(v).replace(".", ",");
   const tiles = [[z.art, nz?.split(":")[0] || "Nutzung"], [z.vg != null ? vgText(z) : "", "Vollgeschosse"], [z.staffel ? "+ " + z.staffel : "", "Staffelgeschoss"],
     [z.grz != null ? komma(z.grz) : "", "GRZ (Anteil bebaubar)"], [z.gfz != null ? komma(z.gfz) : "", "GFZ (Geschossfläche)"], [z.bauweise, "Bauweise"],
     [z.hoehe, "Höhe laut Plan"], [z.wohnungen ? String(z.wohnungen) : "", "Wohnungen je Haus max."],
@@ -2327,6 +2348,7 @@ function renderResult(coord, placeName, plans, plot) {
   const found = findSummary(plans), valid = plans.filter(p => p.status === "festgestellt");
   const main = found?.plan || valid[0] || plans[0], sum = found?.sum || null, flst = plotNumber(plot);
   cur = {sum, zone: sum ? (sum.zones.find(z => flst && z.flst.includes(flst)) || null) : null};
+  if (cur.zone) cur.zone = {...cur.zone, flstErkannt: true};
   cur.bs = !!main && /^BS/i.test(planName(main.props));
   if (!main) {
     r.append(card("Kein Bebauungsplan gefunden", `<p class="hint">${esc(placeName)}</p>
@@ -2345,9 +2367,9 @@ function renderResult(coord, placeName, plans, plot) {
     if (warns.length) r.append(card("Bitte beachten", `<ul class="warn-list">${li(warns)}</ul>`, "warn"));
     if (sum) {
       const zc = card("Mein Grundstück", `<label class="hint" for="zoneSel">${cur.zone ? "Erkannt über die Flurstücksnummer. Falls falsch, bitte auswählen:" : "Bitte wählen Sie die Lage Ihres Grundstücks:"}</label>
-        <select id="zoneSel"><option value="">– Lage wählen –</option>${sum.zones.map(z => `<option value="${esc(z.id)}" ${cur.zone === z ? "selected" : ""}>${esc(z.lage)}</option>`).join("")}</select>
+        <select id="zoneSel"><option value="">– Lage wählen –</option>${sum.zones.map(z => `<option value="${esc(z.id)}" ${cur.zone?.id === z.id ? "selected" : ""}>${esc(z.lage)}</option>`).join("")}</select>
         <div id="glance"></div>`);
-      zc.querySelector("#zoneSel").addEventListener("change", e => { cur.zone = sum.zones.find(z => z.id === e.target.value) || null; renderGlance(); updateCalc(); });
+      zc.querySelector("#zoneSel").addEventListener("change", e => { const v = e.target.value; cur.zone = v === "amtlich" ? cur.amt : mitAmt(sum.zones.find(z => z.id === v) || null); renderGlance(); updateCalc(); });
       const rl = x => `<dt>${esc(x.t)}</dt><dd>${esc(x.d)}</dd>`, src = document.createElement("div");
       src.className = "srcline";
       src.innerHTML = `<p class="legal">Kurzfassung aus: ${esc(sum.sources)} ${esc(sum.zonesNote)} Verbindlich ist nur der Originalplan.</p>
@@ -2357,6 +2379,7 @@ function renderResult(coord, placeName, plans, plot) {
           ${sum.rules.length > 4 ? `<details class="more"><summary>Alle ${sum.rules.length} Regeln anzeigen</summary><dl class="rules">${sum.rules.slice(4).map(rl).join("")}</dl></details>` : ""}`),
         card("Nicht in diesem Plan geregelt", `<ul class="plain">${li(sum.notRegulated)}</ul>`), generalCard(), src);
       renderGlance();
+      if (plot?.geometry) ladeAmtlich(main, valid, plot);
     } else {
       r.append(Object.assign(card("Kurzfassung", `<p>Für diesen Plan gibt es noch keine Kurzfassung in der App.</p>
         ${Object.keys(lastMass).length ? `<div class="big">${Object.entries(lastMass).map(([k, v]) => `<div><b>${esc(v)}</b><span>${esc(MASS[k])}</span></div>`).join("")}</div>` : ""}${linkBtns(main)}`), {id: "kfCard"}), calcCard(), generalCard());
@@ -2391,13 +2414,31 @@ function renderOvBuild(tiles) {
   const z = cur.zone, n = z && NUTZUNG[z.art];
   const short = {"Grundfläche, die bebaut werden darf": "bebaubare Grundfläche", "Grundfläche für das Haus (fest im Plan)": "Grundfläche fürs Haus", "inklusive Garage, Zufahrt, Nebengebäude": "mit Garage und Zufahrt", "Wohn-/Geschossfläche insgesamt": "Geschossfläche gesamt"};
   const [t1, t2] = tiles.slice(0, 2).map(([b, l]) => [b, short[l] || l]); // auf dem Handy nur die ersten zwei: Fläche und Geschosse
-  const t = [t1, ...(z ? [[vgText(z), "Vollgeschosse"]] : []), t2, ...(z ? [[z.bauweise, "Bauweise"], [z.art, (n?.split(":")[0] || "Nutzung").replace(/ \(.*\)$/, "")]] : [])].filter(Boolean)
-    .concat(z ? [] : Object.entries(lastMass).map(([k, v]) => [v, MASS[k]])).filter(([b]) => b && b !== "–").slice(0, 4);
+  const m = zoneMass(cur.sum, z), k = v => v != null ? String(v).replace(".", ",") + (m.fromDefault ? "*" : "") : "";
+  const t = [t1, ...(z ? [[vgText(z), "Vollgeschosse"], [k(m.grz), "GRZ"], [k(m.gfz), "GFZ"]] : []), t2, ...(z ? [[z.bauweise, "Bauweise"], [z.art, (n?.split(":")[0] || "Nutzung").replace(/ \(.*\)$/, "")]] : [])].filter(Boolean)
+    .concat(z ? [] : Object.entries(lastMass).map(([k, v]) => [v, MASS[k]])).filter(([b]) => b && b !== "–").slice(0, 6);
   cur.peek = t.slice(0, 2); renderPeek();
   const msg = !cur.hasPlan ? "Hier gilt kein Bebauungsplan. Gebaut werden darf, was sich in die Umgebung einfügt: ähnliche Höhe, Größe und Bauweise wie die Nachbarhäuser."
-    : cur.sum && !z ? "Bitte die Lage Ihres Grundstücks wählen, dann zeigt die App die Werte." : !t.length ? "Für diesen Plan liegen noch keine Werte in der App vor. Der Originalplan ist in den Details verlinkt." : "";
-  const amt = z?.amtlich ? `<span class="ov-place">Werte aus den amtlichen Plandaten der Stadt. Verbindlich ist der Originalplan.</span>` : "";
-  el.innerHTML = `<span class="ov-label">Was darf ich bauen?</span>${t.length ? `<span class="big">${t.map(x => tile(x)).join("")}</span>` : ""}${msg ? `<span class="ov-place">${esc(msg)}</span>` : ""}${amt}${cur.sum && !z && cur.hasPlan ? `<span class="ov-more">Lage wählen ›</span>` : ""}`;
+    : cur.sum && !z ? "Bitte unten die Lage Ihres Grundstücks wählen, dann zeigt die App die Werte." : !t.length ? "Für diesen Plan liegen noch keine Werte in der App vor. Der Originalplan ist in den Details verlinkt." : "";
+  const amt = z?.amtlich ? `<span class="ov-place">Werte aus den amtlichen Plandaten der Stadt${m?.fromDefault ? `. * ${esc(cur.sum.grzDefaultsNote.replace(/\.$/, ""))}` : ""}. Verbindlich ist der Originalplan.</span>`
+    : z?.amtErg ? `<span class="ov-place">GRZ und GFZ aus den amtlichen Plandaten der Stadt. Verbindlich ist der Originalplan.</span>` : "";
+  el.innerHTML = `<span class="ov-label">Was darf ich bauen?</span>${t.length ? `<span class="big">${t.map(x => tile(x)).join("")}</span>` : ""}${msg ? `<span class="ov-place">${esc(msg)}</span>` : ""}${amt}`;
+  ovZone();
+}
+// Lage direkt in der Übersicht wählen (kostenlos); bleibt mit der Auswahl auf der Detailseite gleich
+function ovZone() {
+  const s = cur.sum, need = !!(s && cur.hasPlan && (s.zones.length > 1 || !cur.zone)), d = $("zoneSel");
+  let oz = $("ovZone");
+  if (!need) { oz?.remove(); return; }
+  if (!oz) {
+    oz = Object.assign(document.createElement("div"), {id: "ovZone", className: "ov-zone"});
+    oz.innerHTML = `<label class="ov-label" for="ovZoneSel">Lage meines Grundstücks</label><select id="ovZoneSel"></select>`;
+    $("ovBuild").after(oz);
+    oz.querySelector("select").addEventListener("change", e => { if (d) { d.value = e.target.value; d.dispatchEvent(new Event("change")); } });
+  }
+  const sel = oz.querySelector("select");
+  sel.innerHTML = d ? d.innerHTML : "";
+  sel.value = d ? d.value : "";
 }
 function ovSet(id, cls) {
   const b = qs(`#overview [data-go="${id}"]`); if (!b) return;
