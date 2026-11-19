@@ -1015,7 +1015,15 @@ const NUTZUNG = {
   WA: "Allgemeines Wohngebiet: Wohnen, dazu kleine Läden, Gaststätten, nicht störendes Handwerk",
   GE: "Gewerbegebiet: Betriebe, Büros, Werkstätten",
   SOL: "Sondergebiet Läden: Ladengeschäfte, oben auch Büros und Betriebswohnungen",
-  W: "Wohngebiet (Baustufenplan): vor allem Wohnhäuser, anderes nur ausnahmsweise"
+  W: "Wohngebiet (Baustufenplan): vor allem Wohnhäuser, anderes nur ausnahmsweise",
+  WS: "Kleinsiedlungsgebiet: Kleinsiedlungen und Wohnhäuser mit Nutzgärten",
+  WB: "Besonderes Wohngebiet: Wohnen, dazu Läden, Büros, Gaststätten",
+  MD: "Dorfgebiet: Höfe, Wohnhäuser, Handwerk",
+  MI: "Mischgebiet: Wohnen und nicht wesentlich störendes Gewerbe",
+  MU: "Urbanes Gebiet: Wohnen, Gewerbe, soziale und kulturelle Einrichtungen",
+  MK: "Kerngebiet: Handel, Büros, Verwaltung, Kultur",
+  GI: "Industriegebiet: Industrie- und Gewerbebetriebe",
+  SO: "Sondergebiet: Nutzung laut Plan"
 };
 
 // Allgemeine Hamburger Regeln, die unabhängig vom Bebauungsplan gelten (Stand 2026, ohne Gewähr)
@@ -2227,6 +2235,61 @@ const bfKeyUpdate = () => {
 };
 boundsSrc.on("featuresloadend", bfKeyUpdate);
 map.on("moveend", () => { bfKeyUpdate(); loadBaufenster(); });
+// ---------- Amtliche Werte der Stadt: aus den XPlanung-Daten der Baufenster auf dem Grundstück (kostenlos, sofort) ----------
+const AMT_ART = {ReinesWohngebiet: "WR", AllgWohngebiet: "WA", AllgemeinesWohngebiet: "WA", BesonderesWohngebiet: "WB", Kleinsiedlungsgebiet: "WS", Dorfgebiet: "MD",
+  Mischgebiet: "MI", UrbanesGebiet: "MU", Kerngebiet: "MK", Gewerbegebiet: "GE", Industriegebiet: "GI", SondergebietSonst: "SO", SondergebietErholung: "SO"};
+const AMT_HOEHE = {GBH: "Gebäudehöhe", TH: "Traufhöhe", FH: "Firsthöhe", OK: "Oberkante", LH: "lichte Höhe", HBA: "Höhe baulicher Anlagen", WH: "Wandhöhe"};
+function amtZone(a) {
+  const n = k => a[k] != null && a[k] !== "" && !isNaN(parseFloat(a[k])) ? parseFloat(String(a[k]).replace(",", ".")) : null;
+  const zw = n("Anzahl_Vollgeschosse_zwingend"), mx = n("Anzahl_Vollgeschosse") ?? n("maximal_zulaessige_Anzahl_Vollgeschossen");
+  const hoehe = [...String(a.Hoehenangabe || "").matchAll(/Höhenbezug: (\w+)\|Bezugspunkt: (\w+)\|Höhe: ([\d.]+)/g)]
+    .map(([, bez, pkt, h]) => `${AMT_HOEHE[pkt] || pkt} ${String(h).replace(".", ",")} m ${/NHN/.test(bez) ? "über NN" : /Gehweg/.test(bez) ? "über Gehweg" : "über Gelände"}`).join(", ");
+  const wo = n("maximale_Anzahl_von_Wohnungen") ?? (parseInt(String(a.textliche_Erlaeuterungen || "").match(/max\.\s*(\d+)\s*Wohnung/)?.[1], 10) || null);
+  const texte = [...String(a.textliche_Festsetzungen || "").matchAll(/\[([^|\]]*)\|([^\]]*)\]/g)].map(([, nr, t]) => ({nr: nr.trim().replace(/^§2/, "§ 2"), t: t.replace(/\s*\n\s*/g, " ").trim()}));
+  const datum = String(a.Datum_der_Rechtsverordnung || "");
+  return {id: "amtlich", amtlich: true, lage: "laut amtlichen Plandaten", art: AMT_ART[a.Besondere_Art_baulichen_Nutzung] || "",
+    vg: zw ?? mx, vgArt: zw != null ? "zwingend" : mx != null ? "höchstens" : undefined, grz: n("Grundflaechenzahl"), gfz: n("Geschossflaechenzahl"),
+    grBaufenster: n("Grundflaeche"), gfBaufenster: n("Geschossflaeche"), staffel: n("Anzahl_Staffelgeschosse"),
+    bauweise: {GeschlosseneBauweise: "geschlossen", OffeneBauweise: "offen", AbweichendeBauweise: "abweichend"}[a.Bauweise] || "",
+    wohnungen: wo, hoehe, zusatz: [a.Gliederungsnummer && `Fläche ${a.Gliederungsnummer}`, a.textliche_Erlaeuterungen].filter(Boolean).join(", "),
+    texte, jahr: parseInt(datum.slice(0, 4), 10) || null, datum: /^\d{8}$/.test(datum) ? `${datum.slice(6)}.${datum.slice(4, 6)}.${datum.slice(0, 4)}` : ""};
+}
+async function ladeAmtlich(main, valid, plot) {
+  if (typeof Baufenster === "undefined") return;
+  const mine = plot, namen = new Set([main, ...valid].map(p => normKey(planName(p.props))));
+  const list = await Baufenster.load(ol.extent.buffer(plot.geometry.getExtent(), 5)).catch(() => []);
+  if (lastPlot !== mine || cur.sum) return;
+  const g = plot.geometry.getType() === "MultiPolygon" ? plot.geometry.getPolygons() : [plot.geometry];
+  const inner = g.map(p => p.getInteriorPoint().getCoordinates());
+  const treffer = [];
+  for (const b of list) {
+    if (!namen.has(normKey(b.attrs.Name_des_Bebauungsplanes))) continue;
+    const mp = new ol.geom.MultiPolygon(b.polys), polys = mp.getPolygons();
+    const drin = inner.some(c => mp.intersectsCoordinate(c));
+    const ecken = polys.reduce((s, p) => s + p.getCoordinates()[0].filter(c => g.some(q => q.intersectsCoordinate(c))).length, 0)
+      + g.reduce((s, q) => s + q.getCoordinates()[0].filter(c => mp.intersectsCoordinate(c)).length, 0);
+    if (drin || ecken) treffer.push({z: amtZone(b.attrs), rang: (drin ? 1000 : 0) + ecken, plan: b.attrs.Name_des_Bebauungsplanes});
+  }
+  if (!treffer.length) return;
+  treffer.sort((a, b) => b.rang - a.rang);
+  const sig = z => JSON.stringify([z.art, z.vg, z.vgArt, z.grz, z.gfz, z.bauweise, z.hoehe, z.wohnungen]);
+  const zonen = [...new Map(treffer.map(t => [sig(t.z), t.z])).values()];
+  cur.zone = zonen[0];
+  const z = zonen[0], nz = NUTZUNG[z.art], komma = v => String(v).replace(".", ",");
+  const tiles = [[z.art, nz?.split(":")[0] || "Nutzung"], [z.vg != null ? vgText(z) : "", "Vollgeschosse"], [z.staffel ? "+ " + z.staffel : "", "Staffelgeschoss"],
+    [z.grz != null ? komma(z.grz) : "", "GRZ (Anteil bebaubar)"], [z.gfz != null ? komma(z.gfz) : "", "GFZ (Geschossfläche)"], [z.bauweise, "Bauweise"],
+    [z.hoehe, "Höhe laut Plan"], [z.wohnungen ? String(z.wohnungen) : "", "Wohnungen je Haus max."],
+    [z.grBaufenster ? fmt(z.grBaufenster) + " m²" : "", "Grundfläche max. (ganzes Baufenster)"]].filter(([b]) => b);
+  const kf = $("kfCard");
+  if (kf) {
+    kf.innerHTML = `<h2>${icon(TITLE_ICO["Amtliche Werte der Stadt"])}Amtliche Werte der Stadt</h2>` + `<div class="big">${tiles.map(t => tile(t)).join("")}</div>
+      ${z.zusatz ? `<p class="hint">${esc(z.zusatz)}</p>` : ""}
+      ${zonen.length > 1 ? `<p class="hint">Auf Ihrem Grundstück liegen ${zonen.length} Baufenster mit unterschiedlichen Werten. Gezeigt sind die Werte des Baufensters, das am meisten Fläche auf dem Grundstück hat.</p>` : ""}
+      ${z.texte.length ? `<dl class="rules">${z.texte.map(x => `<dt>${esc(x.nr)}</dt><dd>${esc(x.t)}</dd>`).join("")}</dl>` : ""}
+      <p class="legal">Quelle: amtliche Plandaten (XPlanung) der Freien und Hansestadt Hamburg für das Baufenster auf Ihrem Grundstück${z.datum ? `, Plan vom ${esc(z.datum)}` : ""}. Eine Kurzfassung des ganzen Plans gibt es noch nicht. Verbindlich ist nur der Originalplan.</p>${linkBtns(main)}`;
+  }
+  updateCalc();
+}
 async function queryAt(coord, placeName) {
   const id = ++queryId, was3d = View3D.isOpen();
   close3d(); clearMap(); plotArea = null; // Fläche des vorigen Grundstücks nicht übernehmen
@@ -2295,8 +2358,9 @@ function renderResult(coord, placeName, plans, plot) {
         card("Nicht in diesem Plan geregelt", `<ul class="plain">${li(sum.notRegulated)}</ul>`), generalCard(), src);
       renderGlance();
     } else {
-      r.append(card("Kurzfassung", `<p>Für diesen Plan gibt es noch keine Kurzfassung in der App.</p>
-        ${Object.keys(lastMass).length ? `<div class="big">${Object.entries(lastMass).map(([k, v]) => `<div><b>${esc(v)}</b><span>${esc(MASS[k])}</span></div>`).join("")}</div>` : ""}${linkBtns(main)}`), calcCard(), generalCard());
+      r.append(Object.assign(card("Kurzfassung", `<p>Für diesen Plan gibt es noch keine Kurzfassung in der App.</p>
+        ${Object.keys(lastMass).length ? `<div class="big">${Object.entries(lastMass).map(([k, v]) => `<div><b>${esc(v)}</b><span>${esc(MASS[k])}</span></div>`).join("")}</div>` : ""}${linkBtns(main)}`), {id: "kfCard"}), calcCard(), generalCard());
+      if (plot?.geometry) ladeAmtlich(main, valid, plot);
     }
   }
   renderOverview(main, sum, placeName);
@@ -2332,7 +2396,8 @@ function renderOvBuild(tiles) {
   cur.peek = t.slice(0, 2); renderPeek();
   const msg = !cur.hasPlan ? "Hier gilt kein Bebauungsplan. Gebaut werden darf, was sich in die Umgebung einfügt: ähnliche Höhe, Größe und Bauweise wie die Nachbarhäuser."
     : cur.sum && !z ? "Bitte die Lage Ihres Grundstücks wählen, dann zeigt die App die Werte." : !t.length ? "Für diesen Plan liegen noch keine Werte in der App vor. Der Originalplan ist in den Details verlinkt." : "";
-  el.innerHTML = `<span class="ov-label">Was darf ich bauen?</span>${t.length ? `<span class="big">${t.map(x => tile(x)).join("")}</span>` : ""}${msg ? `<span class="ov-place">${esc(msg)}</span>` : ""}${cur.sum && !z && cur.hasPlan ? `<span class="ov-more">Lage wählen ›</span>` : ""}`;
+  const amt = z?.amtlich ? `<span class="ov-place">Werte aus den amtlichen Plandaten der Stadt. Verbindlich ist der Originalplan.</span>` : "";
+  el.innerHTML = `<span class="ov-label">Was darf ich bauen?</span>${t.length ? `<span class="big">${t.map(x => tile(x)).join("")}</span>` : ""}${msg ? `<span class="ov-place">${esc(msg)}</span>` : ""}${amt}${cur.sum && !z && cur.hasPlan ? `<span class="ov-more">Lage wählen ›</span>` : ""}`;
 }
 function ovSet(id, cls) {
   const b = qs(`#overview [data-go="${id}"]`); if (!b) return;
@@ -2423,7 +2488,8 @@ function pdfLinks(p) {
 }
 const vgText = z => z.vg == null ? "–" : {"höchstens": `höchstens ${z.vg}`, "mindestens": `mindestens ${z.vg}`, "unbekannt": String(z.vg)}[z.vgArt] || `genau ${z.vg}`;
 function zoneMass(sum, z) { // Plan-Wert oder Standardwert nach BauNVO
-  if (!sum || !z) return null;
+  if (!z) return null;
+  if (!sum) return {grz: z.grz ?? null, gfz: z.gfz ?? null, fromDefault: false, vg: z.vg, vgArt: z.vgArt};
   const d = (z.art === "WR" || z.art === "WA") ? sum.grzDefaults?.[z.vg] : null;
   return {grz: z.grz ?? d?.grz ?? null, gfz: z.gfz ?? d?.gfz ?? null, fromDefault: z.grz == null && !!d, vg: z.vg, vgArt: z.vgArt};
 }
@@ -2618,7 +2684,7 @@ function updateCalc() {
   const grz = zm ? zm.grz : num(lastMass.grz ?? lastMass.grzmax), gfz = zm ? zm.gfz : num(lastMass.gfz ?? lastMass.gfzmax);
   const tiles = [];
   // Überschreitung für Garagen, Zufahrten, Nebenanlagen (§ 19 Abs. 4 BauNVO ab 1990: 50 %, höchstens GRZ 0,8)
-  const ueber = z?.grUeber ?? (/(19[9]\d|20\d\d)/.test(cur.sum?.recht || "") ? 0.5 : null), gr = z?.gr || (a && grz ? a * grz : null);
+  const ueber = z?.grUeber ?? (/(19[9]\d|20\d\d)/.test(cur.sum?.recht || "") || z?.jahr >= 1990 ? 0.5 : null), gr = z?.gr || (a && grz ? a * grz : null);
   if (gr) {
     tiles.push([fmt(gr) + " m²", z?.gr ? "Grundfläche für das Haus (fest im Plan)" : "Grundfläche, die bebaut werden darf"]);
     if (ueber) tiles.push([fmt(a && !z?.grUeber ? Math.min(gr * (1 + ueber), Math.max(gr, a * 0.8)) : gr * (1 + ueber)) + " m²", "inklusive Garage, Zufahrt, Nebengebäude"]);
@@ -2756,7 +2822,7 @@ const ICO = {
   info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>'
 };
 const TITLE_ICO = {"Bitte beachten": "alert", "Mein Grundstück": "home", "Was darf ich bauen?": "ruler", "Weitere Prüfungen am Grundstück": "shield",
-  "Originalplan": "file", "Kurzfassung": "file", "Das sollten Sie wissen": "book", "Nicht in diesem Plan geregelt": "minus",
+  "Originalplan": "file", "Kurzfassung": "file", "Amtliche Werte der Stadt": "file", "Das sollten Sie wissen": "book", "Nicht in diesem Plan geregelt": "minus",
   "Gilt außerdem in ganz Hamburg": "city", "Vollständigen Bericht anfordern?": "file", "Bebaut und noch frei": "ruler", "Grundstück mit Maßen": "ruler", "3D-Ansicht mit Baufenster": "home", "Nachbarhäuser": "city", "Ausschnitt aus dem Originalplan": "file", "Nächste Schritte": "book", "Ihr Ansprechpartner": "phone", "Kein Bebauungsplan gefunden": "search"};
 const icon = n => `<span class="ico ico-${n || "info"}" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICO[n] || ICO.info}</svg></span>`;
 function card(title, html, cls = "") { const s = document.createElement("section"); s.className = "card " + cls; s.innerHTML = (title ? `<h2>${icon(TITLE_ICO[title])}${esc(title)}</h2>` : "") + html; return s; }
@@ -2861,8 +2927,8 @@ function unlock(quiet) {
   document.querySelectorAll('[data-pro="pdf"]').forEach(b => { b.disabled = !rep.ready; if (!rep.ready) b.textContent = "Bericht wird fertiggestellt …"; });
 }
 // Kauf 30 Tage auf diesem Gerät merken (Vorschau: ohne Konto und ohne Zahlung)
-try { localStorage.removeItem("moinplan-berichte"); } catch { /* egal */ } // alte Vorschau-Käufe vom 10.11. zurückgesetzt
-const KEEP = "moinplan-berichte-2", keyOf = () => { const g = lastPlot?.geometry; return g ? ol.extent.getCenter(g.getExtent()).map(Math.round).join(",") : ""; };
+try { localStorage.removeItem("moinplan-berichte"); localStorage.removeItem("moinplan-berichte-2"); } catch { /* egal */ } // alte Vorschau-Käufe zurückgesetzt (10.11., 19.11.)
+const KEEP = "moinplan-berichte-3", keyOf = () => { const g = lastPlot?.geometry; return g ? ol.extent.getCenter(g.getExtent()).map(Math.round).join(",") : ""; };
 const kept = () => { try { const o = JSON.parse(localStorage.getItem(KEEP) || "{}"), now = Date.now(); for (const k in o) if (o[k] < now) delete o[k]; return o; } catch { return {}; } };
 function remember() { const k = keyOf(); if (!k) return; try { const o = kept(); o[k] ||= Date.now() + 30 * 864e5; localStorage.setItem(KEEP, JSON.stringify(o)); rep.bis = o[k]; } catch { /* privates Fenster: dann eben nicht */ } }
 // Deckblatt füllen; läuft vor jedem Druck des bezahlten Berichts (auch über das Browser-Menü)
