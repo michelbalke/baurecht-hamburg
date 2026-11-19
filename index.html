@@ -2267,6 +2267,24 @@ function mitAmt(x) {
   if (!x || !a || x.amtlich || x.vg !== a.vg || (x.grz != null && x.gfz != null)) return x;
   return {...x, grz: x.grz ?? a.grz, gfz: x.gfz ?? a.gfz, amtErg: x.grz == null || x.gfz == null};
 }
+// Fläche der Baufenster auf dem Grundstück, über ein Punktraster wie im Bericht (gleiche Zahl an beiden Stellen)
+async function ladeBfFlaeche(plot) {
+  if (typeof Baufenster === "undefined" || !plot?.geometry) return;
+  const list = await Baufenster.load(ol.extent.buffer(plot.geometry.getExtent(), 5)).catch(() => []);
+  if (lastPlot !== plot || !list.length) return;
+  const ext = plot.geometry.getExtent(), g = plot.geometry.getType() === "MultiPolygon" ? plot.geometry.getPolygons() : [plot.geometry];
+  const bf = list.flatMap(b => b.polys.map(p => new ol.geom.Polygon(p))).filter(p => ol.extent.intersects(p.getExtent(), ext));
+  if (!bf.length) return;
+  const A = g.reduce((s, p) => s + p.getArea(), 0), step = Math.max(0.25, Math.sqrt(A / 60000));
+  let n = 0, nBf = 0;
+  for (let x = ext[0] + step / 2; x < ext[2]; x += step) for (let y = ext[1] + step / 2; y < ext[3]; y += step) {
+    const c = [x, y]; if (!g.some(p => p.intersectsCoordinate(c))) continue;
+    n++; if (bf.some(p => p.intersectsCoordinate(c))) nBf++;
+  }
+  if (!n) return;
+  cur.bf = {flaeche: Math.round(nBf * A / n), fuer: Math.round(plot.area || A)};
+  updateCalc();
+}
 async function ladeAmtlich(main, valid, plot) {
   if (typeof Baufenster === "undefined") return;
   const mine = plot, namen = new Set([main, ...valid].map(p => normKey(planName(p.props))));
@@ -2394,6 +2412,7 @@ function renderResult(coord, placeName, plans, plot) {
   renderOverview(main, sum, placeName);
   appendExtras(r, coord, plot, sum, placeName);
   updateCalc();
+  if (main && plot?.geometry) ladeBfFlaeche(plot);
   if (kept()[keyOf()]) unlock(true); // in den letzten 30 Tagen auf diesem Gerät gekauft
   const offen = blattOffen; side.scrollTop = 0; setBlatt(false); // Handy: neues Ergebnis erst nur mit Planname und Eckdaten, Karte groß
   if (first || offen) requestAnimationFrame(() => { map.updateSize(); fitPlot(); }); // Kopf wird kleiner, Karte größer; weich weiterzoomen statt springen
@@ -2417,7 +2436,7 @@ function renderOverview(main, sum, placeName) {
 function renderOvBuild(tiles) {
   const el = $("ovBuild"); if (!el) return;
   const z = cur.zone, n = z && NUTZUNG[z.art];
-  const short = {"Grundfläche, die bebaut werden darf": "bebaubare Grundfläche", "Grundfläche für das Haus (fest im Plan)": "Grundfläche fürs Haus", "inklusive Garage, Zufahrt, Nebengebäude": "mit Garage und Zufahrt", "Wohn-/Geschossfläche insgesamt": "Geschossfläche gesamt"};
+  const short = {"Grundfläche, die bebaut werden darf": "bebaubare Grundfläche", "Grundfläche, die bebaut werden darf (Baufenster)": "bebaubare Grundfläche (Baufenster)", "Wohn-/Geschossfläche insgesamt (Baufenster)": "Geschossfläche gesamt (Baufenster)", "Grundfläche für das Haus (fest im Plan)": "Grundfläche fürs Haus", "inklusive Garage, Zufahrt, Nebengebäude": "mit Garage und Zufahrt", "Wohn-/Geschossfläche insgesamt": "Geschossfläche gesamt"};
   const [t1, t2] = tiles.slice(0, 2).map(([b, l]) => [b, short[l] || l]); // auf dem Handy nur die ersten zwei: Fläche und Geschosse
   const m = zoneMass(cur.sum, z), k = v => v != null ? String(v).replace(".", ",") + (m.fromDefault ? "*" : "") : "";
   const t = [t1, ...(z ? [[vgText(z), "Vollgeschosse"], [k(m.grz), "GRZ"], [k(m.gfz), "GFZ"]] : []), t2, ...(z ? [[z.bauweise, "Bauweise"], [z.art, (n?.split(":")[0] || "Nutzung").replace(/ \(.*\)$/, "")]] : [])].filter(Boolean)
@@ -2730,16 +2749,22 @@ function updateCalc() {
   const grz = zm ? zm.grz : num(lastMass.grz ?? lastMass.grzmax), gfz = zm ? zm.gfz : num(lastMass.gfz ?? lastMass.gfzmax);
   const tiles = [];
   // Überschreitung für Garagen, Zufahrten, Nebenanlagen (§ 19 Abs. 4 BauNVO ab 1990: 50 %, höchstens GRZ 0,8)
-  const ueber = z?.grUeber ?? (/(19[9]\d|20\d\d)/.test(cur.sum?.recht || "") || z?.jahr >= 1990 ? 0.5 : null), gr = z?.gr || (a && grz ? a * grz : null);
+  const ueber = z?.grUeber ?? (/(19[9]\d|20\d\d)/.test(cur.sum?.recht || "") || z?.jahr >= 1990 ? 0.5 : null);
+  // Baufenster auf dem Grundstück (aus den Daten der Stadt): das Haus muss darin stehen, also höchstens so groß wie das Baufenster.
+  // Nur, wenn die eingegebene Fläche zum Grundstück gehört (nicht bei selbst gemessener anderer Fläche).
+  const bfA = cur.bf && a && Math.abs(a - cur.bf.fuer) <= 1 && cur.bf.flaeche >= 1 ? cur.bf.flaeche : null, vgZ = zm?.vg ?? null;
+  const grGrz = z?.gr || (a && grz ? a * grz : null), grBf = !z?.gr && bfA && (!grGrz || grGrz > bfA), gr = grBf ? bfA : grGrz; // ohne GRZ: das Baufenster ist die Obergrenze
   if (gr) {
-    tiles.push([fmt(gr) + " m²", z?.gr ? "Grundfläche für das Haus (fest im Plan)" : "Grundfläche, die bebaut werden darf"]);
-    if (ueber) tiles.push([fmt(a && !z?.grUeber ? Math.min(gr * (1 + ueber), Math.max(gr, a * 0.8)) : gr * (1 + ueber)) + " m²", "inklusive Garage, Zufahrt, Nebengebäude"]);
+    tiles.push([fmt(gr) + " m²", z?.gr ? "Grundfläche für das Haus (fest im Plan)" : grBf ? "Grundfläche, die bebaut werden darf (Baufenster)" : "Grundfläche, die bebaut werden darf"]);
+    if (ueber && grGrz) tiles.push([fmt(a && !z?.grUeber ? Math.min(grGrz * (1 + ueber), Math.max(grGrz, a * 0.8)) : grGrz * (1 + ueber)) + " m²", "inklusive Garage, Zufahrt, Nebengebäude"]); // Garagen dürfen auch außerhalb des Baufensters stehen: Rechnung mit der GRZ-Fläche
   }
-  if (a && gfz) tiles.push([fmt(a * gfz) + " m²", "Wohn-/Geschossfläche insgesamt"]);
+  const gfGfz = a && gfz ? a * gfz : null, gfBf = bfA && vgZ && (!gfGfz || bfA * vgZ < gfGfz);
+  if (gfGfz || gfBf) tiles.push([fmt(gfBf ? bfA * vgZ : gfGfz) + " m²", gfBf ? "Wohn-/Geschossfläche insgesamt (Baufenster)" : "Wohn-/Geschossfläche insgesamt"]);
   if (z?.hoehe) tiles.push([z.hoehe, "Höhe laut Plan"]);
   out.innerHTML = tiles.map(t => tile(t)).join("");
   renderOvBuild(tiles);
   $("calcNote").textContent = !a && !z?.gr ? "Geben Sie die Grundstücksfläche ein oder umfahren Sie das Grundstück in der Karte."
+    : grBf || gfBf ? `Überschlag. Das Baufenster auf dem Grundstück ist ${grz || gfz ? "nur " : ""}${fmt(bfA)} m² groß. Das Haus muss darin stehen. ${grz || gfz ? `Deshalb ist ${grBf && gfBf ? "die Fläche" : grBf ? "die Grundfläche" : "die Geschossfläche"} kleiner als nach ${grBf && gfBf ? "GRZ und GFZ" : grBf ? "GRZ" : "GFZ"}.` : "GRZ und GFZ liegen nicht vor, deshalb rechnet die App mit dem Baufenster."} Abstände zum Nachbarn müssen eingehalten werden.`
     : grz || gfz || z?.gr ? "Überschlag. Das Haus muss außerdem im Baufenster liegen, und Abstände zum Nachbarn müssen eingehalten werden."
     : cur.sum && !z ? "Wählen Sie oben die Lage Ihres Grundstücks, dann rechnet die App." : "Für diesen Ort liegen GRZ und GFZ noch nicht vor.";
 }
