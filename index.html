@@ -1837,10 +1837,11 @@ const Bericht = (() => {
       for (let x = ext[0] + step / 2; x < ext[2]; x += step) for (let y = ext[1] + step / 2; y < ext[3]; y += step) {
         const c = [x, y]; if (!inAny(plotPs, c)) continue;
         n++; const inBf = inAny(bfPs, c); if (inBf) nBf++;
-        const b = cand.find(a => inAny(a.polys, c)); if (b) { b.on++; if (inBf) nBfBuilt++; }
+        const b = cand.find(a => inAny(a.polys, c)); if (b) { b.on++; if (inBf) b.onBf = (b.onBf || 0) + 1; }
       }
-      const k = n ? A / n : 0; alk.forEach(a => { a.onArea = a.on * k; a.own = a.onArea > Math.max(2, a.area * 0.5); });
-      return {alk, bfPs, A, bf: nBf * k, bfBuilt: nBfBuilt * k, own: alk.filter(a => a.own), rest: alk.filter(a => !a.own)};
+      const k = n ? A / n : 0; alk.forEach(a => { a.onArea = a.on * k; a.own = a.onArea >= 5 || a.onArea > Math.max(2, a.area * 0.5); }); // ab 5 m² auf dem Grundstück: eigenes Gebäude (auch Reihenhaus-Teil); kleine Überlappungen sind Messungenauigkeit
+      const own = alk.filter(a => a.own);
+      return {alk, bfPs, A, bf: nBf * k, bfBuilt: own.reduce((s, a) => s + (a.onBf || 0), 0) * k, own, rest: alk.filter(a => !a.own)};
     })().catch(() => null);
   // Ausschnitt aus der Planzeichnung, Grundstück gelb umrandet
   async function planUrl(plotPs, ext, center) {
@@ -1909,13 +1910,17 @@ const Bericht = (() => {
       const gr = tiles.find(([v, l]) => v && /^Grundfläche/.test(l))?.[0], gr2 = tiles.find(([v, l]) => v && /Garage/.test(l))?.[0];
       const frei = (soll, ist) => soll - ist >= 0 ? `<b class="ok">${m0(soll - ist)} m²</b> noch frei` : `<b class="warn">${m0(ist - soll)} m²</b> mehr als heute erlaubt`;
       const rows = [["Grundstück", `<b>${m0(amt)} m²</b>`], ["Heute bebaut", `<b>${m0(all)} m²</b> (${m0(all / amt * 100)} %)${d.own.length ? `<br><span class="hint">${d.own.map(a => `${esc(a.fn)} ${m0(a.onArea)} m²`).join(", ")}</span>` : ""}`]];
-      if (gr) rows.push(["Haus: erlaubt " + m0(gr) + " m²", `bebaut ${m0(haus)} m², ${frei(gr, haus)}`]);
+      const neben = all - haus, bfKlein = gr && d.bf >= 1 && d.bf < gr, grH = bfKlein ? d.bf : gr; // Baufenster kleiner als GRZ-Fläche: dann begrenzt das Baufenster
+      if (gr) rows.push(["Haus: erlaubt " + m0(grH) + " m²", `bebaut ${m0(haus)} m², ${frei(grH, haus)}`]);
       if (gr2) rows.push(["Mit Garage und Nebengebäuden: erlaubt " + m0(gr2) + " m²", `bebaut ${m0(all)} m², ${frei(gr2, all)}`]);
-      if (d.bfPs.length) rows.push(["Baufenster auf dem Grundstück", `<b>${m0(d.bf)} m²</b>, davon bebaut ${m0(d.bfBuilt)} m², <b class="ok">${m0(d.bf - d.bfBuilt)} m²</b> frei`]);
+      else if (gr && neben >= 1) rows.push(["Garage und Nebengebäude", `${m0(neben)} m²<br><span class="hint">Für ältere Pläne (vor 1990) zählen sie meist nicht zur erlaubten Grundfläche des Hauses. Im Zweifel beim Bauamt fragen.</span>`]);
+      if (d.bfPs.length && d.bf < 1) rows.push(["Baufenster", `<span class="hint">In den Daten der Stadt liegt kein Baufenster auf diesem Grundstück. Bitte im Originalplan prüfen.</span>`]);
+      else if (d.bfPs.length) rows.push(["Baufenster auf dem Grundstück", `<b>${m0(d.bf)} m²</b>, davon bebaut ${m0(d.bfBuilt)} m², <b class="ok">${m0(Math.max(0, d.bf - d.bfBuilt))} m²</b> frei${bfKlein ? `<br><span class="hint">Das Baufenster ist kleiner als die Fläche nach GRZ. Das Haus darf deshalb höchstens ${m0(d.bf)} m² Grundfläche haben, nicht ${m0(gr)} m².</span>` : ""}`]);
       else rows.push(["Baufenster", `<span class="hint">Für diesen Plan liegen keine Baufenster als Daten vor.</span>`]);
-      const pct = Math.min(100, all / amt * 100), soll = gr2 || gr;
+      // Balken: verglichen wird immer Gleiches mit Gleichem (Haus mit Haus-Grenze, alles mit Grenze inkl. Garage)
+      const ist = gr2 ? all : gr ? haus : all, soll = gr2 || grH, pct = Math.min(100, ist / amt * 100);
       done(cRech, `<div><div class="rbar"><i style="width:${pct.toFixed(1)}%"></i>${soll ? `<u style="left:${Math.min(100, soll / amt * 100).toFixed(1)}%"></u>` : ""}</div>
-        <p class="hint rbar-key"><span><i></i>heute bebaut</span>${soll ? `<span><u></u>erlaubt</span>` : ""}</p>${rowsHtml(rows)}
+        <p class="hint rbar-key"><span><i></i>${gr2 ? "heute bebaut (mit Garage und Nebengebäuden)" : gr ? "heute bebaut (Haus)" : "heute bebaut"}</span>${soll ? `<span><u></u>erlaubt</span>` : ""}</p>${rowsHtml(rows)}
         <p class="hint">Überschlag aus den Gebäuden im Liegenschaftskataster. Zufahrten, Terrassen und Stellplätze sind dort nicht erfasst, zählen aber oft mit. Was schon steht, hat meist Bestandsschutz.</p></div>`);
     });
 
