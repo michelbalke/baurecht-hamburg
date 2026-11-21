@@ -794,9 +794,13 @@ dialog.pro[open] { animation: rise .28s var(--ease) both; }
 .pro-top button.ghost { flex: none; }
 .pro-for { margin: -4px 0 0; font-size: 13.5px; color: var(--muted); }
 .pro-d { font-size: 13.5px; line-height: 1.4; color: var(--muted); }
-.pro ul.pro-list { margin: 0; padding-left: 20px; font-size: 14px; line-height: 1.5; }
+.pro ul.pro-list { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 10px; font-size: 13.5px; line-height: 1.4; color: var(--muted); }
+.pro-list li { position: relative; padding-left: 28px; }
+.pro-list li::before { content: ""; position: absolute; left: 0; top: 1px; width: 18px; height: 18px; border-radius: 50%; background: var(--accent) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 12.5 4 4 8-9'/%3E%3C/svg%3E") center/12px no-repeat; }
+.pro-list li b { display: block; font-size: 15px; font-weight: 600; color: var(--fg); }
+.pro-price small { display: block; margin-top: 3px; font-size: 12.5px; font-weight: 400; color: var(--muted); }
 .pro-price { display: flex; align-items: baseline; justify-content: space-between; padding: 12px 14px; border-radius: 14px; background: var(--fill); font-weight: 600; }
-.pro-price b { font: 700 22px/1 var(--display); }
+.pro-price { gap: 12px; } .pro-price b { font: 700 22px/1 var(--display); white-space: nowrap; }
 .pro-note { margin: 0; padding: 10px 12px; border-radius: 12px; background: var(--warn-soft); color: var(--warn); font-size: 13px; line-height: 1.4; }
 .pro .pro-d { margin: 0; }
 .pro button.wide { justify-content: center; width: 100%; box-sizing: border-box; padding: 12px 16px; font-size: 16px; }
@@ -2907,13 +2911,20 @@ const proDlg = $("pro"), proIn = $("proIn");
 const proHead = t => `<div class="pro-top"><h3 id="proH">${esc(t)}</h3><button type="button" class="ghost" data-pro="close">Schließen</button></div>${rep.place ? `<p class="pro-for">Für ${esc(rep.place)}${rep.flst ? " · Flurstück " + esc(rep.flst) : ""}</p>` : ""}`;
 const PRO_VIEWS = {
   report: (t = "Vollständiger Bericht") => `${proHead(t)}
-    <p class="pro-d">Der Bericht gilt für dieses Grundstück. Sie können ihn sofort lesen und als PDF speichern. Enthalten sind:</p>
-    <ul class="pro-list"><li>Was darf ich bauen: Fläche, Geschosse, Bauweise, Nutzung</li><li>Alle Regeln aus dem Plan in einfachen Worten</li><li>Prüfungen am Grundstück, zum Beispiel Denkmalschutz</li><li>Regeln, die in ganz Hamburg gelten</li><li>Rechnung: wie viel ist bebaut, wie viel noch frei</li><li>Skizze mit Maßen, 3D-Bild mit Baufenster, Ausschnitt aus dem Originalplan</li><li>Nachbarhäuser: Höhe, Geschosse, Grundfläche</li><li>Nächste Schritte, Links zu den Originalplänen, Ansprechpartner im Bezirksamt</li></ul>
-    <div class="pro-price"><span>Preis einmalig</span><b>${PRO.preis}</b></div>
+    <p class="pro-d">Statt Stunden im Planportal und Rückfragen beim Amt: alles zu Ihrem Grundstück in einem Bericht. Sofort lesen, als PDF speichern und weitergeben.</p>
+    <ul class="pro-list">
+      <li><b>Gezielt planen statt raten</b>Wie groß, wie hoch, wie viele Geschosse: die Werte aus dem Bebauungsplan, auf Ihr Grundstück umgerechnet.</li>
+      <li><b>Sehen, wie viel noch geht</b>Was schon bebaut ist und was noch frei ist, mit Skizze, Maßen und 3D-Bild vom Baufenster.</li>
+      <li><b>Stolpersteine früh erkennen</b>Denkmalschutz, Erhaltungsverordnungen und Regeln für ganz Hamburg, bevor Sie Geld in eine Planung stecken.</li>
+      <li><b>Den Plan verstehen, ohne Fachwissen</b>Alle Regeln aus dem Bebauungsplan in einfachen Worten, dazu der Ausschnitt aus dem Originalplan.</li>
+      <li><b>Vergleich mit den Nachbarn</b>Höhe, Geschosse und Grundfläche der Häuser nebenan.</li>
+      <li><b>Gut vorbereitet ins Gespräch</b>Für Architekt, Bezirksamt, Bank oder Käufer: mit nächsten Schritten, Links zu den Originalplänen und Ihrem Ansprechpartner.</li>
+    </ul>
+    <div class="pro-price"><span>Einmalig für dieses Grundstück<small>Kein Abo. 30 Tage auf diesem Gerät abrufbar.</small></span><b>${PRO.preis}</b></div>
     <p class="pro-note">Vorschau: Die Bezahlung ist noch nicht eingebaut. Hier wird der Bericht kostenlos freigeschaltet.</p>
-    <button type="button" class="wide" data-pro="kaufen">Für ${PRO.preis} kaufen</button>
+    <button type="button" class="wide" data-pro="kaufen">Bericht für ${PRO.preis} freischalten</button>
     <p class="legal">Ob gebaut werden darf, entscheidet allein das Bauamt. Verbindliche Sicherheit gibt ein Bauvorbescheid beim Bezirksamt.</p>`,
-  start: () => PRO_VIEWS.report("Vollständigen Bericht anfordern?"),
+  start: () => PRO_VIEWS.report("Wissen, was auf Ihrem Grundstück geht"),
   frei: () => `${proHead("Bericht freigeschaltet")}
     <p class="pro-d">Der vollständige Bericht ist jetzt geöffnet. Sie können ihn hier lesen oder als PDF speichern. Auf diesem Gerät bleibt er 30 Tage freigeschaltet.</p>
     <button type="button" class="wide" data-pro="pdf">Als PDF speichern</button>
