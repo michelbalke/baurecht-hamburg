@@ -1,0 +1,40 @@
+/* Rechtstexte von MoinPlan: gleiche Farben und Schrift wie die Website (dunkel, Apple-Systemschrift) */
+:root { color-scheme: dark;
+  --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --bg: #000; --panel: #1c1c1e; --fg: #fff; --muted: rgba(235,235,245,.6); --line: rgba(255,255,255,.12); --fill: #2c2c2e;
+  --accent: #8ea2ff; --navy: #4766f0; --warn: #ff9f0a; --warn-soft: rgba(255,159,10,.16); }
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.55 var(--sans); letter-spacing: -.01em; -webkit-font-smoothing: antialiased; }
+a { color: var(--accent); overflow-wrap: anywhere; }
+.top { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; gap: 12px; padding: calc(12px + env(safe-area-inset-top, 0px)) 16px 12px; background: rgba(0,0,0,.82); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); border-bottom: 1px solid var(--line); }
+.top a.home { display: flex; align-items: center; gap: 10px; color: var(--fg); text-decoration: none; font-weight: 700; font-size: 18px; letter-spacing: -.02em; }
+.top a.home svg { width: 26px; height: 26px; color: #fff; }
+.top a.back { margin-left: auto; padding: 7px 14px; border-radius: 999px; background: var(--fill); color: var(--fg); text-decoration: none; font-size: 15px; font-weight: 600; }
+main { max-width: 760px; margin: 0 auto; padding: 24px 16px 40px; }
+h1 { font-size: 30px; line-height: 1.15; letter-spacing: -.025em; margin: 8px 0 6px; }
+h2 { font-size: 20px; letter-spacing: -.02em; margin: 30px 0 8px; }
+h3 { font-size: 17px; margin: 20px 0 6px; }
+p, li { color: rgba(255,255,255,.88); }
+.stand { color: var(--muted); font-size: 14px; margin: 0 0 18px; }
+.card { background: var(--panel); border-radius: 20px; padding: 16px 18px; margin: 14px 0; }
+.card > :first-child { margin-top: 0; } .card > :last-child { margin-bottom: 0; }
+.hinweis { background: var(--warn-soft); border-radius: 16px; padding: 12px 14px; font-size: 14px; }
+/* Platzhalter: muss Michel noch ausfüllen, damit nichts übersehen wird */
+.ph { background: var(--warn); color: #000; border-radius: 6px; padding: 0 5px; font-weight: 600; }
+address { font-style: normal; }
+dl { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; margin: 0; }
+dt { color: var(--muted); } dd { margin: 0; }
+@media (max-width: 520px) { dl { grid-template-columns: 1fr; gap: 0; } dd { margin-bottom: 8px; } }
+pre { white-space: pre-wrap; font: 13px/1.5 ui-monospace, Menlo, monospace; background: var(--fill); border-radius: 12px; padding: 12px; color: rgba(255,255,255,.8); overflow-wrap: anywhere; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th, td { text-align: left; vertical-align: top; padding: 8px 6px; border-top: 1px solid var(--line); }
+th { color: var(--muted); font-weight: 600; }
+footer.recht { max-width: 760px; margin: 0 auto; padding: 18px 16px calc(28px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 14px; }
+footer.recht a { color: var(--muted); text-decoration: none; } footer.recht a:hover, footer.recht a[aria-current] { color: var(--fg); }
+form.widerruf { display: grid; gap: 12px; }
+form.widerruf label { display: grid; gap: 4px; font-weight: 600; font-size: 15px; }
+form.widerruf input, form.widerruf textarea { font: inherit; color: var(--fg); background: var(--fill); border: 1px solid var(--line); border-radius: 12px; padding: 11px 12px; }
+.btn { font: inherit; font-weight: 600; border: 0; border-radius: 14px; padding: 13px 18px; background: var(--navy); color: #fff; cursor: pointer; text-align: center; text-decoration: none; display: inline-block; }
+.btn:disabled { opacity: .45; cursor: default; }
+@media print { :root { color-scheme: light; } body { background: #fff; color: #000; } p, li { color: #000; } .top, footer.recht, .noprint { display: none; } .card { background: none; border: 1px solid #ccc; } a { color: #000; } }
