@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Widerruf · MoinPlan</title>
+<link rel="stylesheet" href="recht.css">
+</head>
+<body>
+<header class="top"><a class="home" href="./"><svg viewBox="0 0 215 213" aria-hidden="true"><path d="M0 68 117 0v73L70 100v113H0ZM135 118l80-46v141h-80Z" fill="currentColor"/></svg>MoinPlan</a><a class="back" href="./">Zur Website</a></header>
+<main>
+<h1>Widerrufsbelehrung</h1>
+<p class="stand">für Verbraucher beim Kauf eines Grundstücksberichts</p>
+
+<div class="card" id="knopf">
+<h2>Vertrag widerrufen</h2>
+<p>Sie möchten einen Kauf widerrufen? Hier geht das direkt online.</p>
+<button type="button" class="btn" id="start">Vertrag widerrufen</button>
+<form class="widerruf" id="form" hidden>
+<label>Ihr Name<input name="name" autocomplete="name" required></label>
+<label>Welcher Kauf? (Bestellnummer oder Grundstück und Kaufdatum)<input name="vertrag" required></label>
+<label>E-Mail-Adresse für die Eingangsbestätigung<input name="mail" type="email" autocomplete="email" required></label>
+<button type="submit" class="btn">Widerruf bestätigen</button>
+</form>
+<p id="fertig" hidden></p>
+</div>
+
+<h2>Widerrufsrecht</h2>
+<p>Sie haben das Recht, binnen vierzehn Tagen ohne Angabe von Gründen diesen Vertrag zu widerrufen.</p>
+<p>Die Widerrufsfrist beträgt vierzehn Tage ab dem Tag des Vertragsabschlusses.</p>
+<p>Um Ihr Widerrufsrecht auszuüben, müssen Sie uns (<span class="ph">[Name bzw. Firma, Straße Hausnummer, PLZ Hamburg, Telefonnummer, E-Mail-Adresse]</span>) mittels einer eindeutigen Erklärung (z. B. ein mit der Post versandter Brief oder E-Mail) über Ihren Entschluss, diesen Vertrag zu widerrufen, informieren. Sie können dafür das beigefügte Muster-Widerrufsformular verwenden, das jedoch nicht vorgeschrieben ist. Sie können den Vertrag auch über die Schaltfläche „Vertrag widerrufen“ oben auf dieser Seite widerrufen. Machen Sie von dieser Möglichkeit Gebrauch, so werden wir Ihnen unverzüglich (z. B. per E-Mail) eine Bestätigung über den Eingang eines solchen Widerrufs übermitteln.</p>
+<p>Zur Wahrung der Widerrufsfrist reicht es aus, dass Sie die Mitteilung über die Ausübung des Widerrufsrechts vor Ablauf der Widerrufsfrist absenden.</p>
+
+<h2>Folgen des Widerrufs</h2>
+<p>Wenn Sie diesen Vertrag widerrufen, haben wir Ihnen alle Zahlungen, die wir von Ihnen erhalten haben, einschließlich der Lieferkosten (mit Ausnahme der zusätzlichen Kosten, die sich daraus ergeben, dass Sie eine andere Art der Lieferung als die von uns angebotene, günstigste Standardlieferung gewählt haben), unverzüglich und spätestens binnen vierzehn Tagen ab dem Tag zurückzuzahlen, an dem die Mitteilung über Ihren Widerruf dieses Vertrags bei uns eingegangen ist. Für diese Rückzahlung verwenden wir dasselbe Zahlungsmittel, das Sie bei der ursprünglichen Transaktion eingesetzt haben, es sei denn, mit Ihnen wurde ausdrücklich etwas anderes vereinbart; in keinem Fall werden Ihnen wegen dieser Rückzahlung Entgelte berechnet.</p>
+
+<h2>Vorzeitiges Erlöschen des Widerrufsrechts</h2>
+<p>Das Widerrufsrecht erlischt bei einem Vertrag über die Bereitstellung von nicht auf einem körperlichen Datenträger befindlichen digitalen Inhalten auch dann, wenn wir mit der Vertragserfüllung begonnen haben, nachdem Sie ausdrücklich zugestimmt haben, dass wir mit der Vertragserfüllung vor Ablauf der Widerrufsfrist beginnen, Sie Ihre Kenntnis davon bestätigt haben, dass durch Ihre Zustimmung mit Beginn der Vertragserfüllung Ihr Widerrufsrecht erlischt, und wir Ihnen eine Bestätigung des Vertrags auf einem dauerhaften Datenträger (per E-Mail) zur Verfügung gestellt haben.</p>
+
+<h2>Muster-Widerrufsformular</h2>
+<div class="card">
+<p>(Wenn Sie den Vertrag widerrufen wollen, dann füllen Sie bitte dieses Formular aus und senden Sie es zurück.)</p>
+<p>– An <span class="ph">[Name bzw. Firma, Straße Hausnummer, PLZ Hamburg, E-Mail-Adresse]</span>:</p>
+<p>– Hiermit widerrufe(n) ich/wir (*) den von mir/uns (*) abgeschlossenen Vertrag über den Kauf der folgenden Waren (*)/die Erbringung der folgenden Dienstleistung (*)</p>
+<p>– Bestellt am (*)/erhalten am (*)</p>
+<p>– Name des/der Verbraucher(s)</p>
+<p>– Anschrift des/der Verbraucher(s)</p>
+<p>– Unterschrift des/der Verbraucher(s) (nur bei Mitteilung auf Papier)</p>
+<p>– Datum</p>
+<p>(*) Unzutreffendes streichen.</p>
+</div>
+
+<script>
+// Widerrufsfunktion (§ 356a BGB): Schritt 1 „Vertrag widerrufen“, Schritt 2 „Widerruf bestätigen“.
+// Die Seite ist statisch: Sie öffnet eine fertige E-Mail an uns und zeigt Datum und Uhrzeit.
+// Die automatische Eingangsbestätigung kommt mit dem Zahlungsanbieter bzw. Mail-Versand.
+const AN = ""; // E-Mail-Adresse für Widerrufe, z. B. "widerruf@…"; leer = Vorschau
+const $ = id => document.getElementById(id);
+$("start").onclick = () => { $("start").hidden = true; $("form").hidden = false; $("form").elements.name.focus(); };
+$("form").onsubmit = e => {
+  e.preventDefault();
+  const f = e.target.elements, jetzt = new Date().toLocaleString("de-DE", {dateStyle: "long", timeStyle: "short"});
+  const text = `Hiermit widerrufe ich den Vertrag über den folgenden Grundstücksbericht:\n${f.vertrag.value}\n\nName: ${f.name.value}\nE-Mail für die Bestätigung: ${f.mail.value}\nErklärt am: ${jetzt}`;
+  if (AN) location.href = `mailto:${AN}?subject=${encodeURIComponent("Widerruf Grundstücksbericht")}&body=${encodeURIComponent(text)}`;
+  $("form").hidden = true; $("fertig").hidden = false;
+  $("fertig").textContent = AN
+    ? `Ihr Widerruf vom ${jetzt} ist vorbereitet. Bitte senden Sie die geöffnete E-Mail ab. Wir bestätigen den Eingang unverzüglich an ${f.mail.value}.`
+    : `Vorschau: Hier wird noch nichts gesendet, weil der Kauf noch nicht freigeschaltet ist.`;
+};
+</script>
+</main>
+<footer class="recht"><a href="impressum.html">Impressum</a><a href="datenschutz.html">Datenschutz</a><a href="agb.html">AGB</a><a href="widerruf.html" aria-current="page">Widerruf</a><a href="lizenzen.html">Quellen und Lizenzen</a></footer>
+</body>
+</html>

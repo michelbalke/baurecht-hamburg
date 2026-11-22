@@ -4,6 +4,7 @@
   --bg: #000; --panel: #1c1c1e; --fg: #fff; --muted: rgba(235,235,245,.6); --line: rgba(255,255,255,.12); --fill: #2c2c2e;
   --accent: #8ea2ff; --navy: #4766f0; --warn: #ff9f0a; --warn-soft: rgba(255,159,10,.16); }
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 html { -webkit-text-size-adjust: 100%; }
 body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.55 var(--sans); letter-spacing: -.01em; -webkit-font-smoothing: antialiased; }
 a { color: var(--accent); overflow-wrap: anywhere; }

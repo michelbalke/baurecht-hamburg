@@ -806,7 +806,14 @@ dialog.pro[open] { animation: rise .28s var(--ease) both; }
 .pro-list li b { display: block; font-size: 15px; font-weight: 600; color: var(--fg); }
 .pro-price small { display: block; margin-top: 3px; font-size: 12.5px; font-weight: 400; color: var(--muted); }
 .pro-price { display: flex; align-items: baseline; justify-content: space-between; padding: 12px 14px; border-radius: 14px; background: var(--fill); font-weight: 600; }
-.pro-price { gap: 12px; } .pro-price b { font: 700 22px/1 var(--display); white-space: nowrap; }
+.pro-price { gap: 12px; } .pro-price b { font: 700 22px/1 var(--display); white-space: nowrap; text-align: right; }
+.pro-price b small { font-family: var(--sans); }
+.pro-field { display: grid; gap: 5px; font-size: 13.5px; font-weight: 600; color: var(--muted); }
+.pro-field input { font: 16px var(--sans); color: var(--fg); background: var(--fill); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; }
+.pro-check { display: flex; gap: 10px; align-items: flex-start; font-size: 13.5px; line-height: 1.4; cursor: pointer; }
+.pro-check input { flex: none; width: 20px; height: 20px; margin: 0; accent-color: var(--navy); }
+.pro-agb { margin: 0; font-size: 12.5px; color: var(--muted); }
+.pro [data-pro="kaufen"]:disabled { opacity: .45; cursor: default; }
 .pro-note { margin: 0; padding: 10px 12px; border-radius: 12px; background: var(--warn-soft); color: var(--warn); font-size: 13px; line-height: 1.4; }
 .pro .pro-d { margin: 0; }
 .pro button.wide { justify-content: center; width: 100%; box-sizing: border-box; padding: 12px 16px; font-size: 16px; }
@@ -951,7 +958,7 @@ ol.steps { margin: 0; padding-left: 22px; display: flex; flex-direction: column;
   </section>
   <section class="card">
     <h2>Rechtliches</h2>
-    <nav class="rechtlinks" aria-label="Rechtliches"><a href="impressum.html">Impressum</a><a href="datenschutz.html">Datenschutz</a><a href="lizenzen.html">Quellen und Lizenzen</a></nav>
+    <nav class="rechtlinks" aria-label="Rechtliches"><a href="impressum.html">Impressum</a><a href="datenschutz.html">Datenschutz</a><a href="agb.html">AGB</a><a href="widerruf.html">Widerruf</a><a href="lizenzen.html">Quellen und Lizenzen</a></nav>
   </section>
 </nav>
 <div class="app">
@@ -978,7 +985,7 @@ ol.steps { margin: 0; padding-left: 22px; display: flex; flex-direction: column;
       </section>
     </div>
     <p class="legal">Fachdaten: Freie und Hansestadt Hamburg (LGV und Bezirksämter), Datenlizenz Deutschland Namensnennung 2.0. Grundkarte: © basemap.de / BKG (2026) CC BY 4.0, Datenquellen © GeoBasis-DE / BKG (2026) CC BY 4.0. Alle Angaben ohne Gewähr. Rechtsverbindlich ist nur der festgestellte Plan mit Verordnung; für eine verbindliche Auskunft das Bezirksamt fragen.</p>
-    <nav class="rechtlinks noprint" aria-label="Rechtliches"><a href="impressum.html">Impressum</a><a href="datenschutz.html">Datenschutz</a><a href="lizenzen.html">Quellen und Lizenzen</a></nav>
+    <nav class="rechtlinks noprint" aria-label="Rechtliches"><a href="impressum.html">Impressum</a><a href="datenschutz.html">Datenschutz</a><a href="agb.html">AGB</a><a href="widerruf.html">Widerruf</a><a href="lizenzen.html">Quellen und Lizenzen</a></nav>
   </aside>
   <div class="mapwrap">
     <div id="map"></div>
@@ -2916,7 +2923,8 @@ function showCard(title, msg) { body.remove("detail"); $("overview").innerHTML =
 
 
 // ---------- Vollständiger Bericht (Vorschau, noch ohne Bezahlung) ----------
-const PRO = {preis: "34,99 €"};
+// bezahlung: erst true, wenn ein Zahlungsanbieter angeschlossen ist; steuer: Hinweis am Preis (Kleinunternehmer oder inkl. USt.), leer bis Michel es festlegt
+const PRO = {preis: "34,99 €", bezahlung: false, steuer: ""};
 let rep = {}, lastPlot = null, bezahlt = false; // bezahlt: Vorschau, gilt nur bis zum Neuladen
 const proDlg = $("pro"), proIn = $("proIn");
 const proHead = t => `<div class="pro-top"><h3 id="proH">${esc(t)}</h3><button type="button" class="ghost" data-pro="close">Schließen</button></div>${rep.place ? `<p class="pro-for">Für ${esc(rep.place)}${rep.flst ? " · Flurstück " + esc(rep.flst) : ""}</p>` : ""}`;
@@ -2931,9 +2939,13 @@ const PRO_VIEWS = {
       <li><b>Vergleich mit den Nachbarn</b>Höhe, Geschosse und Grundfläche der Häuser nebenan.</li>
       <li><b>Gut vorbereitet ins Gespräch</b>Für Architekt, Bezirksamt, Bank oder Käufer: mit nächsten Schritten, Links zu den Originalplänen und Ihrem Ansprechpartner.</li>
     </ul>
-    <div class="pro-price"><span>Einmalig für dieses Grundstück<small>Kein Abo. 30 Tage auf diesem Gerät abrufbar.</small></span><b>${PRO.preis}</b></div>
-    <p class="pro-note">Vorschau: Die Bezahlung ist noch nicht eingebaut. Hier wird der Bericht kostenlos freigeschaltet.</p>
-    <button type="button" class="wide" data-pro="kaufen">Bericht für ${PRO.preis} freischalten</button>
+    <div class="pro-price"><span>Einmalig für dieses Grundstück<small>Kein Abo. 30 Tage auf diesem Gerät abrufbar.</small></span><b>${PRO.preis}<small>Gesamtpreis${PRO.steuer ? ". " + esc(PRO.steuer) : ""}</small></b></div>
+    <label class="pro-field">E-Mail für die Bestellbestätigung<input type="email" id="proMail" autocomplete="email" placeholder="${PRO.bezahlung ? "name@beispiel.de" : "Vorschau: wird nicht gesendet"}"${PRO.bezahlung ? " required" : ""}></label>
+    <label class="pro-check"><input type="checkbox" id="proOk1"><span>Ich stimme ausdrücklich zu, dass MoinPlan vor Ablauf der Widerrufsfrist mit der Bereitstellung des Berichts beginnt.</span></label>
+    <label class="pro-check"><input type="checkbox" id="proOk2"><span>Mir ist bekannt, dass ich dadurch mein Widerrufsrecht verliere.</span></label>
+    <p class="pro-agb">Es gelten unsere <a href="agb.html" target="_blank">AGB</a>. Hinweise zum <a href="widerruf.html" target="_blank">Widerrufsrecht</a> und zum <a href="datenschutz.html" target="_blank">Datenschutz</a>.</p>
+    ${PRO.bezahlung ? "" : `<p class="pro-note">Vorschau: Die Bezahlung ist noch nicht eingebaut. Es kommt kein Kauf zustande und der Bericht wird kostenlos freigeschaltet.</p>`}
+    <button type="button" class="wide" data-pro="kaufen" disabled>${PRO.bezahlung ? "Zahlungspflichtig bestellen" : "Vorschau: Bericht kostenlos ansehen"}</button>
     <p class="legal">Ob gebaut werden darf, entscheidet allein das Bauamt. Verbindliche Sicherheit gibt ein Bauvorbescheid beim Bezirksamt.</p>`,
   start: () => PRO_VIEWS.report("Wissen, was auf Ihrem Grundstück geht"),
   frei: () => `${proHead("Bericht freigeschaltet")}
@@ -2943,7 +2955,9 @@ const PRO_VIEWS = {
 };
 function proView(v) { if (!bezahlt && (v === "start" || v === "report")) try { Bericht.warm(lastPlot, true); } catch { /* Vorladen ist nur Tempo */ }
   proIn.innerHTML = PRO_VIEWS[v](); proIn.parentElement.scrollTop = 0; if (!proDlg.open) proDlg.showModal(); }
-proDlg.addEventListener("click", e => { if (e.target === proDlg) proDlg.close(); }); // Tipp neben das Fenster schließt
+proDlg.addEventListener("click", e => { if (e.target === proDlg) proDlg.close(); });
+// Bestellknopf erst aktiv, wenn beide Häkchen gesetzt sind (vorzeitiges Erlöschen des Widerrufsrechts) und, sobald echt bezahlt wird, die E-Mail stimmt
+proIn.addEventListener("input", () => { const k = proIn.querySelector('[data-pro="kaufen"]'), m = $("proMail"); if (k) k.disabled = !($("proOk1")?.checked && $("proOk2")?.checked && (!m?.required || m.checkValidity())); }); // Tipp neben das Fenster schließt
 document.addEventListener("click", e => {
   const b = e.target.closest("[data-pro]"); if (!b) return;
   const v = b.dataset.pro;
