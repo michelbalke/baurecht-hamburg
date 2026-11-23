@@ -426,6 +426,18 @@ body.searching .recent:not(.leer) { opacity: 1; visibility: visible; pointer-eve
 .recent button:hover, .recent button:active, .recent button:focus-visible { background: var(--fill); }
 .recent button svg { width: 18px; height: 18px; flex: none; color: var(--accent); }
 .recent button span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.recent button small { margin-left: 8px; font-size: 13px; color: var(--muted); }
+/* Fehlertolerante Suche: „Meinten Sie …?“-Liste und Hinweis, wenn ein Tippfehler korrigiert wurde */
+.vorschlaege { display: flex; flex-direction: column; margin: 0 -18px -8px; }
+.vorschlaege button { all: unset; box-sizing: border-box; position: relative; display: flex; align-items: center; gap: 12px; padding: 11px 18px; font-size: 16px; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: background .15s; }
+.vorschlaege button + button::before { content: ""; position: absolute; left: 48px; right: 18px; top: 0; border-top: 1px solid var(--line); }
+.vorschlaege button:hover, .vorschlaege button:active, .vorschlaege button:focus-visible { background: var(--fill); }
+.vorschlaege button:first-child { font-weight: 600; }
+.vorschlaege svg { width: 18px; height: 18px; flex: none; color: var(--accent); }
+.vorschlaege span { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.vorschlaege small { font-size: 13px; font-weight: 400; color: var(--muted); }
+.ov-fix { font-size: 13px; line-height: 1.35; color: var(--muted); overflow-wrap: break-word; }
+.ov-fix b { color: var(--fg); font-weight: 600; }
 /* ---------- Kopf: weiße Karte mit Wortmarke, zentrierter Frage, Suchkapsel und Hamburg-Skyline als Linienzeichnung ----------
    Raster ordnet die Teile; auf dem Handy nach der Suche wird daraus eine schmale Leiste (Haus, Wortmarke, Suchfeld, Menü). */
 .side > header { position: relative; flex-shrink: 0; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "logo name menu" "sky sky sky" "search search search";
@@ -2166,7 +2178,7 @@ on("bfKey", "click", () => {
 on("drawerClose", "click", () => toggleDrawer(false));
 on("backdrop", "click", () => toggleDrawer(false));
 addEventListener("keydown", e => { if (e.key === "Escape" && $("drawer").classList.contains("open")) toggleDrawer(false); });
-on("q", "focus", () => { renderRecent(); body.add("searching"); });
+on("q", "focus", () => { ladeStrassen(); renderRecent($("q").value); body.add("searching"); });
 on("q", "input", () => renderRecent($("q").value));
 on("q", "blur", () => setTimeout(() => body.remove("searching"), 250));
 if (isPhone()) { // Rechtliches ins Menü (Kopie bleibt fürs Merkblatt)
@@ -2216,17 +2228,93 @@ async function gazetteer(q) {
   const leaf = re => [...doc.getElementsByTagName("*")].find(n => re.test(n.localName) && !n.children.length)?.textContent.trim() || "";
   return {coord: pos.textContent.trim().split(/\s+/).map(Number).slice(0, 2), name, stadtteil: leaf(/^stadtteil(name)?$/i) || (name.match(/\(OT ([^)]+)\)/) || [])[1] || "", ortsteil: leaf(/^ortsteil(nummer)?$/i)};
 }
+// ---------- Fehlertolerante Adresssuche: Straßenliste der Stadt (strassen.json), Tippfehler finden ----------
+// Erst sucht der Gazetteer genau; findet er nichts, vergleichen wir mit allen Hamburger Straßennamen und schlagen die ähnlichsten vor.
+let strassenP = null;
+function ladeStrassen() {
+  return strassenP ||= fetch("strassen.json").then(r => r.ok ? r.json() : null).then(d => d && d.s.map(([n, ...t]) => ({n, k: strKey(n), st: t.map(i => d.st[i])})))
+    .then(l => { strassenListe = l; if (l && document.activeElement === $("q")) renderRecent($("q").value); return l; })
+    .catch(e => { diag("Straßenliste: " + (e.message || e)); return null; });
+}
+const strKey = s => String(s).toLowerCase().replace(/ä/g, "ae").replace(/ö/g, "oe").replace(/ü/g, "ue").replace(/ß/g, "ss")
+  .replace(/str(asse|\.|\b)/g, "str").replace(/[^a-z0-9]/g, "");
+// Tippfehler-Abstand (Buchstabe fehlt, zu viel, falsch oder vertauscht); bricht ab, sobald er größer als max wird
+function tippAbstand(a, b, max) {
+  if (Math.abs(a.length - b.length) > max) return max + 1;
+  let p2 = null, p = Array.from({length: b.length + 1}, (_, j) => j);
+  for (let i = 1; i <= a.length; i++) {
+    const c = [i]; let best = i;
+    for (let j = 1; j <= b.length; j++) {
+      let v = Math.min(p[j] + 1, c[j - 1] + 1, p[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+      if (p2 && i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) v = Math.min(v, p2[j - 2] + 1);
+      c.push(v); if (v < best) best = v;
+    }
+    if (best > max) return max + 1;
+    p2 = p; p = c;
+  }
+  return p[b.length];
+}
+// Teilt die Eingabe in Straße, Hausnummer und Zusatz („Heinrich Eine Weg 41a“)
+const teileAdresse = q => { const m = q.trim().match(/^(.*?)[\s,]+(\d+)\s*([a-zA-Z])?$/); return m ? {str: m[1], nr: m[2] + (m[3] || "")} : {str: q.trim(), nr: ""}; };
+// Ähnlichste Straßen: 0 = gleich, 0.5 = Anfang des Namens, sonst Zahl der Tippfehler (erlaubt: 1 bis 3, je nach Länge)
+function aehnlicheStrassen(liste, str, n = 5) {
+  const k = strKey(str); if (k.length < 3) return [];
+  const max = k.length <= 5 ? 1 : k.length <= 9 ? 2 : 3, out = [];
+  for (const s of liste) {
+    let d = s.k === k ? 0 : s.k.startsWith(k) && k.length >= 4 ? 0.5 : tippAbstand(k, s.k, max);
+    if (d > max && k.length >= 5 && s.k.length > k.length) // angefangener Name mit Tippfehler: „heinricheine“ → „heinrichheineweg“
+      for (const L of [k.length - 1, k.length, k.length + 1]) d = Math.min(d, tippAbstand(k, s.k.slice(0, L), max - 1) + 0.6);
+    if (d <= max) out.push({...s, d});
+  }
+  return out.sort((a, b) => a.d - b.d || Math.abs(a.k.length - k.length) - Math.abs(b.k.length - k.length) || a.n.localeCompare(b.n, "de")).slice(0, n);
+}
+// Nach erfolgloser genauer Suche: Kandidaten beim Gazetteer prüfen (gibt es die Hausnummer dort?), dann übernehmen oder Liste zeigen
+async function sucheUnscharf(q) {
+  const liste = await ladeStrassen(); if (!liste) return {treffer: []};
+  const {str, nr} = teileAdresse(q), kand = aehnlicheStrassen(liste, str, 5).filter(s => s.d > 0 || nr);
+  const geprueft = await Promise.all(kand.map(async s => { const adr = nr ? `${s.n} ${nr}` : s.n, hit = await gazetteer(adr); return hit && {...s, adr, hit}; }));
+  const treffer = geprueft.filter(Boolean);
+  // Eindeutig: nur ein Kandidat oder klar ähnlicher als der nächste
+  const sicher = treffer.length && treffer[0].d <= 2 && (!treffer[1] || treffer[1].d - treffer[0].d >= 1);
+  // Straße erkannt, aber die Hausnummer gibt es dort nicht: nächstgelegene Nummern anbieten (gleiche Straßenseite zuerst)
+  if (!treffer.length && nr && kand[0]?.d <= 2) {
+    const t = await getText(CFG.gazetteer + "&StoredQuery_ID=HausnummernZuStrasse&strassenname=" + encodeURIComponent(kand[0].n), "Hausnummern");
+    const n = parseInt(nr, 10), adr = [...new Set([...(t || "").matchAll(/geographicIdentifier[^>]*>([^<,]+)/g)].map(m => m[1].trim()))];
+    const naechste = adr.map(a => ({adr: a, z: parseInt(teileAdresse(a).nr, 10)})).filter(a => a.z >= 0)
+      .sort((a, b) => (a.z % 2 !== n % 2) - (b.z % 2 !== n % 2) || Math.abs(a.z - n) - Math.abs(b.z - n) || a.adr.localeCompare(b.adr, "de")).slice(0, 4);
+    return {treffer: naechste.map(a => ({...kand[0], adr: a.adr})), sicher: false, nummer: {str: kand[0].n, nr}};
+  }
+  return {treffer, sicher};
+}
+const ortIco = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.5"/></svg>`;
+const stTxt = st => st.slice(0, 2).join(", ") + (st.length > 2 ? " …" : "");
+function zeigeVorschlaege(q, treffer, nummer) {
+  body.remove("detail"); $("overview").innerHTML = "";
+  $("overview").append(card("Meinten Sie …?", `<p class="hint">${nummer ? `Die Hausnummer ${esc(nummer.nr)} gibt es in „${esc(nummer.str)}“ nicht. Die nächsten Hausnummern:` : `Für „${esc(q)}“ gibt es keine Adresse. Diese ähneln ihr am meisten:`}</p>
+    <div class="vorschlaege">${treffer.map(t => `<button type="button" data-q="${esc(t.adr)}">${ortIco}<span>${esc(t.adr)}<small>${esc(stTxt(t.st))}</small></span></button>`).join("")}</div>`));
+}
+document.addEventListener("click", e => { const b = e.target.closest(".vorschlaege [data-q]"); if (b) { $("q").value = b.dataset.q; $("searchForm").requestSubmit(); } });
+let korrektur = null; // {von, zu, place}: Tippfehler wurde automatisch korrigiert
 on("searchForm", "submit", async e => {
   e.preventDefault();
-  const q = $("q").value.trim();
+  let q = $("q").value.trim();
   if (!q) return;
   const c = parseCoordinates(q);
   document.activeElement?.blur(); // Tastatur schließen
   if (c) { curPlace = null; view.animate({center: c, resolution: 0.8, duration: 800}); return queryAt(c, "Koordinate " + q); }
   showCard("Bitte warten", "Adresse wird gesucht …");
-  const id = ++queryId, hit = await gazetteer(q);
+  const id = ++queryId; let hit = await gazetteer(q);
   if (id !== queryId) return;
-  if (!hit) return showCard("Hinweis", "Adresse nicht gefunden. Bitte Straße und Hausnummer prüfen (z. B. „Rathausmarkt 1“) oder direkt in die Karte tippen.");
+  if (!hit) { // Tippfehler? Ähnliche Straßen prüfen
+    const {treffer, sicher, nummer} = await sucheUnscharf(q);
+    if (id !== queryId) return;
+    if (!treffer.length) return showCard("Hinweis", "Adresse nicht gefunden. Bitte Straße und Hausnummer prüfen (z. B. „Rathausmarkt 1“) oder direkt in die Karte tippen.");
+    if (!sicher) return zeigeVorschlaege(q, treffer, nummer);
+    hit = treffer[0].hit; korrektur = {von: q, zu: treffer[0].adr, place: hit}; q = treffer[0].adr; $("q").value = q;
+  } else { // der Gazetteer verzeiht selbst manches („Heinrich Eineweg“): dann auch zeigen, welche Adresse gefunden wurde
+    const zu = hit.name.split(",")[0].replace(/\s*\(OT.*$/, "").trim();
+    if (zu && strKey(teileAdresse(zu).str) !== strKey(teileAdresse(q).str)) { korrektur = {von: q, zu, place: hit}; q = zu; $("q").value = q; }
+  }
   view.animate({center: hit.coord, resolution: 0.8, duration: 800});
   addRecent(q);
   curPlace = hit;
@@ -2460,7 +2548,8 @@ function renderResult(coord, placeName, plans, plot) {
 function renderOverview(main, sum, placeName) {
   const gilt = main?.status === "festgestellt", name = main ? sum?.name || planTitle(planName(main.props)) || "Bebauungsplan" : "Kein Bebauungsplan";
   $("overview").classList.add("neu"); setTimeout(() => $("overview").classList.remove("neu"), 800); // nur frische Ergebnisse bauen sich auf, nicht die Rückkehr aus den Details
-  $("overview").innerHTML = `<button type="button" class="ov-plan" data-go="">
+  const fix = korrektur && korrektur.place === curPlace ? `<span class="ov-fix">Gefunden: <b>${esc(korrektur.zu)}</b>${curPlace.stadtteil && !/^\d/.test(curPlace.stadtteil) ? ", " + esc(curPlace.stadtteil) : ""} · Ihre Eingabe: „${esc(korrektur.von)}“</span>` : "";
+  $("overview").innerHTML = `<button type="button" class="ov-plan" data-go="">${fix}
       ${main && gilt ? "" : `<span class="pill ${main ? "draft" : "none"}">${main ? "Bebauungsplan im Verfahren" : "§ 34 BauGB: Einfügen in die Umgebung"}</span>`}
       <span class="ov-name">${esc(name).replace(/(Baustufen|Teilbebauungs|Durchführungs|Bebauungs)(plan)/, "$1&shy;$2")}</span>
       <span class="ov-peek" id="ovPeek"></span>
@@ -2821,10 +2910,18 @@ function addRecent(q) {
 const clockIco = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>`;
 // Beim Tippen nur passende Einträge zeigen; ohne Treffer bleibt das Blatt zu
 function renderRecent(filter = "") {
-  const box = $("recent"), f = filter.trim().toLowerCase(), list = recent.filter(q => q.toLowerCase().includes(f));
-  box.hidden = !recent.length; box.classList.toggle("leer", !list.length);
-  box.innerHTML = `<p>Zuletzt gesucht</p>` + list.map(q => `<button type="button" data-q="${esc(q)}">${clockIco}<span>${esc(q)}</span></button>`).join("") + `<button type="button" class="clear" data-clear>Verlauf löschen</button>`;
+  const box = $("recent"), f = filter.trim().toLowerCase(), list = recent.filter(q => q.toLowerCase().includes(f)), sug = strassenTipp(filter, list);
+  box.hidden = !recent.length && !sug.length; box.classList.toggle("leer", !list.length && !sug.length);
+  box.innerHTML = (sug.length ? `<p>Vorschläge</p>` + sug.map(s => `<button type="button" data-q="${esc(s.adr)}">${ortIco}<span>${esc(s.adr)}<small>${esc(stTxt(s.st))}</small></span></button>`).join("") : "")
+    + (list.length ? `<p>Zuletzt gesucht</p>` + list.map(q => `<button type="button" data-q="${esc(q)}">${clockIco}<span>${esc(q)}</span></button>`).join("") + `<button type="button" class="clear" data-clear>Verlauf löschen</button>` : "");
   placeRecent();
+}
+// Beim Tippen passende Straßen aus der Straßenliste (ab 3 Buchstaben, auch mit Tippfehler); die Hausnummer wird übernommen
+let strassenListe = null;
+function strassenTipp(filter, list) {
+  if (!strassenListe || filter.trim().length < 3 || parseCoordinates(filter)) return [];
+  const {str, nr} = teileAdresse(filter), seen = new Set(list.map(q => q.toLowerCase()));
+  return aehnlicheStrassen(strassenListe, str, 4).filter(s => s.d > 0).map(s => ({...s, adr: nr ? `${s.n} ${nr}` : s.n})).filter(s => !seen.has(s.adr.toLowerCase()));
 }
 // Blatt hängt am body (über Karte und Kopf), deshalb Lage vom Suchfeld abnehmen: auf dem Handy volle Breite, sonst so breit wie das Feld
 function placeRecent() {
