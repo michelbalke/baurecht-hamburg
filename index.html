@@ -808,12 +808,10 @@ dialog.pro[open] { animation: rise .28s var(--ease) both; }
 .pro-price { display: flex; align-items: baseline; justify-content: space-between; padding: 12px 14px; border-radius: 14px; background: var(--fill); font-weight: 600; }
 .pro-price { gap: 12px; } .pro-price b { font: 700 22px/1 var(--display); white-space: nowrap; text-align: right; }
 .pro-price b small { font-family: var(--sans); }
-.pro-field { display: grid; gap: 5px; font-size: 13.5px; font-weight: 600; color: var(--muted); }
-.pro-field input { font: 16px var(--sans); color: var(--fg); background: var(--fill); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; }
 .pro-check { display: flex; gap: 10px; align-items: flex-start; font-size: 13.5px; line-height: 1.4; cursor: pointer; }
 .pro-check input { flex: none; width: 20px; height: 20px; margin: 0; accent-color: var(--navy); }
 .pro-agb { margin: 0; font-size: 12.5px; color: var(--muted); }
-.pro [data-pro="kaufen"]:disabled { opacity: .45; cursor: default; }
+.pro [data-pro="kaufen"]:disabled { opacity: 1; cursor: default; border-color: transparent; background: color-mix(in srgb, var(--navy) 45%, var(--panel)); color: color-mix(in srgb, #fff 55%, var(--panel)); } /* deckend statt opacity: der klebende Knopf darf den Text darunter nicht durchscheinen lassen */
 .pro-note { margin: 0; padding: 10px 12px; border-radius: 12px; background: var(--warn-soft); color: var(--warn); font-size: 13px; line-height: 1.4; }
 .pro .pro-d { margin: 0; }
 .pro button.wide { justify-content: center; width: 100%; box-sizing: border-box; padding: 12px 16px; font-size: 16px; }
@@ -2960,7 +2958,6 @@ const PRO_VIEWS = {
       <li><b>Gut vorbereitet ins Gespräch</b>Für Architekt, Bezirksamt, Bank oder Käufer: mit nächsten Schritten, Links zu den Originalplänen und Ihrem Ansprechpartner.</li>
     </ul>
     <div class="pro-price"><span>Einmalig für dieses Grundstück<small>Kein Abo. 30 Tage auf diesem Gerät abrufbar.</small></span><b>${PRO.preis}<small>Gesamtpreis${PRO.steuer ? ". " + esc(PRO.steuer) : ""}</small></b></div>
-    <label class="pro-field">E-Mail für die Bestellbestätigung<input type="email" id="proMail" autocomplete="email" placeholder="${PRO.bezahlung ? "name@beispiel.de" : "Vorschau: wird nicht gesendet"}"${PRO.bezahlung ? " required" : ""}></label>
     <label class="pro-check"><input type="checkbox" id="proOk1"><span>Ich stimme ausdrücklich zu, dass MoinPlan vor Ablauf der Widerrufsfrist mit der Bereitstellung des Berichts beginnt.</span></label>
     <label class="pro-check"><input type="checkbox" id="proOk2"><span>Mir ist bekannt, dass ich dadurch mein Widerrufsrecht verliere.</span></label>
     <p class="pro-agb">Es gelten unsere <a href="agb.html" target="_blank">AGB</a>. Hinweise zum <a href="widerruf.html" target="_blank">Widerrufsrecht</a> und zum <a href="datenschutz.html" target="_blank">Datenschutz</a>.</p>
@@ -2976,8 +2973,8 @@ const PRO_VIEWS = {
 function proView(v) { if (!bezahlt && (v === "start" || v === "report")) { zaehle("kaufdialog", zaehlArt); try { Bericht.warm(lastPlot, true); } catch { /* Vorladen ist nur Tempo */ } }
   proIn.innerHTML = PRO_VIEWS[v](); proIn.parentElement.scrollTop = 0; if (!proDlg.open) proDlg.showModal(); }
 proDlg.addEventListener("click", e => { if (e.target === proDlg) proDlg.close(); });
-// Bestellknopf erst aktiv, wenn beide Häkchen gesetzt sind (vorzeitiges Erlöschen des Widerrufsrechts) und, sobald echt bezahlt wird, die E-Mail stimmt
-proIn.addEventListener("input", () => { const k = proIn.querySelector('[data-pro="kaufen"]'), m = $("proMail"); if (k) k.disabled = !($("proOk1")?.checked && $("proOk2")?.checked && (!m?.required || m.checkValidity())); }); // Tipp neben das Fenster schließt
+// Bestellknopf erst aktiv, wenn beide Häkchen gesetzt sind (vorzeitiges Erlöschen des Widerrufsrechts); die E-Mail fragt der Zahlungsdienstleister ab
+proIn.addEventListener("input", () => { const k = proIn.querySelector('[data-pro="kaufen"]'); if (k) k.disabled = !($("proOk1")?.checked && $("proOk2")?.checked); }); // Tipp neben das Fenster schließt
 document.addEventListener("click", e => {
   const b = e.target.closest("[data-pro]"); if (!b) return;
   const v = b.dataset.pro;
