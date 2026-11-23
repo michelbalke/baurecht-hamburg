@@ -792,8 +792,7 @@ body.is3d .view3d { display: block; }
 dialog.pro { border: 0; padding: 0; background: var(--panel); color: var(--fg); border-radius: 24px; width: min(460px, calc(100vw - 32px)); max-height: calc(100dvh - 48px); box-shadow: var(--shadow-lg); overscroll-behavior: contain; }
 dialog.pro::backdrop { background: rgba(0,0,0,.6); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
 dialog.pro[open] { animation: rise .28s var(--ease) both; }
-@media (max-width: 760px) { dialog.pro { margin: auto 0 0; width: 100%; max-width: 100%; max-height: 92dvh; border-radius: 24px 24px 0 0; }
-  .pro [data-pro="kaufen"] { position: sticky; bottom: calc(10px + env(safe-area-inset-bottom, 0px)); box-shadow: 0 0 0 10px var(--panel), 0 -14px 20px 4px var(--panel); } } /* Kaufknopf bleibt sichtbar */
+@media (max-width: 760px) { dialog.pro { margin: auto 0 0; width: 100%; max-width: 100%; max-height: 92dvh; border-radius: 24px 24px 0 0; } }
 .pro-in { padding: 18px 18px calc(18px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 12px; }
 .pro-top { display: flex; align-items: center; gap: 10px; }
 .pro-top h3 { flex: 1; margin: 0; font: 700 21px/1.2 var(--display); }
@@ -811,7 +810,7 @@ dialog.pro[open] { animation: rise .28s var(--ease) both; }
 .pro-check { display: flex; gap: 10px; align-items: flex-start; font-size: 13.5px; line-height: 1.4; cursor: pointer; }
 .pro-check input { flex: none; width: 20px; height: 20px; margin: 0; accent-color: var(--navy); }
 .pro-agb { margin: 0; font-size: 12.5px; color: var(--muted); }
-.pro [data-pro="kaufen"]:disabled { opacity: 1; cursor: default; border-color: transparent; background: color-mix(in srgb, var(--navy) 45%, var(--panel)); color: color-mix(in srgb, #fff 55%, var(--panel)); } /* deckend statt opacity: der klebende Knopf darf den Text darunter nicht durchscheinen lassen */
+.pro [data-pro="kaufen"]:disabled { opacity: .45; cursor: default; }
 .pro-note { margin: 0; padding: 10px 12px; border-radius: 12px; background: var(--warn-soft); color: var(--warn); font-size: 13px; line-height: 1.4; }
 .pro .pro-d { margin: 0; }
 .pro button.wide { justify-content: center; width: 100%; box-sizing: border-box; padding: 12px 16px; font-size: 16px; }
