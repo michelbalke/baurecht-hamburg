@@ -950,10 +950,30 @@ ol.steps { margin: 0; padding-left: 22px; display: flex; flex-direction: column;
   body.has-result .side > header h1 small { display: none; }
   body.has-result .side > header .logo svg { width: 25px; height: 25px; }
 }
+/* iPhone (Safari 26): Statusleiste in Kopffarbe. Ohne festen Streifen oben färbt Safari die Leiste schwarz
+   (Seitenhintergrund) und lässt sie weich über den grauen Kopf auslaufen; das sah verschwommen aus. */
+.statusbg { display: none; }
+@media screen and (max-width: 760px) {
+  body:not(.has-result):not(.mapfull):not(.is3d) .statusbg { display: block; position: fixed; top: 0; left: 0; right: 0; z-index: 30; height: env(safe-area-inset-top, 0px); background: var(--panel); pointer-events: none; }
+}
+/* Kleine Handys (iPhone SE, mini): nichts abschneiden, keine Wörter mitten im Wort trennen */
+@media screen and (max-width: 380px) {
+  .banner { width: 52%; } .banner figcaption { font-size: 13.5px; }
+  form.search button[type=submit] { padding: 0 16px; }
+  form.search input { padding-right: 6px; }
+  body.has-result .side > header h1 { font-size: 17px; padding-left: 6px; }
+  body.has-result .side > header { column-gap: 6px; }
+  form.search input::placeholder { font-size: 15px; }
+  body.has-result form.search input { padding: 0 4px 0 29px; }
+  body.has-result form.search svg { left: 10px; }
+  .ov-build .big b { font-size: 17px; -webkit-hyphens: auto; hyphens: auto; overflow-wrap: normal; }
+  .ov-build .big span { font-size: 12px; white-space: normal; }
+}
 </style>
 
 </head>
 <body>
+<div class="statusbg" aria-hidden="true"></div>
 <div id="printHead" class="printonly"></div>
 <section id="repCover" class="printonly"></section>
 <dialog class="pro" id="pro" aria-labelledby="proH"><div class="pro-in" id="proIn"></div></dialog>
@@ -2190,7 +2210,7 @@ const startResults = $("results").innerHTML;
 // Die Suchleiste sitzt immer im Kopf; das Raster stellt sie auf der Startseite unter die Überschrift, nach der Suche (Handy) neben die Wortmarke.
 function placeSearch(clear) {
   const inHead = isPhone() && body.contains("has-result");
-  $("q").placeholder = inHead ? "Erneute Suche" : "z. B. Rathausmarkt 1";
+  $("q").placeholder = inHead ? (innerWidth < 380 ? "Neue Suche" : "Erneute Suche") : "z. B. Rathausmarkt 1";
   if (inHead && clear) $("q").value = "";
 }
 addEventListener("resize", () => placeSearch()); placeSearch();
