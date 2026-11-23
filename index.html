@@ -2068,7 +2068,7 @@ const Bericht = (() => {
     if (calcSec) calcSec.after(cRech, cSk, c3d); else r.append(cRech, cSk, c3d);
     const orig = [...r.querySelectorAll("section.card")].find(s => /Originalplan|Kurzfassung/.test(s.querySelector("h2")?.textContent || ""));
     orig ? orig.after(cPlan) : c3d.after(cPlan);
-    steps.before(cNb); cNb.after(cWis);
+    steps.before(cNb); c3d.after(cWis); // „Gut zu wissen“ direkt hinter der 3D-Ansicht
     const done = (c, html) => { if (html) { c.classList.remove("loading"); c.querySelector("h2").nextElementSibling.outerHTML = html; } else c.remove(); };
 
     const pre = warm(plot, true), dataP = pre.data;
