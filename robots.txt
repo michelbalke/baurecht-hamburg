@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /zaehler/
+
+Sitemap: https://michelbalke.github.io/baurecht-hamburg/sitemap.xml

@@ -7,7 +7,23 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="MoinPlan">
-<title>MoinPlan</title>
+<title>MoinPlan – Was darf ich auf meinem Grundstück in Hamburg bauen?</title>
+<meta name="description" content="Adresse eingeben und sehen, was der Bebauungsplan für Ihr Grundstück in Hamburg erlaubt: Grundfläche, Geschosse, Baufenster, Denkmalschutz, Erhaltungsverordnung und 3D-Ansicht. Aus amtlichen Daten der Stadt.">
+<link rel="canonical" href="https://michelbalke.github.io/baurecht-hamburg/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="MoinPlan">
+<meta property="og:locale" content="de_DE">
+<meta property="og:title" content="MoinPlan – Was darf ich auf meinem Grundstück bauen?">
+<meta property="og:description" content="Bebauungsplan, Baufenster, Denkmal und 3D für jedes Grundstück in Hamburg, in einfachen Worten.">
+<meta property="og:url" content="https://michelbalke.github.io/baurecht-hamburg/">
+<meta property="og:image" content="https://michelbalke.github.io/baurecht-hamburg/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="site.webmanifest">
 <link rel="preconnect" href="https://geodienste.hamburg.de" crossorigin>
 <link rel="preconnect" href="https://www.daten-hamburg.de" crossorigin>
 <style>:root,
@@ -976,6 +992,7 @@ ol.steps { margin: 0; padding-left: 22px; display: flex; flex-direction: column;
 
 </head>
 <body>
+<noscript><p style="margin:24px 16px;font:16px/1.5 -apple-system,Helvetica,Arial,sans-serif;color:#fff">MoinPlan braucht JavaScript, um Karte und Bebauungspläne zu zeigen. Bitte JavaScript im Browser einschalten.</p></noscript>
 <div class="statusbg" aria-hidden="true"></div>
 <div id="printHead" class="printonly"></div>
 <section id="repCover" class="printonly"></section>
@@ -1298,7 +1315,7 @@ const View3D = (() => {
   const LOD2 = "https://www.daten-hamburg.de/gdi3d/datasource-data/LoD2/15/";
   // Gelände-Karte: Stadtplan Hamburg (schlichter als das Luftbild)
   const MAP_WMS = "https://geodienste.hamburg.de/HH_WMS_Cache_Stadtplan", MAP_LAYER = "stadtplan";
-  const GDI3D = "https://www.daten-hamburg.de/gdi3d/datasource-data/", CESIUM = "https://geoportal-hamburg.de/mastercode/cesium/latest/"; // wie im 3D-Projektplaner
+  const GDI3D = "https://www.daten-hamburg.de/gdi3d/datasource-data/", CESIUM_EIGEN = "cesium/", CESIUM_STADT = "https://geoportal-hamburg.de/mastercode/cesium/latest/"; // Cesium 1.145 liegt selbst auf unserem Server (Ordner cesium/), die Stadt-Kopie ist nur Rückfall
   const R = 170; // Radius des Ausschnitts in Metern
 
   // ---------- Geodäsie: WGS84, ECEF und lokales Ost-Nord-Oben-System ----------
@@ -1475,14 +1492,15 @@ const View3D = (() => {
   function loadCesium() {
     if (window.Cesium) return Promise.resolve(true);
     if (location.protocol === "file:") return Promise.resolve(false); // Cesium-Hilfsprozesse laufen nur, wenn die Seite von einem Server kommt
-    return cesiumP ||= new Promise(res => {
-      window.CESIUM_BASE_URL = CESIUM;
-      const l = document.createElement("link"); l.rel = "stylesheet"; l.href = CESIUM + "Widgets/widgets.css"; document.head.append(l);
-      const sc = document.createElement("script"); sc.src = CESIUM + "Cesium.js";
-      sc.onload = () => res(!!window.Cesium); sc.onerror = () => res(false);
+    const laden = base => new Promise(res => {
+      window.CESIUM_BASE_URL = base;
+      const l = document.createElement("link"); l.rel = "stylesheet"; l.href = base + "Widgets/widgets.css"; document.head.append(l);
+      const sc = document.createElement("script"); sc.src = base + "Cesium.js";
+      sc.onload = () => res(!!window.Cesium); sc.onerror = () => { l.remove(); sc.remove(); res(false); };
       document.head.append(sc);
       setTimeout(() => res(!!window.Cesium), 30000);
     });
+    return cesiumP ||= laden(new URL(CESIUM_EIGEN, location.href).href).then(ok => ok || laden(CESIUM_STADT));
   }
   async function openCesium(me, lon, lat, plot, plan) {
     const C = Cesium, opt = me.opt, phone = matchMedia("(max-width: 760px)").matches;
@@ -1777,7 +1795,7 @@ const Baufenster = (() => {
 })();
 </script>
 <script>// Zusatzinhalte für den gekauften Bericht: Rechnung „bebaut und noch frei“, Skizze mit Maßen, 3D-Bild,
-// Nachbarhäuser, Ausschnitt aus dem Originalplan und nächste Schritte.
+// Nachbarhäuser, Gut zu wissen vor dem Kauf, Ausschnitt aus dem Originalplan und nächste Schritte.
 // Daten: ALKIS (Gebäude), 3D-Stadtmodell LoD2 (Höhen), Baufenster aus dem B-Plan, Rasterplan-WMS.
 // Freie und Hansestadt Hamburg, LGV (Datenlizenz Deutschland Namensnennung 2.0).
 // Nutzt Helfer aus index.html (card, esc, fmt, readGml, wfsUrlBbox, alkisSvc/CFG.alkis, View3D, Baufenster).
@@ -1876,6 +1894,7 @@ const Bericht = (() => {
       pre.data = loadData(plot, plotPs, ext);
       pre.lod = pre.data.then(d => d && lodHeights(center, d.alk)).catch(() => {});
       pre.plan = planUrl(plotPs, ext, center).catch(() => "");
+      pre.wissen = loadWissen(plotPs, ext);
     }
     if (with3d && !pre.shot && !(typeof View3D !== "undefined" && View3D.isOpen())) { const p = pre; p.shot = p.data.then(d => shot3d(p, d)).then(u => { if (!u) p.shot = null; return u; }); }
     return pre;
@@ -1932,6 +1951,103 @@ const Bericht = (() => {
     return url;
   }
 
+  // ---------- „Gut zu wissen vor dem Kauf“: Bodenwert, Schutzgebiete, Solar, Gründach, Hochwasser, Fluglärm ----------
+  // Alle Dienste von geodienste.hamburg.de (CORS offen, live geprüft 2026-11-23).
+  const GD = "https://geodienste.hamburg.de/";
+  const gmlBox = async (svc, type, ext, max = 50) => { const t = await getText(wfsUrlBbox(GD + svc, type, ext, max), "Bericht " + type); return t == null ? null : readGml(t); };
+  const gmlFilter = async (svc, type, filter, max = 50) => {
+    const u = new URL(GD + svc); u.search = new URLSearchParams({service: "WFS", version: "1.1.0", request: "GetFeature", typeName: type, srsName: "EPSG:25832", maxFeatures: max, filter});
+    const t = await getText("" + u, "Bericht " + type); return t == null ? null : readGml(t);
+  };
+  // Fläche liegt wirklich auf dem Grundstück: Rasterpunkte im Grundstück prüfen (eine gemeinsame Grenzlinie zählt nicht)
+  const hitsOn = (fs, plotPs) => fs && fs.filter(f => {
+    const g = f.geometry; if (!g) return true;
+    if (!/Polygon/.test(g.getType())) return plotPs.some(p => touches(g, p, p.getExtent()));
+    return plotPs.some(p => { const e = p.getExtent(), dx = (e[2] - e[0]) / 12, dy = (e[3] - e[1]) / 12;
+      if (!ol.extent.intersects(g.getExtent(), e)) return false;
+      for (let i = .5; i < 12; i++) for (let j = .5; j < 12; j++) { const c = [e[0] + i * dx, e[1] + j * dy]; if (p.intersectsCoordinate(c) && g.intersectsCoordinate(c)) return true; }
+      return g.intersectsCoordinate(p.getInteriorPoint().getCoordinates().slice(0, 2)); });
+  });
+  async function bodenrichtwert(pt) {
+    const box = [pt[0] - 0.5, pt[1] - 0.5, pt[0] + 0.5, pt[1] + 0.5], y0 = new Date().getFullYear();
+    for (const y of [y0, y0 - 1, y0 - 2]) { // neuester Jahrgang zuerst; Anfang des Jahres ist der neue oft noch nicht da
+      const zs = await gmlBox("HH_WFS_Bodenrichtwerte", "v_brw_zonen_geom_flaeche_" + y, box, 5);
+      if (zs == null) return null;
+      const z = zs.find(f => !f.geometry || f.geometry.getType() === "Point" || f.geometry.intersectsCoordinate(pt)) || zs[0]; if (!z) continue;
+      let nutz = []; try { nutz = JSON.parse(z.props.nutzungsart || "{}").nutzungen || []; } catch { /* Feld fehlt */ }
+      const nrs = nutz.filter(n => /^(EFH|MFH)\b/.test(n.nutzungsart || "")).map(n => n.richtwertnummer).slice(0, 4); if (!nrs.length) return {y, werte: []};
+      const eq = n => `<PropertyIsEqualTo><PropertyName>richtwertnummer</PropertyName><Literal>${n}</Literal></PropertyIsEqualTo>`;
+      const f = `<Filter xmlns="http://www.opengis.net/ogc"><And><PropertyIsEqualTo><PropertyName>jahrgang</PropertyName><Literal>${y}</Literal></PropertyIsEqualTo>${nrs.length > 1 ? `<Or>${nrs.map(eq).join("")}</Or>` : eq(nrs[0])}</And></Filter>`;
+      const ws = await gmlFilter("HH_WFS_Bodenrichtwerte", "lgv_brw_zoniert_alle", f, 10); if (ws == null) return null;
+      const werte = ws.map(w => ({art: (w.props.nutzung_kombiniert || "").replace(/^\S+\s+/, ""), eur: parseFloat(w.props.richtwert_euro), gfz: w.props.geschossfl_zahl, zust: w.props.entwicklungszustand || ""}))
+        .filter(w => w.eur > 0).sort((a, b) => a.art.localeCompare(b.art));
+      return {y, werte};
+    }
+    return {y: y0, werte: []};
+  }
+  const loadWissen = (plotPs, ext) => (async () => {
+    const pt = plotPs[0].getInteriorPoint().getCoordinates().slice(0, 2), on = (svc, type) => gmlBox(svc, type, ext).then(fs => hitsOn(fs, plotPs));
+    const SG = "HH_WFS_Schutzgebiete", FL = "HH_WFS_Fluglaermschutzzonen", SB = "HH_WFS_Siedlungsbeschraenkungsbereiche";
+    const [brw, lsg, nsg, nd, ffh, solar, gd, tide, t1, t2, nz, sb1, sb2] = await Promise.all([
+      bodenrichtwert(pt).catch(() => null),
+      on(SG, "de.hh.up:nr_f_landschaftsschutzgebiet"), on(SG, "de.hh.up:nr_f_naturschutzgebiet"), on(SG, "de.hh.up:nr_f_naturdenkmal"), on(SG, "de.hh.up:nr_f_ffh_gebiet"),
+      gmlBox("wfs_solarpotenzialanalyse", "de.hh.up:gebaeude", ext, 30).then(fs => fs && fs.filter(f => f.geometry && inAny(plotPs, ol.extent.getCenter(f.geometry.getExtent())))),
+      on("HH_WFS_Gruendach_Foerdergebiete", "gruendach_foerdergebiete"),
+      on("HH_WFS_Hochwasser_gefaehrdeter_Bereich_Tidegebiet_Elbe", "de.hh.up:hw_gef_bereich_tidegebiet_elbe"),
+      on(FL, "de.hh.up:tsz1_area"), on(FL, "de.hh.up:tsz2_area"), on(FL, "de.hh.up:nsz_area"),
+      on(SB, "de.hh.up:siedlungsplan_fluglaerm_bereich_1"), on(SB, "de.hh.up:siedlungsplan_fluglaerm_bereich_2")]);
+    return {brw, lsg, nsg, nd, ffh, solar, gd, tide, flug: [t1, t2, nz, sb1, sb2]};
+  })().catch(() => null);
+  const euro = v => v >= 1e6 ? fmt(Math.round(v / 1e5) / 10, 1) + " Mio. €" : m0(Math.round(v / 1000) * 1000) + " €";
+  function bodenwert(werte, area) { // eine Nutzung oder fast gleiche Werte: ein Betrag; sonst Spanne
+    const v = werte.map(w => w.eur).sort((a, b) => a - b), lo = v[0], hi = v[v.length - 1];
+    if (hi < lo * 1.1) { const m = (lo + hi) / 2; return `etwa <b>${euro(m * area)}</b> wert (${m0(area)} m² × ${m0(m)} €/m²)`; }
+    return `zwischen <b>${euro(lo * area)} und ${euro(hi * area)}</b> wert, je nachdem ob Ein- oder Mehrfamilienhäuser gebaut werden dürfen (${m0(area)} m² × ${m0(lo)} bis ${m0(hi)} €/m²)`;
+  }
+  function wissenHtml(w, area) {
+    if (!w) return "";
+    const rows = [], na = `<span class="hint">Dienst nicht erreichbar, bitte selbst prüfen.</span>`, yes = t => `<b class="warn">Ja.</b> ${t}`, no = t => `<b class="ok">Nein.</b> ${t}`;
+    const names = fs => [...new Set(fs.map(f => f.props.gebietsname || f.props.schutzgebiet || f.props.name).filter(Boolean))].slice(0, 2).map(esc).join(", ");
+    // Bodenrichtwert
+    if (w.brw == null) rows.push(["Bodenrichtwert", na]);
+    else if (!w.brw.werte.length) rows.push(["Bodenrichtwert", `<span class="hint">Für diese Lage gibt es keinen Bodenrichtwert für Wohnhäuser (z. B. Grün- oder Gewerbefläche).</span>`]);
+    else {
+      rows.push([`Bodenrichtwert ${w.brw.y}`, w.brw.werte.map(v => `<b>${m0(v.eur)} €/m²</b> ${esc(v.art)}${v.gfz && +v.gfz ? ` <span class="hint">(bei GFZ ${esc(String(v.gfz).replace(".", ","))})</span>` : ""}`).join("<br>") +
+        (area ? `<br><span class="hint">Grob gerechnet ist der Boden allein ${bodenwert(w.brw.werte, area)}. Lage, Zuschnitt und was gebaut werden darf ändern den Wert. Ein Gutachten ersetzt das nicht.</span>` : "")]);
+    }
+    // Natur und Landschaft
+    const sg = [w.lsg, w.nsg, w.nd, w.ffh];
+    if (sg.some(x => x == null)) rows.push(["Natur- und Landschaftsschutz", na]);
+    else {
+      const t = [w.nsg.length && `Naturschutzgebiet ${names(w.nsg)}`, w.ffh.length && `FFH-Gebiet ${names(w.ffh)}`, w.lsg.length && `Landschaftsschutzgebiet ${names(w.lsg)}`, w.nd.length && "Naturdenkmal"].filter(Boolean);
+      rows.push(["Natur- und Landschaftsschutz", t.length ? yes(`${t.join(", ")}. Neue Gebäude, Anbauten und Fällungen brauchen hier oft eine zusätzliche Genehmigung der Naturschutzbehörde.`) : no("Kein Schutzgebiet und kein Naturdenkmal auf dem Grundstück.")]);
+    }
+    // Hochwasser an der Elbe
+    rows.push(["Hochwassergefährdeter Bereich Elbe", w.tide == null ? na : w.tide.length ? yes("Das Grundstück liegt im hochwassergefährdeten Bereich der Tideelbe. Bei Sturmflut kann es hier nass werden: hochwasserangepasst bauen, Keller und Heizung schützen. Infos: <a href=\"https://www.hamburg.de/hochwasser/\" target=\"_blank\" rel=\"noopener\">hamburg.de/hochwasser</a>") : no("Nicht im hochwassergefährdeten Bereich der Tideelbe.")]);
+    // Fluglärm
+    if (w.flug.some(x => x == null)) rows.push(["Fluglärm", na]);
+    else {
+      const [t1, t2, nz, s1, s2] = w.flug, z = [t1.length && "Tag-Schutzzone 1", t2.length && "Tag-Schutzzone 2", nz.length && "Nacht-Schutzzone"].filter(Boolean);
+      rows.push(["Fluglärm", z.length ? yes(`Lärmschutzbereich des Flughafens (${z.join(", ")}). Für neue Wohnungen gelten Bauverbote oder Schallschutz-Pflichten.`)
+        : s1.length || s2.length ? yes(`Siedlungsbeschränkungsbereich ${s1.length ? 1 : 2} des Flughafens. Neue Wohngebiete sind hier eingeschränkt, Schallschutz ist wichtig.`) : no("Nicht in einer Fluglärm-Schutzzone.")]);
+    }
+    // Solar
+    if (w.solar == null) rows.push(["Solar auf dem Dach", na]);
+    else if (!w.solar.length) rows.push(["Solar auf dem Dach", `<span class="hint">Für die Gebäude auf dem Grundstück gibt es keine Solar-Auswertung (z. B. unbebaut).</span>`]);
+    else {
+      const b = w.solar.slice().sort((a, b) => (+b.props.pvarea || 0) - (+a.props.pvarea || 0)), f = b[0].props, url = isUrl(f.calcurl_pv) ? f.calcurl_pv : "";
+      const pv = b.reduce((s, x) => s + (+x.props.pvarea || 0), 0), kw = b.reduce((s, x) => s + (+x.props.power || 0), 0);
+      rows.push(["Solar auf dem Dach", (pv >= 1 ? `<b>${m0(pv)} m²</b> Dachfläche für Solar geeignet, etwa <b>${m1(kw)} kWp</b>.` : "Das Dach ist laut Stadt kaum für Solar geeignet.") +
+        `<br><span class="hint">${esc((f.eignung || "").replace(/^Eignung \d+ \(|\)$/g, ""))}${url ? ` · <a href="${esc(url)}" target="_blank" rel="noopener">Solarrechner der Stadt</a>` : ""}</span>`]);
+    }
+    rows.push(["Solarpflicht", `<span class="hint">In Hamburg muss bei einem Neubau und wenn die Dachhaut überwiegend erneuert wird eine Solaranlage aufs Dach (Dächer ab 50 m², Hamburgisches Klimaschutzgesetz). Ausnahmen gibt es, z. B. wenn es technisch nicht geht oder sich nicht lohnt. <a href="https://www.hamburg.de/politik-und-verwaltung/behoerden/bukea/themen/energie/erneuerbare-energien/photovoltaik/faq-pv-pflicht-in-hamburg-956122" target="_blank" rel="noopener">Fragen und Antworten der Stadt</a></span>`]);
+    // Gründach
+    rows.push(["Gründach-Förderung", w.gd == null ? na : (w.gd.length ? `<b class="ok">Ja, erhöhte Förderung (PLUS-Gebiet).</b> ` : "Ja, die normale Förderung. ") +
+      `<span class="hint">Hamburg fördert begrünte Dächer und Fassaden. <a href="https://www.ifbhh.de/foerderprogramm/hamburger-gruendachfoerderung" target="_blank" rel="noopener">Gründachförderung der IFB</a></span>`]);
+    rows.push(["Bäume", `<span class="hint">Größere Bäume sind in Hamburg durch die Baumschutzverordnung geschützt. Fällen nur mit Genehmigung des Bezirksamts, oft mit Ersatzpflanzung. Bäume an der Straße gehören der Stadt.</span>`]);
+    return `<div>${rowsHtml(rows)}<p class="hint">Aus offenen Daten der Stadt Hamburg (Bodenrichtwerte, Schutzgebiete, Solarpotenzial, Hochwasser, Fluglärm). Baulasten, Altlasten und Grundbuch sind dort nicht frei verfügbar: Auskunft gibt das Bezirksamt (Baulastenverzeichnis) und das Grundbuchamt.</p></div>`;
+  }
+
   async function build(r, plot, rep) {
     r.querySelectorAll(".rep-x").forEach(x => x.remove());
     const geom = plot?.geometry, plotPs = polysOf(geom);
@@ -1948,11 +2064,11 @@ const Bericht = (() => {
     const ext = geom.getExtent(), center = ol.extent.getCenter(ext);
     const calcSec = r.querySelector("#calcOut")?.closest("section");
     const mk = (title, cls) => { const c = card(title, `<p class="hint">wird erstellt …</p>`, "rep-x loading " + cls); return c; };
-    const cRech = mk("Bebaut und noch frei", "rep-rech"), cSk = mk("Grundstück mit Maßen", "rep-sk"), c3d = mk("3D-Ansicht mit Baufenster", "rep-3d"), cNb = mk("Nachbarhäuser", "rep-nb"), cPlan = mk("Ausschnitt aus dem Originalplan", "rep-plan");
+    const cRech = mk("Bebaut und noch frei", "rep-rech"), cSk = mk("Grundstück mit Maßen", "rep-sk"), c3d = mk("3D-Ansicht mit Baufenster", "rep-3d"), cNb = mk("Nachbarhäuser", "rep-nb"), cPlan = mk("Ausschnitt aus dem Originalplan", "rep-plan"); const cWis = mk("Gut zu wissen vor dem Kauf", "rep-wis");
     if (calcSec) calcSec.after(cRech, cSk, c3d); else r.append(cRech, cSk, c3d);
     const orig = [...r.querySelectorAll("section.card")].find(s => /Originalplan|Kurzfassung/.test(s.querySelector("h2")?.textContent || ""));
     orig ? orig.after(cPlan) : c3d.after(cPlan);
-    steps.before(cNb);
+    steps.before(cNb); cNb.after(cWis);
     const done = (c, html) => { if (html) { c.classList.remove("loading"); c.querySelector("h2").nextElementSibling.outerHTML = html; } else c.remove(); };
 
     const pre = warm(plot, true), dataP = pre.data;
@@ -2009,6 +2125,7 @@ const Bericht = (() => {
         <p class="hint">Wichtig, wenn sich ein Neubau in die Umgebung einfügen muss (§ 34 BauGB) oder das Amt über Ausnahmen entscheidet. Höhe: Gelände bis höchster Punkt des Dachs, aus dem 3D-Stadtmodell.</p></div>`);
     });
 
+    const wis = (pre.wissen || loadWissen(plotPs, ext)).then(w => done(cWis, wissenHtml(w, plot.area || plotPs.reduce((a, p) => a + p.getArea(), 0))));
     const planImg = pre.plan.then(url => done(cPlan, url ? `<div><img class="rimg" src="${url}" alt="Ausschnitt aus der Planzeichnung, Grundstück gelb umrandet">
         <p class="hint">Gescannte Planzeichnung der Stadt, Ihr Grundstück ist gelb umrandet. Die Zeichen erklärt die Legende im Originalplan (Link in diesem Bericht).</p></div>` : ""));
     if (!pre.shot) pre.shot = dataP.then(d => shot3d(pre, d, true));
@@ -2017,7 +2134,7 @@ const Bericht = (() => {
         <p class="hint">Gelb: Ihr Grundstück. Blau: das Baufenster aus dem Bebauungsplan${d?.bfPs.length ? "" : " (für diesen Plan liegen keine Baufenster als Daten vor)"}. Grau: Gebäude aus dem 3D-Stadtmodell der Stadt Hamburg.</p></div>` : ""); });
 
     // Fertig, sobald alles da ist, spätestens nach 12 s. Was länger braucht (Planbild, 3D-Bild), erscheint danach von selbst.
-    const all = Promise.allSettled([rech, sk, nb, planImg, img3d]).then(() => [cRech, cSk, c3d, cNb, cPlan].forEach(c => c.classList.contains("loading") && c.remove()));
+    const all = Promise.allSettled([rech, sk, nb, wis, planImg, img3d]).then(() => [cRech, cSk, c3d, cNb, cWis, cPlan].forEach(c => c.classList.contains("loading") && c.remove()));
     await Promise.race([all, new Promise(res => setTimeout(res, window.__repCap || 12000))]);
   }
   return {build, warm};
@@ -3060,7 +3177,7 @@ const ICO = {
 };
 const TITLE_ICO = {"Bitte beachten": "alert", "Mein Grundstück": "home", "Was darf ich bauen?": "ruler", "Weitere Prüfungen am Grundstück": "shield",
   "Originalplan": "file", "Kurzfassung": "file", "Amtliche Werte der Stadt": "file", "Das sollten Sie wissen": "book", "Nicht in diesem Plan geregelt": "minus",
-  "Gilt außerdem in ganz Hamburg": "city", "Vollständigen Bericht anfordern?": "file", "Bebaut und noch frei": "ruler", "Grundstück mit Maßen": "ruler", "3D-Ansicht mit Baufenster": "home", "Nachbarhäuser": "city", "Ausschnitt aus dem Originalplan": "file", "Nächste Schritte": "book", "Ihr Ansprechpartner": "phone", "Kein Bebauungsplan gefunden": "search"};
+  "Gilt außerdem in ganz Hamburg": "city", "Vollständigen Bericht anfordern?": "file", "Bebaut und noch frei": "ruler", "Grundstück mit Maßen": "ruler", "3D-Ansicht mit Baufenster": "home", "Nachbarhäuser": "city", "Gut zu wissen vor dem Kauf": "shield", "Ausschnitt aus dem Originalplan": "file", "Nächste Schritte": "book", "Ihr Ansprechpartner": "phone", "Kein Bebauungsplan gefunden": "search"};
 const icon = n => `<span class="ico ico-${n || "info"}" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICO[n] || ICO.info}</svg></span>`;
 function card(title, html, cls = "") { const s = document.createElement("section"); s.className = "card " + cls; s.innerHTML = (title ? `<h2>${icon(TITLE_ICO[title])}${esc(title)}</h2>` : "") + html; return s; }
 function showCard(title, msg) { body.remove("detail"); $("overview").innerHTML = ""; $("overview").append(card(title, `<p class="hint">${esc(msg)}</p>`, title === "Bitte warten" ? "busy" : "")); }
@@ -3081,6 +3198,7 @@ const PRO_VIEWS = {
       <li><b>Stolpersteine früh erkennen</b>Denkmalschutz, Erhaltungsverordnungen und Regeln für ganz Hamburg, bevor Sie Geld in eine Planung stecken.</li>
       <li><b>Den Plan verstehen, ohne Fachwissen</b>Alle Regeln aus dem Bebauungsplan in einfachen Worten, dazu der Ausschnitt aus dem Originalplan.</li>
       <li><b>Vergleich mit den Nachbarn</b>Höhe, Geschosse und Grundfläche der Häuser nebenan.</li>
+      <li><b>Gut zu wissen vor dem Kauf</b>Bodenrichtwert und grober Bodenwert, Natur- und Landschaftsschutz, Hochwasser, Fluglärm, Solar-Eignung vom Dach und Förderung fürs Gründach.</li>
       <li><b>Gut vorbereitet ins Gespräch</b>Für Architekt, Bezirksamt, Bank oder Käufer: mit nächsten Schritten, Links zu den Originalplänen und Ihrem Ansprechpartner.</li>
     </ul>
     <div class="pro-price"><span>Einmalig für dieses Grundstück<small>Kein Abo. 30 Tage auf diesem Gerät abrufbar.</small></span><b>${PRO.preis}<small>Gesamtpreis${PRO.steuer ? ". " + esc(PRO.steuer) : ""}</small></b></div>
@@ -3201,6 +3319,8 @@ const openDetails = () => document.querySelectorAll("#results details").forEach(
 // auch beim Drucken über das Browser-Menü (Strg+P, Teilen > Drucken): alles aufklappen, Kopfzeile setzen
 window.addEventListener("beforeprint", () => { openDetails(); if (bezahlt) prepareReport(); $("printHead").textContent = bezahlt ? "" : "MoinPlan: Den vollständigen Bericht können Sie auf der Website anfordern."; });
 map.on("singleclick", ev => { if (!draw && !tm) { curPlace = null; queryAt(ev.coordinate, "Punkt in der Karte"); } });
+// Direktlink: …/?adresse=Rathausmarkt%201 sucht gleich los (z. B. von der Fehlerseite oder zum Teilen)
+{ const a = new URLSearchParams(location.search).get("adresse"); if (a && a.trim()) { $("q").value = a.trim().slice(0, 120); $("searchForm").requestSubmit(); } }
 </script>
 </body>
 </html>
