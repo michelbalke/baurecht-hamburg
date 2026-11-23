@@ -415,7 +415,7 @@ select { flex: initial; min-width: auto; padding: 10px; width: 100%; }
 .linkbtns, .checksum { gap: 8px; }
 
 /* Suchhistorie: weißes Blatt direkt unter dem Suchfeld, erscheint nur beim Suchen (Lage setzt placeRecent) */
-.recent { position: fixed; z-index: 30; display: flex; flex-direction: column; padding: 6px 0; max-height: 60dvh; overflow-y: auto; background: #2c2c2e; color: var(--fg); border-radius: 22px;
+.recent { position: absolute; z-index: 30; display: flex; flex-direction: column; padding: 6px 0; max-height: 60dvh; overflow-y: auto; background: #2c2c2e; color: var(--fg); border-radius: 22px;
   box-shadow: 0 0 0 .5px rgba(255,255,255,.12), 0 18px 40px rgba(0,0,0,.6); opacity: 0; visibility: hidden; pointer-events: none; transform: translateY(-6px) scale(.98); transform-origin: top center;
   transition: opacity .16s ease, transform .2s var(--ease), visibility 0s .2s; }
 body.searching .recent:not(.leer) { opacity: 1; visibility: visible; pointer-events: auto; transform: none; transition: opacity .2s ease, transform .28s var(--ease); }
@@ -2198,7 +2198,7 @@ on("bfKey", "click", () => {
 on("drawerClose", "click", () => toggleDrawer(false));
 on("backdrop", "click", () => toggleDrawer(false));
 addEventListener("keydown", e => { if (e.key === "Escape" && $("drawer").classList.contains("open")) toggleDrawer(false); });
-on("q", "focus", () => { ladeStrassen(); renderRecent($("q").value); body.add("searching"); });
+on("q", "focus", () => { ladeStrassen(); renderRecent($("q").value); body.add("searching"); folgeRecent(); });
 on("q", "input", () => renderRecent($("q").value));
 on("q", "blur", () => setTimeout(() => body.remove("searching"), 250));
 if (isPhone()) { // Rechtliches ins Menü (Kopie bleibt fürs Merkblatt)
@@ -2943,15 +2943,18 @@ function strassenTipp(filter, list) {
   const {str, nr} = teileAdresse(filter), seen = new Set(list.map(q => q.toLowerCase()));
   return aehnlicheStrassen(strassenListe, str, 4).filter(s => s.d > 0).map(s => ({...s, adr: nr ? `${s.n} ${nr}` : s.n})).filter(s => !seen.has(s.adr.toLowerCase()));
 }
-// Blatt hängt am body (über Karte und Kopf), deshalb Lage vom Suchfeld abnehmen: auf dem Handy volle Breite, sonst so breit wie das Feld
+// Blatt hängt am body (über Karte und Kopf), deshalb Lage vom Suchfeld abnehmen: auf dem Handy volle Breite, sonst so breit wie das Feld.
+// Absolut in Seitenkoordinaten statt fixed: iOS schiebt beim Öffnen der Tastatur Seite und Ansicht, fixe Elemente landeten dann über dem Suchfeld.
 function placeRecent() {
-  const box = $("recent");
-  if (isPhone() && body.contains("has-result")) { const h = qs(".side > header").getBoundingClientRect(); return Object.assign(box.style, {top: h.bottom + "px", left: h.left + "px", width: h.width + "px"}); }
-  const f = $("searchForm").getBoundingClientRect();
-  Object.assign(box.style, {top: f.bottom + 8 + "px", left: f.left + "px", width: f.width + "px"});
+  const box = $("recent"), vv = visualViewport, x = scrollX, y = scrollY;
+  const head = isPhone() && body.contains("has-result"), r = (head ? qs(".side > header") : $("searchForm")).getBoundingClientRect();
+  const top = head ? r.bottom : r.bottom + 14, sichtUnten = vv ? vv.offsetTop + vv.height : innerHeight;
+  Object.assign(box.style, {top: top + y + "px", left: r.left + x + "px", width: r.width + "px", maxHeight: Math.max(150, Math.min(innerHeight * .6, sichtUnten - top - 12)) + "px"});
 }
+// Während die Tastatur einfährt, Lage ein paar Bilder lang nachführen
+function folgeRecent(ms = 900) { const bis = performance.now() + ms; const tick = () => { placeRecent(); if (performance.now() < bis) requestAnimationFrame(tick); }; requestAnimationFrame(tick); }
 document.body.append($("recent"));
-addEventListener("resize", placeRecent); side.addEventListener("scroll", placeRecent, {passive: true}); visualViewport?.addEventListener("resize", placeRecent);
+addEventListener("resize", placeRecent); document.addEventListener("scroll", placeRecent, {passive: true, capture: true}); visualViewport?.addEventListener("resize", () => folgeRecent(300)); visualViewport?.addEventListener("scroll", placeRecent);
 on("recent", "pointerdown", e => e.preventDefault()); // Feld behält den Fokus, Tastatur bleibt bis zur Auswahl
 on("recent", "click", e => { if (e.target.closest("[data-clear]")) { recent = []; try { localStorage.removeItem("recent"); } catch {} renderRecent(); return; } const q = e.target.closest("[data-q]")?.dataset.q; if (q) { $("q").value = q; $("searchForm").requestSubmit(); } });
 renderRecent();
