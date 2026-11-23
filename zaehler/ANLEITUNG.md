@@ -1,17 +1,19 @@
-# MoinPlan-Zähler einrichten (Cloudflare, kostenlos)
+# MoinPlan-Zähler mit GoatCounter einrichten
 
-Was gezählt wird (je Tag und Planart): angezeigte Suchergebnisse, geöffneter Kaufdialog, Kauf, PDF gespeichert.
-Nicht gespeichert: IP-Adresse, gesuchte Adresse, Kennung, Cookies. Jedes Ereignis zählt höchstens einmal je Suchergebnis.
+Gezählt wird (je Planart: bplan, baustufenplan, keinplan):
+- `suche-…` Suchergebnis angezeigt
+- `kaufdialog-…` Angebot für den Bericht geöffnet
+- `kauf-…` Bericht gekauft
+- `pdf-…` Bericht als PDF gespeichert
 
-Kosten: 0 € (Cloudflare Workers Free: 100.000 Aufrufe am Tag, D1 Free: 100.000 Schreibvorgänge am Tag). Keine Kreditkarte nötig.
+Jedes Ereignis zählt höchstens einmal je Suche. Keine Cookies, keine Adresse. Seitenaufrufe werden nicht gezählt.
 
-1. Konto anlegen auf dash.cloudflare.com (E-Mail reicht).
-2. Links „Storage & Databases“ → „D1“ → „Create“, Name `moinplan-zaehler`. In der Datenbank „Console“ öffnen und den Inhalt von `schema.sql` einfügen und ausführen.
-3. Links „Workers & Pages“ → „Create“ → „Worker“ → Name `moinplan-zaehler` → „Deploy“. Dann „Edit code“, alles löschen, `worker.js` einfügen, „Deploy“.
-4. Im Worker „Settings“ → „Bindings“ → „Add“ → „D1 database“: Variablenname `DB`, Datenbank `moinplan-zaehler`.
-5. „Settings“ → „Variables and Secrets“ → „Add“, Typ „Secret“, Name `SCHLUESSEL`, Wert: ein langes Passwort nur für die Auswertung.
-6. Die Adresse des Workers (z. B. `https://moinplan-zaehler.<name>.workers.dev/`) an Claude geben. Claude trägt sie in `CFG.zaehler` ein und ergänzt die Datenschutzerklärung (`datenschutz-absatz.html`).
+## Was Michel tun muss
+1. Auf goatcounter.com „Sign up“: Code wählen (z. B. `moinplan`, ergibt moinplan.goatcounter.com), E-Mail, Passwort.
+2. Den gewählten Code an Claude schicken. Claude trägt ihn in `CFG.goatcounter` ein und schaltet die Datenschutzerklärung im selben Schritt um.
+3. In GoatCounter unter „Settings“ prüfen: „Collect“ → keine Referrer/Screen-Größe nötig (kann aus bleiben).
 
-Auswertung: `https://moinplan-zaehler.<name>.workers.dev/?k=<SCHLUESSEL>`, Log-Datei: `…/log.csv?k=<SCHLUESSEL>` (CSV, öffnet in Excel/Numbers).
+Hinweis: Der kostenlose Tarif ist laut GoatCounter für nicht-kommerzielle Seiten gedacht. Sobald MoinPlan echt verkauft, auf der Preisseite den günstigsten erlaubten Tarif prüfen.
 
-Eigene Domain später: in `worker.js` die Domain in `ERLAUBT` ergänzen. Kommt der eigene Server für die Planauslese, kann der Zähler dorthin umziehen (nur die Adresse in `CFG.zaehler` ändern).
+## Auswertung
+Im GoatCounter-Dashboard stehen die Ereignisse als eigene Zeilen. Kaufquote = `kauf-…` geteilt durch `suche-…`. Export als CSV: „Settings“ → „Export“.

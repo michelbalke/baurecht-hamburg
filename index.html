@@ -2004,17 +2004,25 @@ const CFG = {
   alkis: {url: HH + "WFS_HH_ALKIS_vereinfacht", type: "ave:Flurstueck"}, // bekannt, spart GetCapabilities
   alkisWfs: [HH + "WFS_HH_ALKIS_vereinfacht", HH + "HH_WFS_ALKIS_vereinfacht"], // Rückfall: Objektart aus GetCapabilities
   start: {center: [565700, 5933930], resolution: 1.2}, // Startkarte: Rathausmarkt
-  zaehler: "" // Adresse des Zähl-Servers (zaehler/worker.js), leer = es wird nichts gezählt
+  goatcounter: "" // Code des GoatCounter-Kontos (z. B. "moinplan" für moinplan.goatcounter.com), leer = es wird nichts gezählt
 };
-// Anonyme Zählung: nur Name des Ereignisses und Planart, keine Adresse, keine Kennung, keine Cookies.
+// Anonyme Zählung mit GoatCounter: nur Name des Ereignisses und Planart, keine Adresse, keine Cookies.
+// Das Zählskript wird erst beim ersten Ereignis geladen; Seitenaufrufe selbst werden nicht gezählt.
 // Jedes Ereignis zählt höchstens einmal je Suchergebnis (zweimal Kaufdialog öffnen = einmal).
 const gezaehlt = new Set();
 let zaehlNr = 0;
 function zaehle(name, art) {
   const k = name + "|" + zaehlNr;
-  if (!CFG.zaehler || gezaehlt.has(k)) return; gezaehlt.add(k);
-  try { navigator.sendBeacon(CFG.zaehler, name + (art ? ":" + art : "")); } catch { /* Zählen darf nie stören */ }
+  if (!CFG.goatcounter || gezaehlt.has(k)) return; gezaehlt.add(k);
+  const path = name + (art ? "-" + art : "");
+  zaehlWarte.push(path); if (window.goatcounter?.count) return zaehlLos();
+  if (document.querySelector("script[data-goatcounter]")) return;
+  window.goatcounter = {no_onload: true};
+  const sc = Object.assign(document.createElement("script"), {async: true, src: "https://gc.zgo.at/count.js", onload: () => zaehlLos()});
+  sc.dataset.goatcounter = `https://${CFG.goatcounter}.goatcounter.com/count`; document.head.append(sc);
 }
+const zaehlWarte = [];
+function zaehlLos() { try { while (zaehlWarte.length) window.goatcounter.count({path: zaehlWarte.shift(), event: true}); } catch { /* Zählen darf nie stören */ } }
 // Festsetzungen nach XPlanung / BauNVO ("Maß der baulichen Nutzung")
 const MASS = {
   grz: "GRZ", grzmax: "GRZ max.", gfz: "GFZ", gfzmax: "GFZ max.",
@@ -2444,7 +2452,7 @@ function renderResult(coord, placeName, plans, plot) {
   renderOverview(main, sum, placeName);
   appendExtras(r, coord, plot, sum, placeName);
   zaehlNr++; zaehlArt = !main ? "keinplan" : cur.bs ? "baustufenplan" : "bplan";
-  zaehle("ergebnis", zaehlArt);
+  zaehle("suche", zaehlArt);
   updateCalc();
   if (main && plot?.geometry) ladeBfFlaeche(plot);
   if (kept()[keyOf()]) unlock(true); // in den letzten 30 Tagen auf diesem Gerät gekauft
