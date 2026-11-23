@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#000000">
+<meta name="theme-color" content="#1c1c1e">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="MoinPlan">
@@ -954,6 +954,9 @@ ol.steps { margin: 0; padding-left: 22px; display: flex; flex-direction: column;
    (Seitenhintergrund) und lässt sie weich über den grauen Kopf auslaufen; das sah verschwommen aus. */
 .statusbg { display: none; }
 @media screen and (max-width: 760px) {
+  /* Safari 26 nimmt für die Statusleiste die Hintergrundfarbe der Seite: als Farbe Kopfgrau melden, sichtbar bleibt Schwarz (unterste Bildebene) */
+  body { background: var(--bg); } /* Handy ohne Kreise: deren Kante schaute neben der schwebenden Kopfleiste heraus und wirkte wie ein Schmierstreifen */
+  body:not(.has-result) { background: linear-gradient(var(--bg), var(--bg)) var(--panel); }
   body:not(.has-result):not(.mapfull):not(.is3d) .statusbg { display: block; position: fixed; top: 0; left: 0; right: 0; z-index: 30; height: env(safe-area-inset-top, 0px); background: var(--panel); pointer-events: none; }
 }
 /* Kleine Handys (iPhone SE, mini): nichts abschneiden, keine Wörter mitten im Wort trennen */
@@ -2211,6 +2214,7 @@ const startResults = $("results").innerHTML;
 function placeSearch(clear) {
   const inHead = isPhone() && body.contains("has-result");
   $("q").placeholder = inHead ? (innerWidth < 380 ? "Neue Suche" : "Erneute Suche") : "z. B. Rathausmarkt 1";
+  qs('meta[name="theme-color"]').content = isPhone() && !body.contains("has-result") ? "#1c1c1e" : "#000000"; // Statusleiste wie der Kopf
   if (inHead && clear) $("q").value = "";
 }
 addEventListener("resize", () => placeSearch()); placeSearch();
@@ -2274,6 +2278,8 @@ function tippAbstand(a, b, max) {
   }
   return p[b.length];
 }
+// Gleiche Straße, nur anders geschrieben (Leerzeichen statt Bindestrich, „Str.“ statt „Straße“): trotzdem vorschlagen, mit amtlicher Schreibweise
+const andersGeschrieben = (s, str) => s.n.toLowerCase() !== str.trim().toLowerCase();
 // Teilt die Eingabe in Straße, Hausnummer und Zusatz („Heinrich Eine Weg 41a“)
 const teileAdresse = q => { const m = q.trim().match(/^(.*?)[\s,]+(\d+)\s*([a-zA-Z])?$/); return m ? {str: m[1], nr: m[2] + (m[3] || "")} : {str: q.trim(), nr: ""}; };
 // Ähnlichste Straßen: 0 = gleich, 0.5 = Anfang des Namens, sonst Zahl der Tippfehler (erlaubt: 1 bis 3, je nach Länge)
@@ -2291,7 +2297,7 @@ function aehnlicheStrassen(liste, str, n = 5) {
 // Nach erfolgloser genauer Suche: Kandidaten beim Gazetteer prüfen (gibt es die Hausnummer dort?), dann übernehmen oder Liste zeigen
 async function sucheUnscharf(q) {
   const liste = await ladeStrassen(); if (!liste) return {treffer: []};
-  const {str, nr} = teileAdresse(q), kand = aehnlicheStrassen(liste, str, 5).filter(s => s.d > 0 || nr);
+  const {str, nr} = teileAdresse(q), kand = aehnlicheStrassen(liste, str, 5).filter(s => s.d > 0 || nr || andersGeschrieben(s, str));
   const geprueft = await Promise.all(kand.map(async s => { const adr = nr ? `${s.n} ${nr}` : s.n, hit = await gazetteer(adr); return hit && {...s, adr, hit}; }));
   const treffer = geprueft.filter(Boolean);
   // Eindeutig: nur ein Kandidat oder klar ähnlicher als der nächste
@@ -2591,7 +2597,7 @@ function renderOvBuild(tiles) {
     .concat(z ? [] : Object.entries(lastMass).map(([k, v]) => [v, MASS[k]])).filter(([b]) => b && b !== "–").slice(0, 6);
   cur.peek = t.slice(0, 2); renderPeek();
   const msg = !cur.hasPlan ? "Hier gilt kein Bebauungsplan. Gebaut werden darf, was sich in die Umgebung einfügt: ähnliche Höhe, Größe und Bauweise wie die Nachbarhäuser."
-    : cur.sum && !z ? "Bitte unten die Lage Ihres Grundstücks wählen, dann zeigt die App die Werte." : !t.length ? "Für diesen Plan liegen noch keine Werte in der App vor. Der Originalplan ist in den Details verlinkt." : "";
+    : cur.sum && !z ? "Bitte unten die Lage Ihres Grundstücks wählen, dann zeigt die App die Werte." : !t.length ? "Für diesen Plan liegen keine Werte der Stadt vor. Der Originalplan ist in den Details verlinkt." : "";
   const amt = z?.amtlich ? `<span class="ov-place">Werte aus den amtlichen Plandaten der Stadt${m?.fromDefault ? `. * ${esc(cur.sum.grzDefaultsNote.replace(/\.$/, ""))}` : ""}. Verbindlich ist der Originalplan.</span>`
     : z?.amtErg ? `<span class="ov-place">GRZ und GFZ aus den amtlichen Plandaten der Stadt. Verbindlich ist der Originalplan.</span>` : "";
   el.innerHTML = `<span class="ov-label">Was darf ich bauen?</span>${t.length ? `<span class="big">${t.map(x => tile(x)).join("")}</span>` : ""}${msg ? `<span class="ov-place">${esc(msg)}</span>` : ""}${amt}`;
@@ -2941,7 +2947,8 @@ let strassenListe = null;
 function strassenTipp(filter, list) {
   if (!strassenListe || filter.trim().length < 3 || parseCoordinates(filter)) return [];
   const {str, nr} = teileAdresse(filter), seen = new Set(list.map(q => q.toLowerCase()));
-  return aehnlicheStrassen(strassenListe, str, 4).filter(s => s.d > 0).map(s => ({...s, adr: nr ? `${s.n} ${nr}` : s.n})).filter(s => !seen.has(s.adr.toLowerCase()));
+  const tr = aehnlicheStrassen(strassenListe, str, 4), genau = tr.some(s => s.d === 0); // genau getroffen: keine Tippfehler-Vorschläge mehr dazu
+  return tr.filter(s => !genau || s.d < 1).map(s => ({...s, adr: nr ? `${s.n} ${nr}` : s.n})).filter(s => !seen.has(s.adr.toLowerCase()));
 }
 // Blatt hängt am body (über Karte und Kopf), deshalb Lage vom Suchfeld abnehmen: auf dem Handy volle Breite, sonst so breit wie das Feld.
 // Absolut in Seitenkoordinaten statt fixed: iOS schiebt beim Öffnen der Tastatur Seite und Ansicht, fixe Elemente landeten dann über dem Suchfeld.
