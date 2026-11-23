@@ -2597,7 +2597,7 @@ function renderOvBuild(tiles) {
     .concat(z ? [] : Object.entries(lastMass).map(([k, v]) => [v, MASS[k]])).filter(([b]) => b && b !== "–").slice(0, 6);
   cur.peek = t.slice(0, 2); renderPeek();
   const msg = !cur.hasPlan ? "Hier gilt kein Bebauungsplan. Gebaut werden darf, was sich in die Umgebung einfügt: ähnliche Höhe, Größe und Bauweise wie die Nachbarhäuser."
-    : cur.sum && !z ? "Bitte unten die Lage Ihres Grundstücks wählen, dann zeigt die App die Werte." : !t.length ? "Für diesen Plan liegen noch keine Werte in der App vor. Der Originalplan ist in den Details verlinkt." : "";
+    : cur.sum && !z ? "Bitte unten die Lage Ihres Grundstücks wählen, dann zeigt die App die Werte." : !t.length ? "Für diesen Plan liegen keine Werte der Stadt vor. Der Originalplan ist in den Details verlinkt." : "";
   const amt = z?.amtlich ? `<span class="ov-place">Werte aus den amtlichen Plandaten der Stadt${m?.fromDefault ? `. * ${esc(cur.sum.grzDefaultsNote.replace(/\.$/, ""))}` : ""}. Verbindlich ist der Originalplan.</span>`
     : z?.amtErg ? `<span class="ov-place">GRZ und GFZ aus den amtlichen Plandaten der Stadt. Verbindlich ist der Originalplan.</span>` : "";
   el.innerHTML = `<span class="ov-label">Was darf ich bauen?</span>${t.length ? `<span class="big">${t.map(x => tile(x)).join("")}</span>` : ""}${msg ? `<span class="ov-place">${esc(msg)}</span>` : ""}${amt}`;
