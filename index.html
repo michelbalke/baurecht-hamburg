@@ -527,6 +527,10 @@ details[open] > summary { margin-bottom: 6px; }
 details.more > summary { font-weight: 600; font-size: 13.5px; padding: 4px 0; }
 details.more[open] > summary { margin-bottom: 10px; }
 details.more > dl.rules { padding-top: 10px; border-top: 1px solid var(--line); }
+.zlist { overflow-x: auto; }
+.zlist table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.zlist th, .zlist td { text-align: left; padding: 6px 8px 6px 0; border-top: 1px solid var(--line); vertical-align: top; }
+.zlist th { font-weight: 600; color: var(--muted, #8e8e93); border-top: 0; }
 .srcline { display: flex; flex-direction: column; gap: 4px; padding: 0 4px; }
 ul.facts { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; font-size: 13.5px; }
 ul.facts li { display: grid; gap: 1px; padding-left: 12px; border-left: 3px solid var(--accent-soft); }
@@ -2159,6 +2163,7 @@ const CFG = {
   alkis: {url: HH + "WFS_HH_ALKIS_vereinfacht", type: "ave:Flurstueck"}, // bekannt, spart GetCapabilities
   alkisWfs: [HH + "WFS_HH_ALKIS_vereinfacht", HH + "HH_WFS_ALKIS_vereinfacht"], // Rückfall: Objektart aus GetCapabilities
   start: {center: [565700, 5933930], resolution: 1.2}, // Startkarte: Rathausmarkt
+  server: "", // MoinPlan-Server für Kauf und Planauslese, z. B. "https://api.moinplan.de" (kommt aus betreiber.json); leer = ohne Server wie bisher
   goatcounter: "michelbalke" // Code des GoatCounter-Kontos (z. B. "moinplan" für moinplan.goatcounter.com), leer = es wird nichts gezählt
 };
 // Anonyme Zählung mit GoatCounter: nur Name des Ereignisses und Planart, keine Adresse, keine Cookies.
@@ -2471,6 +2476,17 @@ on("searchForm", "submit", async e => {
 });
 
 // ---------- Abfrage an einem Punkt ----------
+// Kurzfassungen, die der Server nach einem Kauf aus dem Originalplan gelesen hat. Ohne Server oder bei Fehler: wie bisher.
+const fassungen = new Map(), frisch = new Set(); // frisch: gerade ausgelesen, am Browser-Cache vorbei neu laden
+async function holeFassungen(plans) {
+  if (!CFG.server) return;
+  const keys = [...new Set(plans.filter(p => p.status === "festgestellt").map(p => normKey(planName(p.props))).filter(k => k && !SUMMARIES[k]))];
+  await Promise.all(keys.map(k => {
+    if (!fassungen.has(k)) fassungen.set(k, fetch(`${CFG.server}/api/fassung/${k}`, {signal: AbortSignal.timeout(3000), cache: frisch.delete(k) ? "reload" : "default"}).then(r => r.ok ? r.json() : null).catch(() => { fassungen.delete(k); return null; }));
+    return fassungen.get(k).then(f => { if (f?.zones && !SUMMARIES[k]) SUMMARIES[k] = f; });
+  }));
+}
+let lastCoord = null;
 let lastMass = {}, cur = {sum: null, zone: null}, curPlace = null, queryId = 0; // queryId: nur die neueste Abfrage darf anzeigen
 const normKey = s => String(s || "").toLowerCase().replace(/ä/g, "ae").replace(/ö/g, "oe").replace(/ü/g, "ue").replace(/ß/g, "ss").replace(/[^a-z0-9]/g, "");
 function findSummary(plans) {
@@ -2621,6 +2637,9 @@ async function queryAt(coord, placeName) {
     })).then(a => a.flat()),
     queryPlot(coord).then(p => { if (id === queryId) checkFetch(coord, p); return p; })]);
   if (id !== queryId) return;
+  await holeFassungen(plans); // vom Server ausgelesene Pläne (nach einem Kauf), dann kostenlos für alle
+  if (id !== queryId) return;
+  lastCoord = coord;
   for (const p of plans) if (p.geometry) selSrc.addFeature(new ol.Feature(p.geometry));
   if (plot?.geometry) {
     plotSrc.addFeature(new ol.Feature({geometry: plot.geometry, label: "Mein Grundstück" + (plot.area ? "\n" + fmt(plot.area) + " m²" : "")}));
@@ -2665,7 +2684,7 @@ function renderResult(coord, placeName, plans, plot) {
     if (sum) {
       const zc = card("Mein Grundstück", `<label class="hint" for="zoneSel">${cur.zone ? "Erkannt über die Flurstücksnummer. Falls falsch, bitte auswählen:" : "Bitte wählen Sie die Lage Ihres Grundstücks:"}</label>
         <select id="zoneSel"><option value="">– Lage wählen –</option>${sum.zones.map(z => `<option value="${esc(z.id)}" ${cur.zone?.id === z.id ? "selected" : ""}>${esc(z.lage)}</option>`).join("")}</select>
-        <div id="glance"></div>`);
+        <div id="glance"></div>${sum.zones.length > 1 ? zonenListe(sum) : ""}`);
       zc.querySelector("#zoneSel").addEventListener("change", e => { const v = e.target.value; cur.zone = v === "amtlich" ? cur.amt : mitAmt(sum.zones.find(z => z.id === v) || null); renderGlance(); updateCalc(); });
       const rl = x => `<dt>${esc(x.t)}</dt><dd>${esc(x.d)}</dd>`, src = document.createElement("div");
       src.className = "srcline";
@@ -2689,7 +2708,7 @@ function renderResult(coord, placeName, plans, plot) {
   zaehle("suche", zaehlArt);
   updateCalc();
   if (main && plot?.geometry) ladeBfFlaeche(plot);
-  if (kept()[keyOf()]) unlock(true); // in den letzten 30 Tagen auf diesem Gerät gekauft
+  kaufPruefen(); // Rückkehr von der Kasse oder in den letzten 30 Tagen auf diesem Gerät gekauft
   const offen = blattOffen; side.scrollTop = 0; setBlatt(false); // Handy: neues Ergebnis erst nur mit Planname und Eckdaten, Karte groß
   if (first || offen) requestAnimationFrame(() => { map.updateSize(); fitPlot(); }); // Kopf wird kleiner, Karte größer; weich weiterzoomen statt springen
 }
@@ -2707,7 +2726,7 @@ function renderOverview(main, sum, placeName) {
     <button type="button" class="ov-build" data-go="calc" id="ovBuild"></button>
     <button type="button" class="ov-box ov-row ov-pro" data-pro="start"><span class="ov-label">Vollständigen Bericht anfordern?<small>Alle Details zum Grundstück als PDF</small></span><span class="ov-more">›</span></button>`;
   cur.hasPlan = !!main;
-  rep = {place: placeName, plan: main ? name : "Kein Bebauungsplan (§ 34 BauGB)", status: !main ? "" : gilt ? "festgestellt" + (sum?.festgestellt ? " " + sum.festgestellt : "") : "im Verfahren", flst: plotNumber(lastPlot), area: lastPlot?.area, links: main ? pdfLinks(main) : []};
+  rep = {planRoh: main && gilt ? planName(main.props) : "", place: placeName, plan: main ? name : "Kein Bebauungsplan (§ 34 BauGB)", status: !main ? "" : gilt ? "festgestellt" + (sum?.festgestellt ? " " + sum.festgestellt : "") : "im Verfahren", flst: plotNumber(lastPlot), area: lastPlot?.area, links: main ? pdfLinks(main) : []};
 }
 // „Was darf ich bauen?“ in der Übersicht: dieselben Werte wie im Rechner der Detailseite, dazu die Eckdaten der Lage
 function renderOvBuild(tiles) {
@@ -2836,6 +2855,14 @@ function zoneMass(sum, z) { // Plan-Wert oder Standardwert nach BauNVO
   return {grz: z.grz ?? d?.grz ?? null, gfz: z.gfz ?? d?.gfz ?? null, fromDefault: z.grz == null && !!d, vg: z.vg, vgArt: z.vgArt};
 }
 const tile = ([b, s], h = esc) => `<span><b>${h(b)}</b><span>${esc(s)}</span></span>`; // span: steht auch im Knopf der Übersicht
+// Alle Bereiche eines Plans auf einen Blick (vor allem für den Bericht, wenn die Lage nicht automatisch erkannt wurde)
+function zonenListe(sum) {
+  const k = v => v != null ? String(v).replace(".", ",") : "–";
+  return `<details class="more"><summary>Alle ${sum.zones.length} Bereiche dieses Plans</summary><div class="zlist"><table>
+    <tr><th>Lage</th><th>Nutzung</th><th>Geschosse</th><th>GRZ</th><th>GFZ</th><th>Bauweise</th></tr>
+    ${sum.zones.map(z => `<tr><td>${esc(z.lage)}</td><td>${esc(z.art || "–")}</td><td>${esc(z.vg != null ? vgText(z) : "–")}</td><td>${k(z.grz)}</td><td>${k(z.gfz)}</td><td>${esc(z.bauweise || (z.gr ? fmt(z.gr) + " m² Grundfläche" : "–"))}</td></tr>`).join("")}
+  </table></div></details>`;
+}
 function renderGlance() {
   const g = $("glance"), z = cur.zone; if (!g) return;
   if (!z) { g.innerHTML = ""; return; }
@@ -3229,7 +3256,7 @@ document.addEventListener("click", e => {
   const b = e.target.closest("[data-pro]"); if (!b) return;
   const v = b.dataset.pro;
   if (v === "close") return proDlg.close();
-  if (v === "kaufen") { proDlg.close(); zaehle("kauf", zaehlArt); return unlock(); }
+  if (v === "kaufen") { if (PRO.bezahlung && CFG.server) return kaufStart(b); proDlg.close(); zaehle("kauf", zaehlArt); return unlock(); }
   if (v === "pdf") return makeReport();
   proView(v);
 });
@@ -3284,7 +3311,7 @@ function captureMap() { // erst das Bild der sichtbaren Karte, dann das scharfe 
   mapImageHi().then(u => { if (u && mine === rep) rep.img = u; }).catch(() => {});
 }
 // Vorschau-Kauf: freischalten und den vollständigen Bericht öffnen
-function unlock(quiet) {
+function unlock(quiet, kauf) {
   if (quiet) { const mine = rep; setTimeout(() => { if (mine === rep) captureMap(); }, 2500); }
   else captureMap(); // Karte jetzt sichern: in den Details ist sie auf dem Handy nicht zu sehen
   bezahlt = true; body.add("bezahlt");
@@ -3295,16 +3322,17 @@ function unlock(quiet) {
   if (o) { delete o.dataset.pro; o.dataset.go = ""; o.querySelector(".ov-label").innerHTML = "Vollständiger Bericht<small>Freigeschaltet: lesen oder als PDF speichern</small>"; }
   if (!quiet && !body.contains("detail")) openDetail("");
   rep.ready = false; const mine = rep;
-  Bericht.build($("results"), lastPlot, rep).catch(() => {}).then(() => { mine.ready = true; if (mine === rep) document.querySelectorAll('[data-pro="pdf"]').forEach(b => { b.disabled = false; b.textContent = "Als PDF speichern"; }); });
-  remember();
+  Bericht.build($("results"), lastPlot, rep).catch(() => {}).then(() => { mine.ready = true; if (mine === rep) { document.querySelectorAll('[data-pro="pdf"]').forEach(b => { b.disabled = false; b.textContent = "Als PDF speichern"; }); if (druck) druckFertig(); } });
+  remember(kauf); ausleseHinweis(kauf);
   if (!quiet) proView("frei");
   document.querySelectorAll('[data-pro="pdf"]').forEach(b => { b.disabled = !rep.ready; if (!rep.ready) b.textContent = "Bericht wird fertiggestellt …"; });
 }
 // Kauf 30 Tage auf diesem Gerät merken (Vorschau: ohne Konto und ohne Zahlung)
 try { localStorage.removeItem("moinplan-berichte"); localStorage.removeItem("moinplan-berichte-2"); } catch { /* egal */ } // alte Vorschau-Käufe zurückgesetzt (10.11., 19.11.)
 const KEEP = "moinplan-berichte-3", keyOf = () => { const g = lastPlot?.geometry; return g ? ol.extent.getCenter(g.getExtent()).map(Math.round).join(",") : ""; };
-const kept = () => { try { const o = JSON.parse(localStorage.getItem(KEEP) || "{}"), now = Date.now(); for (const k in o) if (o[k] < now) delete o[k]; return o; } catch { return {}; } };
-function remember() { const k = keyOf(); if (!k) return; try { const o = kept(); o[k] ||= Date.now() + 30 * 864e5; localStorage.setItem(KEEP, JSON.stringify(o)); rep.bis = o[k]; } catch { /* privates Fenster: dann eben nicht */ } }
+const bisOf = v => typeof v === "object" ? v?.bis : v; // Vorschau: Zahl; mit Server: {bis, id, t} (Kaufnummer und Schlüssel, prüft der Server)
+const kept = () => { try { const o = JSON.parse(localStorage.getItem(KEEP) || "{}"), now = Date.now(); for (const k in o) if (!(bisOf(o[k]) > now)) delete o[k]; return o; } catch { return {}; } };
+function remember(kauf) { const k = keyOf(); if (!k) return; try { const o = kept(); o[k] = kauf ? {bis: kauf.s?.bis || kauf.bis || Date.now() + 30 * 864e5, id: kauf.id, t: kauf.t} : o[k] || Date.now() + 30 * 864e5; localStorage.setItem(KEEP, JSON.stringify(o)); rep.bis = bisOf(o[k]); } catch { /* privates Fenster: dann eben nicht */ } }
 // Deckblatt füllen; läuft vor jedem Druck des bezahlten Berichts (auch über das Browser-Menü)
 function prepareReport() {
   const nr = rep.nr ||= "MP-" + Date.now().toString(36).toUpperCase().slice(-6), date = new Date().toLocaleDateString("de-DE");
@@ -3325,8 +3353,78 @@ const openDetails = () => document.querySelectorAll("#results details").forEach(
 // auch beim Drucken über das Browser-Menü (Strg+P, Teilen > Drucken): alles aufklappen, Kopfzeile setzen
 window.addEventListener("beforeprint", () => { openDetails(); if (bezahlt) prepareReport(); $("printHead").textContent = bezahlt ? "" : "MoinPlan: Den vollständigen Bericht können Sie auf der Website anfordern."; });
 map.on("singleclick", ev => { if (!draw && !tm) { curPlace = null; queryAt(ev.coordinate, "Punkt in der Karte"); } });
+// ---------- Kauf über den MoinPlan-Server (nur wenn CFG.server und PRO.bezahlung gesetzt sind) ----------
+// Ablauf: Kauf anlegen -> Kasse des Zahlungsanbieters -> zurück mit ?kauf=…&t=… -> Server bestätigt die Zahlung -> freischalten.
+// Der Server liest den Plan aus, wenn es noch keine Kurzfassung gibt, und schickt die Bestätigungsmail mit dem PDF.
+const KAUF_URL = new URLSearchParams(location.search), druck = KAUF_URL.has("druck");
+let kaufOffen = null;
+const kaufApi = (id, t) => fetch(`${CFG.server}/api/kauf/${encodeURIComponent(id)}?t=${encodeURIComponent(t)}`, {cache: "no-store"}).then(r => r.ok ? r.json() : Promise.reject(new Error(r.status)));
+async function kaufStart(btn) {
+  btn.disabled = true; btn.textContent = "Weiter zur Zahlung …";
+  try {
+    const r = await fetch(CFG.server + "/api/kauf", {method: "POST", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({plan: rep.planRoh || "", adresse: rep.place || "", punkt: lastCoord, flst: rep.flst || "", flaeche: rep.area || null, zustimmung: !!($("proOk1")?.checked && $("proOk2")?.checked)})});
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok || !d.url) throw new Error(d.fehler || r.status);
+    zaehle("kasse", zaehlArt);
+    location.href = d.url;
+  } catch (e) {
+    btn.disabled = false; btn.textContent = PRO.bezahlung ? "Zahlungspflichtig bestellen" : "Bericht kostenlos ansehen";
+    btn.insertAdjacentHTML("afterend", `<p class="pro-note">Die Zahlung ist gerade nicht erreichbar. Bitte in ein paar Minuten noch einmal versuchen.</p>`);
+  }
+}
+async function kaufZurueck() {
+  const id = KAUF_URL.get("kauf"), t = KAUF_URL.get("t"); if (!id || !t || !CFG.server) return false;
+  if (!druck) history.replaceState(null, "", location.pathname); // Schlüssel nicht in der Adresszeile stehen lassen
+  showCard("Bitte warten", "Ihr Kauf wird geprüft …");
+  let s; try { s = await kaufApi(id, t); } catch { showCard("Hinweis", "Der Kauf konnte gerade nicht geprüft werden. Bitte die Seite gleich neu laden. Die Bestätigung kommt auch per E-Mail."); return true; }
+  if (!s.punkt) return false;
+  kaufOffen = {id, t, s, abbruch: KAUF_URL.has("abbruch")};
+  $("q").value = s.adresse || ""; curPlace = null;
+  view.setCenter(s.punkt); queryAt(s.punkt, s.adresse || "Mein Grundstück");
+  return true;
+}
+function kaufPruefen() {
+  const k = kept()[keyOf()];
+  if (kaufOffen && !kaufOffen.dran) { kaufOffen.dran = true; return kaufWarten(kaufOffen); }
+  if (druck) { window.__moinplanBericht = "fehler"; return; }
+  if (!k) return;
+  if (typeof k === "object" && k.id && CFG.server) { const mine = rep; return kaufApi(k.id, k.t).then(s => { if (s.bezahlt && mine === rep) unlock(true, {id: k.id, t: k.t, s}); }).catch(() => { if (mine === rep) unlock(true, k); }); }
+  if (!PRO.bezahlung) unlock(true); // Vorschau ohne Zahlung
+}
+async function kaufWarten(o, n = 0) {
+  const mine = rep;
+  if (o.abbruch) return; // Kasse abgebrochen: einfach das Ergebnis zeigen
+  if (o.s.bezahlt) { if (n === 0 && !druck) zaehle("kauf", zaehlArt); return unlock(druck, o); }
+  if (druck) { window.__moinplanBericht = "fehler"; return; }
+  if (["fehlgeschlagen", "abgelaufen", "erstattet"].includes(o.s.status)) return;
+  const c = qs("#overview .ov-pro small"); if (c) c.textContent = "Zahlung wird bestätigt …";
+  if (n > 45) { if (c) c.textContent = "Zahlung noch nicht bestätigt. Sie bekommen eine E-Mail, sobald sie da ist."; return; }
+  await new Promise(r => setTimeout(r, 2000));
+  if (mine !== rep) return;
+  try { o.s = await kaufApi(o.id, o.t); } catch { /* gleich noch einmal */ }
+  if (o.s.bezahlt) zaehle("kauf", zaehlArt);
+  kaufWarten(o, n + 1);
+}
+// Plan wird nach dem Kauf noch ausgelesen: Hinweis zeigen, nachfragen und das Ergebnis neu laden, sobald die Werte da sind
+function ausleseHinweis(kauf) {
+  const a = kauf?.s?.auslese; if (!["wartet", "laeuft"].includes(a) || druck) return;
+  const c = qs("#results .procard"); if (!c || c.querySelector(".auslese")) return;
+  c.insertAdjacentHTML("beforeend", `<p class="hint auslese">Für diesen Plan gab es noch keine Kurzfassung. Wir lesen ihn gerade für Sie aus dem Originalplan aus (meist 5 bis 10 Minuten). Die Werte erscheinen dann hier, und Sie bekommen eine E-Mail mit dem PDF.</p>`);
+  const mine = rep, key = normKey(rep.planRoh);
+  const frag = () => setTimeout(async () => {
+    if (mine !== rep) return;
+    let s; try { s = await kaufApi(kauf.id, kauf.t); } catch { return frag(); }
+    if (["wartet", "laeuft"].includes(s.auslese)) return frag();
+    if (s.auslese === "fertig") { fassungen.delete(key); frisch.add(key); delete SUMMARIES[key]; queryAt(lastCoord, rep.place); }
+    else c.querySelector(".auslese").textContent = "Der Plan konnte nicht automatisch ausgelesen werden. Die Angaben oben stammen aus den amtlichen Daten; den Originalplan finden Sie in den Details.";
+  }, 20000);
+  frag();
+}
+// Server-Druck: alles aufklappen, Deckblatt bauen und dem Druckprogramm melden, dass der Bericht fertig ist
+function druckFertig() { openDetails(); prepareReport(); body.add("report"); setTimeout(() => { window.__moinplanBericht = "fertig"; }, 1500); }
 // Direktlink: …/?adresse=Rathausmarkt%201 sucht gleich los (z. B. von der Fehlerseite oder zum Teilen)
-{ const a = new URLSearchParams(location.search).get("adresse"); if (a && a.trim()) { $("q").value = a.trim().slice(0, 120); $("searchForm").requestSubmit(); } }
+kaufZurueck().then(k => { const a = KAUF_URL.get("adresse"); if (!k && a && a.trim()) { $("q").value = a.trim().slice(0, 120); $("searchForm").requestSubmit(); } });
 </script>
 </body>
 </html>

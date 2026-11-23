@@ -35,8 +35,11 @@ Am Ende steht, welche Angaben noch offen sind.
 3. GitHub: Settings > Pages > Custom domain `moinplan.de`, dann „Enforce HTTPS“.
 4. GoatCounter: in den Einstellungen die neue Domain erlauben.
 
-## 4. Noch offen (braucht Konten oder Entscheidungen)
-- Zahlungsanbieter (z. B. Stripe) und ein kleiner Server, der den Kauf prüft und den Bericht freischaltet. Heute schaltet der Browser selbst frei (Vorschau).
-- Mail-Dienst für die Bestätigungsmail (Entwurf: vorschau/bestaetigungsmail/).
+## 4. Server für Kauf, Planauslese und Bestätigungsmail
+Fertig gebaut in `server/` (Anleitung: `server/ANLEITUNG.md`). Fehlt nur: Konten anlegen, Server mieten, Schlüssel eintragen.
+1. Server läuft (`api.moinplan.de`), Test mit `MOINPLAN_ZAHLUNG=test` und dann Stripe-Testmodus.
+2. In `betreiber.json`: `"server": "https://api.moinplan.de"`, nach erfolgreichem Testkauf `"bezahlung": true`. Ohne Server darf `bezahlung` nicht `true` sein (build.py stoppt dann).
+3. Datenschutzerklärung um Server (Hetzner) und Mail-Dienst ergänzen.
+
+## 5. Noch offen
 - Fachanwalt IT-Recht prüft AGB, Widerruf, Datenschutz.
-- Erst danach in `src/index.html` `PRO.bezahlung` auf `true` setzen.
