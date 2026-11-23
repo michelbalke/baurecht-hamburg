@@ -2003,8 +2003,18 @@ const CFG = {
   bplanTypes: [{type: "app:hh_hh_festgestellt", label: "festgestellt"}, {type: "app:prosin_imverfahren", label: "im Verfahren"}],
   alkis: {url: HH + "WFS_HH_ALKIS_vereinfacht", type: "ave:Flurstueck"}, // bekannt, spart GetCapabilities
   alkisWfs: [HH + "WFS_HH_ALKIS_vereinfacht", HH + "HH_WFS_ALKIS_vereinfacht"], // Rückfall: Objektart aus GetCapabilities
-  start: {center: [565700, 5933930], resolution: 1.2} // Startkarte: Rathausmarkt
+  start: {center: [565700, 5933930], resolution: 1.2}, // Startkarte: Rathausmarkt
+  zaehler: "" // Adresse des Zähl-Servers (zaehler/worker.js), leer = es wird nichts gezählt
 };
+// Anonyme Zählung: nur Name des Ereignisses und Planart, keine Adresse, keine Kennung, keine Cookies.
+// Jedes Ereignis zählt höchstens einmal je Suchergebnis (zweimal Kaufdialog öffnen = einmal).
+const gezaehlt = new Set();
+let zaehlNr = 0;
+function zaehle(name, art) {
+  const k = name + "|" + zaehlNr;
+  if (!CFG.zaehler || gezaehlt.has(k)) return; gezaehlt.add(k);
+  try { navigator.sendBeacon(CFG.zaehler, name + (art ? ":" + art : "")); } catch { /* Zählen darf nie stören */ }
+}
 // Festsetzungen nach XPlanung / BauNVO ("Maß der baulichen Nutzung")
 const MASS = {
   grz: "GRZ", grzmax: "GRZ max.", gfz: "GFZ", gfzmax: "GFZ max.",
@@ -2433,6 +2443,8 @@ function renderResult(coord, placeName, plans, plot) {
   }
   renderOverview(main, sum, placeName);
   appendExtras(r, coord, plot, sum, placeName);
+  zaehlNr++; zaehlArt = !main ? "keinplan" : cur.bs ? "baustufenplan" : "bplan";
+  zaehle("ergebnis", zaehlArt);
   updateCalc();
   if (main && plot?.geometry) ladeBfFlaeche(plot);
   if (kept()[keyOf()]) unlock(true); // in den letzten 30 Tagen auf diesem Gerät gekauft
@@ -2925,7 +2937,7 @@ function showCard(title, msg) { body.remove("detail"); $("overview").innerHTML =
 // ---------- Vollständiger Bericht (Vorschau, noch ohne Bezahlung) ----------
 // bezahlung: erst true, wenn ein Zahlungsanbieter angeschlossen ist; steuer: Hinweis am Preis (Kleinunternehmer oder inkl. USt.), leer bis Michel es festlegt
 const PRO = {preis: "34,99 €", bezahlung: false, steuer: ""};
-let rep = {}, lastPlot = null, bezahlt = false; // bezahlt: Vorschau, gilt nur bis zum Neuladen
+let rep = {}, lastPlot = null, bezahlt = false, zaehlArt = ""; // bezahlt: Vorschau, gilt nur bis zum Neuladen
 const proDlg = $("pro"), proIn = $("proIn");
 const proHead = t => `<div class="pro-top"><h3 id="proH">${esc(t)}</h3><button type="button" class="ghost" data-pro="close">Schließen</button></div>${rep.place ? `<p class="pro-for">Für ${esc(rep.place)}${rep.flst ? " · Flurstück " + esc(rep.flst) : ""}</p>` : ""}`;
 const PRO_VIEWS = {
@@ -2953,7 +2965,7 @@ const PRO_VIEWS = {
     <button type="button" class="wide" data-pro="pdf">Als PDF speichern</button>
     <button type="button" class="ghost wide" data-pro="close">Bericht ansehen</button>`
 };
-function proView(v) { if (!bezahlt && (v === "start" || v === "report")) try { Bericht.warm(lastPlot, true); } catch { /* Vorladen ist nur Tempo */ }
+function proView(v) { if (!bezahlt && (v === "start" || v === "report")) { zaehle("kaufdialog", zaehlArt); try { Bericht.warm(lastPlot, true); } catch { /* Vorladen ist nur Tempo */ } }
   proIn.innerHTML = PRO_VIEWS[v](); proIn.parentElement.scrollTop = 0; if (!proDlg.open) proDlg.showModal(); }
 proDlg.addEventListener("click", e => { if (e.target === proDlg) proDlg.close(); });
 // Bestellknopf erst aktiv, wenn beide Häkchen gesetzt sind (vorzeitiges Erlöschen des Widerrufsrechts) und, sobald echt bezahlt wird, die E-Mail stimmt
@@ -2962,7 +2974,7 @@ document.addEventListener("click", e => {
   const b = e.target.closest("[data-pro]"); if (!b) return;
   const v = b.dataset.pro;
   if (v === "close") return proDlg.close();
-  if (v === "kaufen") { proDlg.close(); return unlock(); }
+  if (v === "kaufen") { proDlg.close(); zaehle("kauf", zaehlArt); return unlock(); }
   if (v === "pdf") return makeReport();
   proView(v);
 });
@@ -3053,7 +3065,7 @@ function prepareReport() {
   body.add("report");
 }
 addEventListener("afterprint", () => body.remove("report"));
-function makeReport() { if (proDlg.open) proDlg.close(); prepareReport(); setTimeout(() => window.print(), 50); }
+function makeReport() { zaehle("pdf", zaehlArt); if (proDlg.open) proDlg.close(); prepareReport(); setTimeout(() => window.print(), 50); }
 const openDetails = () => document.querySelectorAll("#results details").forEach(x => x.open = true);
 // auch beim Drucken über das Browser-Menü (Strg+P, Teilen > Drucken): alles aufklappen, Kopfzeile setzen
 window.addEventListener("beforeprint", () => { openDetails(); if (bezahlt) prepareReport(); $("printHead").textContent = bezahlt ? "" : "MoinPlan: Den vollständigen Bericht können Sie auf der Website anfordern."; });

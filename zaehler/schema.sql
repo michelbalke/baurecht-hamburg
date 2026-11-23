@@ -1,0 +1,1 @@
+CREATE TABLE IF NOT EXISTS zaehler (tag TEXT NOT NULL, ereignis TEXT NOT NULL, art TEXT NOT NULL DEFAULT '', anzahl INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (tag, ereignis, art));
