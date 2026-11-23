@@ -792,8 +792,7 @@ body.is3d .view3d { display: block; }
 dialog.pro { border: 0; padding: 0; background: var(--panel); color: var(--fg); border-radius: 24px; width: min(460px, calc(100vw - 32px)); max-height: calc(100dvh - 48px); box-shadow: var(--shadow-lg); overscroll-behavior: contain; }
 dialog.pro::backdrop { background: rgba(0,0,0,.6); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
 dialog.pro[open] { animation: rise .28s var(--ease) both; }
-@media (max-width: 760px) { dialog.pro { margin: auto 0 0; width: 100%; max-width: 100%; max-height: 92dvh; border-radius: 24px 24px 0 0; }
-  .pro [data-pro="kaufen"] { position: sticky; bottom: calc(10px + env(safe-area-inset-bottom, 0px)); box-shadow: 0 0 0 10px var(--panel), 0 -14px 20px 4px var(--panel); } } /* Kaufknopf bleibt sichtbar */
+@media (max-width: 760px) { dialog.pro { margin: auto 0 0; width: 100%; max-width: 100%; max-height: 92dvh; border-radius: 24px 24px 0 0; } }
 .pro-in { padding: 18px 18px calc(18px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 12px; }
 .pro-top { display: flex; align-items: center; gap: 10px; }
 .pro-top h3 { flex: 1; margin: 0; font: 700 21px/1.2 var(--display); }
@@ -808,8 +807,6 @@ dialog.pro[open] { animation: rise .28s var(--ease) both; }
 .pro-price { display: flex; align-items: baseline; justify-content: space-between; padding: 12px 14px; border-radius: 14px; background: var(--fill); font-weight: 600; }
 .pro-price { gap: 12px; } .pro-price b { font: 700 22px/1 var(--display); white-space: nowrap; text-align: right; }
 .pro-price b small { font-family: var(--sans); }
-.pro-field { display: grid; gap: 5px; font-size: 13.5px; font-weight: 600; color: var(--muted); }
-.pro-field input { font: 16px var(--sans); color: var(--fg); background: var(--fill); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; }
 .pro-check { display: flex; gap: 10px; align-items: flex-start; font-size: 13.5px; line-height: 1.4; cursor: pointer; }
 .pro-check input { flex: none; width: 20px; height: 20px; margin: 0; accent-color: var(--navy); }
 .pro-agb { margin: 0; font-size: 12.5px; color: var(--muted); }
@@ -2960,7 +2957,6 @@ const PRO_VIEWS = {
       <li><b>Gut vorbereitet ins Gespräch</b>Für Architekt, Bezirksamt, Bank oder Käufer: mit nächsten Schritten, Links zu den Originalplänen und Ihrem Ansprechpartner.</li>
     </ul>
     <div class="pro-price"><span>Einmalig für dieses Grundstück<small>Kein Abo. 30 Tage auf diesem Gerät abrufbar.</small></span><b>${PRO.preis}<small>Gesamtpreis${PRO.steuer ? ". " + esc(PRO.steuer) : ""}</small></b></div>
-    <label class="pro-field">E-Mail für die Bestellbestätigung<input type="email" id="proMail" autocomplete="email" placeholder="${PRO.bezahlung ? "name@beispiel.de" : "Vorschau: wird nicht gesendet"}"${PRO.bezahlung ? " required" : ""}></label>
     <label class="pro-check"><input type="checkbox" id="proOk1"><span>Ich stimme ausdrücklich zu, dass MoinPlan vor Ablauf der Widerrufsfrist mit der Bereitstellung des Berichts beginnt.</span></label>
     <label class="pro-check"><input type="checkbox" id="proOk2"><span>Mir ist bekannt, dass ich dadurch mein Widerrufsrecht verliere.</span></label>
     <p class="pro-agb">Es gelten unsere <a href="agb.html" target="_blank">AGB</a>. Hinweise zum <a href="widerruf.html" target="_blank">Widerrufsrecht</a> und zum <a href="datenschutz.html" target="_blank">Datenschutz</a>.</p>
@@ -2976,8 +2972,8 @@ const PRO_VIEWS = {
 function proView(v) { if (!bezahlt && (v === "start" || v === "report")) { zaehle("kaufdialog", zaehlArt); try { Bericht.warm(lastPlot, true); } catch { /* Vorladen ist nur Tempo */ } }
   proIn.innerHTML = PRO_VIEWS[v](); proIn.parentElement.scrollTop = 0; if (!proDlg.open) proDlg.showModal(); }
 proDlg.addEventListener("click", e => { if (e.target === proDlg) proDlg.close(); });
-// Bestellknopf erst aktiv, wenn beide Häkchen gesetzt sind (vorzeitiges Erlöschen des Widerrufsrechts) und, sobald echt bezahlt wird, die E-Mail stimmt
-proIn.addEventListener("input", () => { const k = proIn.querySelector('[data-pro="kaufen"]'), m = $("proMail"); if (k) k.disabled = !($("proOk1")?.checked && $("proOk2")?.checked && (!m?.required || m.checkValidity())); }); // Tipp neben das Fenster schließt
+// Bestellknopf erst aktiv, wenn beide Häkchen gesetzt sind (vorzeitiges Erlöschen des Widerrufsrechts); die E-Mail fragt der Zahlungsdienstleister ab
+proIn.addEventListener("input", () => { const k = proIn.querySelector('[data-pro="kaufen"]'); if (k) k.disabled = !($("proOk1")?.checked && $("proOk2")?.checked); }); // Tipp neben das Fenster schließt
 document.addEventListener("click", e => {
   const b = e.target.closest("[data-pro]"); if (!b) return;
   const v = b.dataset.pro;
