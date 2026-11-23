@@ -409,6 +409,7 @@ a { color: var(--accent); }
 .rechtlinks { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 12.5px; }
 .side > .rechtlinks { padding: 0 4px 4px; }
 .rechtlinks a { color: var(--muted); text-decoration: none; } .rechtlinks a:hover { color: var(--fg); text-decoration: underline; }
+.rechtlinks a.ratgeber { color: var(--accent); font-weight: 600; }
 .drawer .rechtlinks { flex-direction: column; gap: 10px; font-size: 16px; } .drawer .rechtlinks a { color: var(--accent); }
 .recent button.clear { justify-content: center; padding: 9px 20px; font-size: 14px; color: var(--accent); }
 .recent button.clear::before { left: 20px; }
@@ -974,6 +975,12 @@ ol.steps { margin: 0; padding-left: 22px; display: flex; flex-direction: column;
 }
 /* iPhone (Safari 26): Statusleiste in Kopffarbe. Ohne festen Streifen oben färbt Safari die Leiste schwarz
    (Seitenhintergrund) und lässt sie weich über den grauen Kopf auslaufen; das sah verschwommen aus. */
+/* PC: Bericht (Detailseite) über den ganzen Bildschirm statt in der schmalen Spalte; Karte bleibt darunter gezeichnet (für Kartenbild im Druck) */
+@media screen and (min-width: 761px) {
+  body.detail .side { position: fixed; inset: 0; z-index: 20; margin: 0; padding: 24px max(24px, calc(50vw - 500px)) 40px; background: var(--bg); }
+  body.detail .side > header :is(.banner, .skyline) { display: none; } /* Kopf schmal: Logo und Suche, keine große Skyline über dem Bericht */
+  body.detail .side > header { padding-top: 16px; }
+}
 .statusbg { display: none; }
 @media screen and (max-width: 760px) {
   /* Safari 26 nimmt für die Statusleiste die Hintergrundfarbe der Seite: als Farbe Kopfgrau melden, sichtbar bleibt Schwarz (unterste Bildebene) */
@@ -1044,7 +1051,7 @@ ol.steps { margin: 0; padding-left: 22px; display: flex; flex-direction: column;
       </section>
     </div>
     <p class="legal">Fachdaten: Freie und Hansestadt Hamburg (LGV und Bezirksämter), Datenlizenz Deutschland Namensnennung 2.0. Grundkarte: © basemap.de / BKG (2026) CC BY 4.0, Datenquellen © GeoBasis-DE / BKG (2026) CC BY 4.0. Alle Angaben ohne Gewähr. Rechtsverbindlich ist nur der festgestellte Plan mit Verordnung; für eine verbindliche Auskunft das Bezirksamt fragen.</p>
-    <nav class="rechtlinks noprint" aria-label="Rechtliches"><a href="impressum.html">Impressum</a><a href="datenschutz.html">Datenschutz</a><a href="agb.html">AGB</a><a href="widerruf.html">Widerruf</a><a href="lizenzen.html">Quellen und Lizenzen</a></nav>
+    <nav class="rechtlinks noprint" aria-label="Rechtliches"><a href="wissen/" class="ratgeber">Ratgeber</a><a href="impressum.html">Impressum</a><a href="datenschutz.html">Datenschutz</a><a href="agb.html">AGB</a><a href="widerruf.html">Widerruf</a><a href="lizenzen.html">Quellen und Lizenzen</a></nav>
   </aside>
   <div class="mapwrap">
     <div id="map"></div>
@@ -2927,7 +2934,7 @@ function measureBar(kind) {
 }
 function startMeasure(kind, fromInfo = false) {
   stopMeasure(); close3d();
-  if (fromInfo && isPhone()) { body.remove("detail"); body.add("mapfull"); map.updateSize(); fitPlot(0); } // Handy: Karte groß zum Messen
+  if (fromInfo) { body.remove("detail"); body.add("mapfull"); map.updateSize(); fitPlot(0); } // Handy: Karte groß zum Messen; PC: Bericht (ganzer Bildschirm) weg, Karte sichtbar
   measureBar(kind);
   if (coarse()) { tm = {kind, coords: [], feature: null, tip: null, fromInfo}; return; }
   draw = new ol.interaction.Draw({source: measureSrc, type: kind});
@@ -3352,7 +3359,20 @@ function makeReport() { zaehle("pdf", zaehlArt); if (proDlg.open) proDlg.close()
 const openDetails = () => document.querySelectorAll("#results details").forEach(x => x.open = true);
 // auch beim Drucken über das Browser-Menü (Strg+P, Teilen > Drucken): alles aufklappen, Kopfzeile setzen
 window.addEventListener("beforeprint", () => { openDetails(); if (bezahlt) prepareReport(); $("printHead").textContent = bezahlt ? "" : "MoinPlan: Den vollständigen Bericht können Sie auf der Website anfordern."; });
-map.on("singleclick", ev => { if (!draw && !tm) { curPlace = null; queryAt(ev.coordinate, "Punkt in der Karte"); } });
+map.on("singleclick", ev => { if (!draw && !tm) { curPlace = null; const id = queryId + 1; queryAt(ev.coordinate, "Punkt in der Karte").then(() => klickAdresse(ev.coordinate, id)); } });
+// Grundstück per Klick geöffnet: Hausadresse dazu suchen (Hauskoordinaten der Stadt, bevorzugt auf dem Grundstück) und ins Suchfeld schreiben
+async function klickAdresse(coord, id) {
+  if (id !== queryId) return;
+  const g = lastPlot?.geometry, ext = g ? ol.extent.buffer(g.getExtent(), 5) : ol.extent.buffer([...coord, ...coord], 40);
+  const txt = await getText(CFG.gazetteer + "&typeNames=gages:Hauskoordinaten&srsName=EPSG:25832&count=200&BBOX=" + ext.map(v => v.toFixed(1)).join(",") + ",urn:ogc:def:crs:EPSG::25832", "Adresse zum Klick");
+  if (id !== queryId || !txt) return;
+  const adr = [...txt.matchAll(/geographicIdentifier[^>]*>([^<]+)<[\s\S]*?<gml:pos>([\d.]+) ([\d.]+)</g)].map(m => ({name: m[1].trim(), c: [+m[2], +m[3]]}))
+    .map(a => ({...a, drin: !!g?.intersectsCoordinate(a.c), d: Math.hypot(a.c[0] - coord[0], a.c[1] - coord[1])}))
+    .filter(a => a.drin || a.d < 40).sort((a, b) => b.drin - a.drin || a.d - b.d);
+  if (!adr.length) return;
+  $("q").value = adr[0].name.split(",")[0];
+  if (rep.place === "Punkt in der Karte") rep.place = adr[0].name;
+}
 // ---------- Kauf über den MoinPlan-Server (nur wenn CFG.server und PRO.bezahlung gesetzt sind) ----------
 // Ablauf: Kauf anlegen -> Kasse des Zahlungsanbieters -> zurück mit ?kauf=…&t=… -> Server bestätigt die Zahlung -> freischalten.
 // Der Server liest den Plan aus, wenn es noch keine Kurzfassung gibt, und schickt die Bestätigungsmail mit dem PDF.
