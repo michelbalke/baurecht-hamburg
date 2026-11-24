@@ -568,6 +568,20 @@ details.okfold .checks { margin-top: 6px; }
 .ov-plan:focus-visible, .ov-box:focus-visible, .ov-build:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .ov-name { font: 700 22px/1.15 var(--display); letter-spacing: .005em; text-wrap: balance; overflow-wrap: break-word; margin-top: 4px; }
 .ov-place { font-size: 13px; color: var(--muted); }
+.ov-plan { cursor: default; }
+h2.ov-name { margin: 4px 0 0; padding: 0; display: block; }
+.ov-planname { font-size: 15px; font-weight: 500; color: var(--muted); line-height: 1.3; }
+.ov-bef { all: unset; cursor: pointer; width: fit-content; font-size: 12px !important; font-weight: 500; color: var(--accent); margin-top: 3px; -webkit-tap-highlight-color: transparent; }
+.ov-bef:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+.ico-lock { width: 13px; height: 13px; vertical-align: -1px; margin-right: 5px; flex: none; }
+/* vor dem Kauf: freie Infos sehen nicht klickbar aus, nur der Bericht-Knopf führt weiter */
+body:not(.bezahlt) #overview [data-go] { cursor: default; }
+body:not(.bezahlt) #overview [data-go]:active { transform: none; }
+body:not(.bezahlt) #overview [data-go] > .ov-more { display: none; }
+body.bezahlt .ov-lock { display: none; }
+.ov-pro { background: var(--navy); color: #fff; }
+.ov-pro .ov-label, .ov-pro .ov-more { color: #fff !important; }
+.ov-pro .ov-label small { color: rgba(255,255,255,.82) !important; }
 .ov-more { color: var(--accent); font-weight: 600; font-size: 14.5px; margin-top: 4px; }
 .ov-label { font-size: 12px; line-height: 1.25; color: var(--muted); font-weight: 600; overflow-wrap: break-word; flex: 1; }
 .ov-val { font: 700 20px/1.1 var(--display); color: var(--muted); display: flex; align-items: center; gap: 6px; margin-top: 4px; }
@@ -797,7 +811,6 @@ body.is3d .view3d { display: block; }
   /* Maßstab und Quellenhinweis über dem Blatt; bei aufgeklapptem Blatt ausgeblendet, sonst lägen sie auf den Zoomknöpfen */
   body.has-result:not(.mapfull):not(.is3d) .mapwrap :is(.ol-scale-line, .ol-attribution) { bottom: calc(var(--blatt, 170px) + 8px); transition: bottom .42s cubic-bezier(.32, .72, 0, 1), opacity .2s; }
   body.has-result:not(.blatt-zu):not(.mapfull):not(.is3d) .mapwrap :is(.ol-scale-line, .ol-attribution) { opacity: 0; pointer-events: none; }
-  body.has-result .ov-plan .ov-more { display: none; }
   body.has-result .ov-peek:not(:empty) { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 7px; }
   .ov-peek > span { padding: 5px 8px; border-radius: 999px; background: var(--fill); font-size: 12.5px; font-weight: 500; color: var(--muted); white-space: nowrap; }
   .ov-peek b { color: var(--fg); font-weight: 600; }
@@ -821,8 +834,7 @@ body.is3d .view3d { display: block; }
 }
 
 /* ---------- Vollständiger Bericht (Vorschau) ---------- */
-.ov-pro { box-shadow: inset 4px 0 0 var(--navy), var(--shadow); }
-.ov-pro .ov-label small, .ov-bef .ov-label small { display: block; font-size: 12.5px; color: var(--muted); font-weight: 400; margin-top: 2px; }
+.ov-pro .ov-label small { display: block; font-size: 12.5px; color: var(--muted); font-weight: 400; margin-top: 2px; }
 .pro-btns { display: flex; flex-wrap: wrap; gap: 8px; }
 dialog.pro { border: 0; padding: 0; background: var(--panel); color: var(--fg); border-radius: 24px; width: min(460px, calc(100vw - 32px)); max-height: calc(100dvh - 48px); box-shadow: var(--shadow-lg); overscroll-behavior: contain; }
 dialog.pro::backdrop { background: rgba(0,0,0,.6); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
@@ -2256,6 +2268,7 @@ const UTM = ol.proj.get("EPSG:25832");
 UTM.setExtent([-1877994.66, 3932281.56, 836715.13, 9440581.95]);
 const St = o => new ol.style.Style(o), Sk = (color, width, lineDash) => new ol.style.Stroke({color, width, lineDash}), Fl = color => new ol.style.Fill({color});
 const vec = (source, style, o) => new ol.layer.Vector({source, style, ...o});
+const LOCK = '<svg class="ico-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>';
 const K = Object.fromEntries(["plan", "plot", "accent", "bf", "bf-fill", "bf-fill2", "sans"].map(v => [v, css("--" + v)])); // Farben einmal lesen, nicht bei jedem Zeichnen
 
 // Grundkarte in Farbe
@@ -2363,7 +2376,7 @@ on("homeBtn", "click", () => {
   requestAnimationFrame(() => { map.updateSize(); view.cancelAnimations(); view.animate({...CFG.start, duration: 500}); });
 });
 document.addEventListener("click", e => {
-  const go = e.target.closest("[data-go]"); if (go) return bezahlt ? openDetail(go.dataset.go) : proView("start");
+  const go = e.target.closest("[data-go]"); if (go) return bezahlt ? openDetail(go.dataset.go) : undefined; // vor dem Kauf sind die freien Infos nur zum Lesen (Krug: keine Überraschungen)
   if (e.target.closest("#backBtn")) closeDetail();
 });
 
@@ -2726,19 +2739,23 @@ function renderResult(coord, placeName, plans, plot) {
 function renderOverview(main, sum, placeName) {
   const gilt = main?.status === "festgestellt", name = main ? sum?.name || planTitle(planName(main.props)) || "Bebauungsplan" : "Kein Bebauungsplan";
   $("overview").classList.add("neu"); setTimeout(() => $("overview").classList.remove("neu"), 800); // nur frische Ergebnisse bauen sich auf, nicht die Rückkehr aus den Details
-  const fix = korrektur && korrektur.place === curPlace ? `<span class="ov-fix">Gefunden: <b>${esc(korrektur.zu)}</b>${curPlace.stadtteil && !/^\d/.test(curPlace.stadtteil) ? ", " + esc(curPlace.stadtteil) : ""} · Ihre Eingabe: „${esc(korrektur.von)}“</span>` : "";
-  $("overview").innerHTML = `<button type="button" class="ov-plan" data-go="">${fix}
+  const fix = korrektur && korrektur.place === curPlace ? `<span class="ov-fix">Ihre Eingabe: „${esc(korrektur.von)}“${curPlace.stadtteil && !/^\d/.test(curPlace.stadtteil) ? " · " + esc(curPlace.stadtteil) : ""}</span>` : "";
+  // Krug: Überschrift = das, was gesucht wurde (die Adresse); der Plan steht klein darunter
+  const adr = ovAdresse(placeName), planZeile = main ? (/plan\b/i.test(name) ? name : "Bebauungsplan " + name) : name;
+  $("overview").innerHTML = `<div class="ov-plan">${fix}
       ${main && gilt ? "" : `<span class="pill ${main ? "draft" : "none"}">${main ? "Bebauungsplan im Verfahren" : "§ 34 BauGB: Einfügen in die Umgebung"}</span>`}
-      <span class="ov-name">${esc(name).replace(/(Baustufen|Teilbebauungs|Durchführungs|Bebauungs)(plan)/, "$1&shy;$2")}</span>
-      <span class="ov-peek" id="ovPeek"></span>
-      <span class="ov-more">Weitere Infos zur Bebaubarkeit ›</span></button>
+      <h2 class="ov-name" id="ovName">${esc(adr || name).replace(/(Baustufen|Teilbebauungs|Durchführungs|Bebauungs)(plan)/, "$1&shy;$2")}</h2>
+      ${adr ? `<span class="ov-planname">${esc(planZeile)}</span>` : ""}
+      ${main ? `<button type="button" class="ov-bef" data-pro="befreiung">Mehr bauen, als der Plan erlaubt? ›</button>` : ""}
+      <span class="ov-peek" id="ovPeek"></span></div>
     ${typeof CHECKS === "undefined" ? "" : `<button type="button" class="ov-box ov-row" data-go="denkmal"><span class="ov-label">Denkmalschutz</span><b class="ov-val">wird geprüft …</b><span class="ov-more">›</span></button>`}
     <button type="button" class="ov-build" data-go="calc" id="ovBuild"></button>
-    ${main ? `<button type="button" class="ov-box ov-row ov-bef" data-pro="befreiung"><span class="ov-label">Mehr bauen, als der Plan erlaubt?<small>Befreiung und Bau-Turbo kurz erklärt</small></span><span class="ov-more">›</span></button>` : ""}
-    <button type="button" class="ov-box ov-row ov-pro" data-pro="start"><span class="ov-label">Vollständigen Bericht anfordern?<small>Alle Details zum Grundstück als PDF</small></span><span class="ov-more">›</span></button>`;
+    <button type="button" class="ov-box ov-row ov-pro" data-pro="start"><span class="ov-label">${LOCK}Vollständiger Bericht<small>Alle Werte, Originalplan, 3D-Ansicht, als PDF</small></span><span class="ov-more">›</span></button>`;
   cur.hasPlan = !!main;
   rep = {planRoh: main && gilt ? planName(main.props) : "", place: placeName, plan: main ? name : "Kein Bebauungsplan (§ 34 BauGB)", status: !main ? "" : gilt ? "festgestellt" + (sum?.festgestellt ? " " + sum.festgestellt : "") : "im Verfahren", flst: plotNumber(lastPlot), area: lastPlot?.area, links: main ? pdfLinks(main) : []};
 }
+// Adresse für die Überschrift: „Lemsahler Landstraße 272, 22397 Hamburg“ → „Lemsahler Landstraße 272“; Kartenklick und Koordinaten haben (noch) keine
+function ovAdresse(p) { return !p || /^(Punkt in der Karte|Koordinate )/.test(p) ? "" : p.split(",")[0].replace(/\s*\(OT.*$/, "").trim(); }
 // „Was darf ich bauen?“ in der Übersicht: dieselben Werte wie im Rechner der Detailseite, dazu die Eckdaten der Lage
 function renderOvBuild(tiles) {
   const el = $("ovBuild"); if (!el) return;
@@ -2750,10 +2767,11 @@ function renderOvBuild(tiles) {
     .concat(z ? [] : Object.entries(lastMass).map(([k, v]) => [v, MASS[k]])).filter(([b]) => b && b !== "–").slice(0, 6);
   cur.peek = t.slice(0, 2); renderPeek();
   const msg = !cur.hasPlan ? "Hier gilt kein Bebauungsplan. Gebaut werden darf, was sich in die Umgebung einfügt: ähnliche Höhe, Größe und Bauweise wie die Nachbarhäuser."
-    : cur.sum && !z ? "Bitte unten die Lage Ihres Grundstücks wählen, dann zeigt die App die Werte." : !t.length ? "Für diesen Plan liegt aktuell keine Gratis-Fassung vor. Der Originalplan ist in den Details verlinkt." : "";
+    : cur.sum && !z ? "Bitte unten die Lage Ihres Grundstücks wählen, dann zeigt die App die Werte." : !t.length ? "Für diesen Plan liegt aktuell keine Gratis-Fassung vor." : "";
   const amt = z?.amtlich ? `<span class="ov-place">Werte aus den amtlichen Plandaten der Stadt${m?.fromDefault ? `. * ${esc(cur.sum.grzDefaultsNote.replace(/\.$/, ""))}` : ""}. Verbindlich ist der Originalplan.</span>`
     : z?.amtErg ? `<span class="ov-place">GRZ und GFZ aus den amtlichen Plandaten der Stadt. Verbindlich ist der Originalplan.</span>` : "";
-  el.innerHTML = `<span class="ov-label">Was darf ich bauen?</span>${t.length ? `<span class="big">${t.map(x => tile(x)).join("")}</span>` : ""}${msg ? `<span class="ov-place">${esc(msg)}</span>` : ""}${amt}`;
+  const lock = cur.hasPlan ? `<span class="ov-place ov-lock">${LOCK}Höhen, Baufenster-Maße und Originalplan im Bericht</span>` : "";
+  el.innerHTML = `<span class="ov-label">Was darf ich bauen?</span>${t.length ? `<span class="big">${t.map(x => tile(x)).join("")}</span>` : ""}${msg ? `<span class="ov-place">${esc(msg)}</span>` : ""}${amt}${lock}`;
   ovZone();
 }
 // Lage direkt in der Übersicht wählen (kostenlos); bleibt mit der Auswahl auf der Detailseite gleich
@@ -3387,7 +3405,7 @@ async function klickAdresse(coord, id) {
     .filter(a => a.drin || a.d < 40).sort((a, b) => b.drin - a.drin || a.d - b.d);
   if (!adr.length) return;
   $("q").value = adr[0].name.split(",")[0];
-  if (rep.place === "Punkt in der Karte") rep.place = adr[0].name;
+  if (rep.place === "Punkt in der Karte") { rep.place = adr[0].name; const h = $("ovName"), z = qs("#overview .ov-planname"); if (h && !z) { h.insertAdjacentHTML("afterend", `<span class="ov-planname">${esc(/plan\b/i.test(h.textContent) || !cur.hasPlan ? h.textContent : "Bebauungsplan " + h.textContent)}</span>`); h.textContent = ovAdresse(adr[0].name); } }
 }
 // ---------- Kauf über den MoinPlan-Server (nur wenn CFG.server und PRO.bezahlung gesetzt sind) ----------
 // Ablauf: Kauf anlegen -> Kasse des Zahlungsanbieters -> zurück mit ?kauf=…&t=… -> Server bestätigt die Zahlung -> freischalten.
