@@ -407,6 +407,9 @@ a { color: var(--accent); }
 .app { display: grid; grid-template-columns: minmax(350px, 470px) 1fr; gap: 18px; padding: 18px; height: 100%; }
 .side { overflow-y: auto; display: flex; flex-direction: column; gap: 14px; min-width: 0; margin: -6px; padding: 6px 6px 20px; view-transition-name: info; }
 .side > .legal { padding: 0 4px; }
+.legal-hinweis { margin: 0; padding: 0 4px; font-size: 11.5px; color: var(--muted); }
+.legal-hinweis > span { display: block; font-size: inherit; }
+.legal-hinweis > span + span { margin-top: 4px; }
 .rechtlinks { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 12.5px; }
 .side > .rechtlinks { padding: 0 4px 4px; }
 .rechtlinks a { color: var(--muted); text-decoration: none; } .rechtlinks a:hover { color: var(--fg); text-decoration: underline; }
@@ -916,7 +919,7 @@ ul.quellen b { color: var(--fg); font-weight: 600; }
   .skyline, .side > header .logo { display: none !important; }
   .banner { margin: 4px 0 0; text-align: left; } .banner figcaption { font-size: 12pt; }
   .printonly { display: block; font-weight: 600; margin: 0 0 12px; }
-  .side > .legal { display: block; font-weight: 400; font-size: 7pt; color: #444; margin: 8pt 0 0; }
+  .side > .legal, .side > .legal-hinweis { display: block; font-weight: 400; font-size: 7pt; color: #444; margin: 8pt 0 0; }
   #results { display: block; }
   #results > section.card { padding: 0 0 7pt; margin: 0 0 7pt; border-bottom: .5pt solid #bbb; border-radius: 0; gap: 4pt; break-inside: auto; }
   #results > section.hero, #results > section.warn { box-shadow: none; border-left: 3pt solid var(--plan); padding-left: 8pt; }
@@ -1067,6 +1070,7 @@ ul.quellen b { color: var(--fg); font-weight: 600; }
         <p class="hint">Adresse eingeben oder einen Punkt in der Karte antippen. Die App fasst das Planungsrecht für den Ort in einfachen Worten zusammen: was der Bebauungsplan festsetzt, zum Beispiel Höhe und bebaubare Fläche. Ob und was gebaut werden darf, entscheidet allein das Bauamt (Bezirksamt).</p>
       </section>
     </div>
+    <p class="legal-hinweis" id="ovHinweis" hidden></p>
     <p class="legal">Fachdaten: Freie und Hansestadt Hamburg (LGV und Bezirksämter), Datenlizenz Deutschland Namensnennung 2.0. Grundkarte: © basemap.de / BKG (2026) CC BY 4.0, Datenquellen © GeoBasis-DE / BKG (2026) CC BY 4.0. Alle Angaben ohne Gewähr. Rechtsverbindlich ist nur der festgestellte Plan mit Verordnung; für eine verbindliche Auskunft das Bezirksamt fragen.</p>
     <nav class="rechtlinks noprint" aria-label="Rechtliches"><a href="wissen/" class="ratgeber">Ratgeber</a><a href="impressum.html">Impressum</a><a href="datenschutz.html">Datenschutz</a><a href="agb.html">AGB</a><a href="widerruf.html">Widerruf</a><a href="lizenzen.html">Quellen und Lizenzen</a></nav>
   </aside>
@@ -2389,7 +2393,7 @@ addEventListener("resize", () => placeSearch()); placeSearch();
 for (const el of document.querySelectorAll(".side > header :is(h1, .banner)")) el.addEventListener("click", () => { if (body.contains("has-result")) $("homeBtn").click(); });
 on("homeBtn", "click", () => {
   clearMeasure(); close3d(); toggleDrawer(false); body.remove("has-result", "detail"); clearMap(); plotArea = null; dmShow();
-  placeSearch(); queryId++; $("overview").innerHTML = ""; $("results").innerHTML = startResults; $("q").value = ""; curPlace = null; cur = {sum: null, zone: null}; side.scrollTop = 0;
+  placeSearch(); queryId++; $("overview").innerHTML = ""; $("ovHinweis").hidden = true; $("results").innerHTML = startResults; $("q").value = ""; curPlace = null; cur = {sum: null, zone: null}; side.scrollTop = 0;
   requestAnimationFrame(() => { map.updateSize(); view.cancelAnimations(); view.animate({...CFG.start, duration: 500}); });
 });
 document.addEventListener("click", e => {
@@ -2483,7 +2487,7 @@ async function sucheUnscharf(q) {
 const ortIco = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.5"/></svg>`;
 const stTxt = st => st.slice(0, 2).join(", ") + (st.length > 2 ? " …" : "");
 function zeigeVorschlaege(q, treffer, nummer) {
-  body.remove("detail"); $("overview").innerHTML = "";
+  body.remove("detail"); $("overview").innerHTML = ""; $("ovHinweis").hidden = true;
   $("overview").append(card("Meinten Sie …?", `<p class="hint">${nummer ? `Die Hausnummer ${esc(nummer.nr)} gibt es in „${esc(nummer.str)}“ nicht. Die nächsten Hausnummern:` : `Für „${esc(q)}“ gibt es keine Adresse. Diese ähneln ihr am meisten:`}</p>
     <div class="vorschlaege">${treffer.map(t => `<button type="button" data-q="${esc(t.adr)}">${ortIco}<span>${esc(t.adr)}<small>${esc(stTxt(t.st))}</small></span></button>`).join("")}</div>`));
 }
@@ -2868,7 +2872,8 @@ function renderOvBuild(tiles) {
     : z?.amtlich ? `<span class="ov-place">Werte aus den amtlichen Plandaten der Stadt${m?.fromDefault ? `. * ${esc(cur.sum.grzDefaultsNote.replace(/\.$/, ""))}` : ""}. Verbindlich ist der Originalplan.</span>`
     : z?.amtErg ? `<span class="ov-place">GRZ und GFZ aus den amtlichen Plandaten der Stadt. Verbindlich ist der Originalplan.</span>` : "";
   const lock = cur.hasPlan ? `<span class="ov-place ov-lock">${LOCK}Höhen, Baufenster-Maße und Originalplan im Bericht</span>` : "";
-  el.innerHTML = `<span class="ov-label">Was darf ich bauen?</span>${t.length ? `<span class="big">${t.map(x => tile(x)).join("")}</span>` : ""}${msg ? `<span class="ov-place">${esc(msg)}</span>` : ""}${amt}${lock}`;
+  el.innerHTML = `<span class="ov-label">Was darf ich bauen?</span>${t.length ? `<span class="big">${t.map(x => tile(x)).join("")}</span>` : ""}${msg ? `<span class="ov-place">${esc(msg)}</span>` : ""}`;
+  const h = $("ovHinweis"); h.innerHTML = amt + lock; h.hidden = !(amt + lock); // Quelle und Bericht-Hinweis unten bei Impressum, nicht zwischen den Werten
   ovZone();
 }
 // Lage direkt in der Übersicht wählen (kostenlos); bleibt mit der Auswahl auf der Detailseite gleich
@@ -3339,7 +3344,7 @@ const TITLE_ICO = {"Bitte beachten": "alert", "Mein Grundstück": "home", "Was d
   "Gilt außerdem in ganz Hamburg": "city", "Vollständigen Bericht anfordern?": "file", "Bebaut und noch frei": "ruler", "Grundstück mit Maßen": "ruler", "3D-Ansicht mit Baufenster": "home", "Nachbarhäuser": "city", "Gut zu wissen vor dem Kauf": "shield", "Ausschnitt aus dem Originalplan": "file", "Nächste Schritte": "book", "Ihr Ansprechpartner": "phone", "Kein Bebauungsplan gefunden": "search"};
 const icon = n => `<span class="ico ico-${n || "info"}" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICO[n] || ICO.info}</svg></span>`;
 function card(title, html, cls = "") { const s = document.createElement("section"); s.className = "card " + cls; s.innerHTML = (title ? `<h2>${icon(TITLE_ICO[title])}${esc(title)}</h2>` : "") + html; return s; }
-function showCard(title, msg) { body.remove("detail"); $("overview").innerHTML = ""; $("overview").append(card(title, `<p class="hint">${esc(msg)}</p>`, title === "Bitte warten" ? "busy" : "")); }
+function showCard(title, msg) { body.remove("detail"); $("overview").innerHTML = ""; $("ovHinweis").hidden = true; $("overview").append(card(title, `<p class="hint">${esc(msg)}</p>`, title === "Bitte warten" ? "busy" : "")); }
 
 
 // ---------- Vollständiger Bericht (Vorschau, noch ohne Bezahlung) ----------
