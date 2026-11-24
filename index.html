@@ -896,6 +896,8 @@ dialog.pro[open] { animation: rise .28s var(--ease) both; }
 .skey span { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; } .skey i { width: 14px; height: 10px; border-radius: 3px; box-sizing: border-box; }
 .k-plot { background: #fff4d1; border: 2px solid #d79a00; } .k-bf { background: #cfe2ff; border: 1.5px dashed #0a5fe0; } .k-own { background: #9aa0ab; border: 1px solid #5c626d; } .k-nb { background: #e3e5ea; border: 1px solid #b9bdc6; }
 ol.steps { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 8px; line-height: 1.45; }
+ul.quellen { margin: 0 0 8px; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; font-size: 13px; line-height: 1.4; color: var(--muted); }
+ul.quellen b { color: var(--fg); font-weight: 600; }
 .pro button[disabled] { opacity: .55; cursor: default; }
 
 /* ---------- Merkblatt (Drucken): kompakt, höchstens drei Seiten ---------- */
@@ -955,7 +957,7 @@ ol.steps { margin: 0; padding-left: 22px; display: flex; flex-direction: column;
   .rscroll { overflow: visible; }
   .rbar { background: #eee !important; border: .5pt solid #bbb; } .rbar i { background: #888 !important; } .rbar u { background: #1f4fa3 !important; }
   .rbar, .rbar *, .rbar-key *, .skey i, svg.skizze, svg.skizze * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  ol.steps { gap: 3pt; }
+  ol.steps { gap: 3pt; } ul.quellen { gap: 2pt; font-size: 8pt; color: #444; } ul.quellen b { color: #111; }
 
   body.report #repCover { display: block; margin: 0 0 9pt; padding: 0 0 7pt; border-bottom: .5pt solid #bbb; }
   #repCover .rep-brand { display: flex; align-items: center; gap: 9pt; margin: 0 0 12pt; color: #15202b; }
@@ -1092,7 +1094,7 @@ ol.steps { margin: 0; padding-left: 22px; display: flex; flex-direction: column;
       </div>
       <p class="v3status" id="v3status" hidden></p>
       <div class="v3info" id="v3info"></div>
-      <p class="v3credit">3D-Stadtmodell, Gelände und Stadtplan: FHH, LGV<span>. Ziehen dreht, zwei Finger zoomen und verschieben.</span></p>
+      <p class="v3credit">3D-Stadtmodell und Gelände: FHH, LGV, dl-de/by-2-0 · Stadtplan: © basemap.de / BKG, CC BY 4.0<span>. Ziehen dreht, zwei Finger zoomen und verschieben.</span></p>
     </div>
   </div>
 </div>
@@ -2091,6 +2093,15 @@ const Bericht = (() => {
       <li><b>Bauantrag stellen.</b> Gebaut wird erst mit Genehmigung. Manche kleinen Vorhaben brauchen keine, müssen den Plan aber trotzdem einhalten.</li>
     </ol><p class="hint">Vorbescheid und Baugenehmigung kosten Gebühren. Die Höhe nennt Ihnen das Bezirksamt.</p>`, "rep-x");
     place(r, steps, ".procard"); // unter „Bericht als PDF“, über dem Ansprechpartner
+    const L = "Datenlizenz Deutschland Namensnennung 2.0 (www.govdata.de/dl-de/by-2-0)";
+    steps.after(card("Quellen und Lizenzen", `<ul class="quellen">
+      <li><b>Bebauungspläne, Planzeichnungen, Baufenster (XPlanung), Erhaltungsverordnungen, Sanierungsgebiete, Siedlungsbeschränkung:</b> Freie und Hansestadt Hamburg, Behörde für Stadtentwicklung und Wohnen und Bezirksämter. ${L}.</li>
+      <li><b>Flurstücke, Gebäude (ALKIS), Adressen, 3D-Stadtmodell, Gelände, Bodenrichtwerte, Solarpotenzial:</b> Freie und Hansestadt Hamburg, Landesbetrieb Geoinformation und Vermessung (LGV). ${L}.</li>
+      <li><b>Denkmalschutz:</b> Freie und Hansestadt Hamburg, Denkmalschutzamt. ${L}.</li>
+      <li><b>Schutzgebiete, Hochwasser, Überschwemmungsgebiete, Fluglärm, Gründach-Förderung:</b> Freie und Hansestadt Hamburg, Behörde für Umwelt, Klima, Energie und Agrarwirtschaft. ${L}.</li>
+      <li><b>Straßennamen:</b> Freie und Hansestadt Hamburg, Behörde für Verkehr und Mobilitätswende. ${L}.</li>
+      <li><b>Hintergrundkarte und Stadtplan:</b> © basemap.de / BKG (2026), CC BY 4.0 (creativecommons.org/licenses/by/4.0); Datenquellen © GeoBasis-DE / BKG (2026).</li>
+    </ul><p class="hint">MoinPlan hat die Daten ausgewählt, auf Ihr Grundstück zugeschnitten, Flächen daraus berechnet und in eigenen Worten zusammengefasst. Die Behörden haben diesen Bericht nicht geprüft.</p>`, "rep-x"));
     if (!plotPs.length) return;
 
     const ext = geom.getExtent(), center = ol.extent.getCenter(ext);
@@ -2159,11 +2170,11 @@ const Bericht = (() => {
 
     const wis = (pre.wissen || loadWissen(plotPs, ext)).then(w => done(cWis, wissenHtml(w, plot.area || plotPs.reduce((a, p) => a + p.getArea(), 0))));
     const planImg = pre.plan.then(url => done(cPlan, url ? `<div><img class="rimg" src="${url}" alt="Ausschnitt aus der Planzeichnung, Grundstück gelb umrandet">
-        <p class="hint">Gescannte Planzeichnung der Stadt, Ihr Grundstück ist gelb umrandet. Die Zeichen erklärt die Legende im Originalplan (Link in diesem Bericht).</p></div>` : ""));
+        <p class="hint">Gescannte Planzeichnung der Stadt, Ihr Grundstück ist gelb umrandet. Die Zeichen erklärt die Legende im Originalplan (Link in diesem Bericht). Quelle: Freie und Hansestadt Hamburg, dl-de/by-2-0.</p></div>` : ""));
     if (!pre.shot) pre.shot = dataP.then(d => shot3d(pre, d, true));
     const img3d = Promise.all([dataP, pre.shot]).then(([d, url]) => { if (!url) pre.shot = null;
       done(c3d, url ? `<div><img class="rimg" src="${url}" alt="3D-Ansicht: Grundstück gelb, Baufenster blau">
-        <p class="hint">Gelb: Ihr Grundstück. Blau: das Baufenster aus dem Bebauungsplan${d?.bfPs.length ? "" : " (für diesen Plan liegen keine Baufenster als Daten vor)"}. Grau: Gebäude aus dem 3D-Stadtmodell der Stadt Hamburg.</p></div>` : ""); });
+        <p class="hint">Gelb: Ihr Grundstück. Blau: das Baufenster aus dem Bebauungsplan${d?.bfPs.length ? "" : " (für diesen Plan liegen keine Baufenster als Daten vor)"}. Grau: Gebäude aus dem 3D-Stadtmodell der Stadt Hamburg. Quelle: FHH, LGV, dl-de/by-2-0; Stadtplan © basemap.de / BKG (2026) CC BY 4.0.</p></div>` : ""); });
 
     // Fertig, sobald alles da ist, spätestens nach 12 s. Was länger braucht (Planbild, 3D-Bild), erscheint danach von selbst.
     const all = Promise.allSettled([rech, sk, nb, wis, planImg, img3d]).then(() => [cRech, cSk, c3d, cNb, cWis, cPlan].forEach(c => c.classList.contains("loading") && c.remove()));
@@ -2272,7 +2283,7 @@ const LOCK = '<svg class="ico-lock" viewBox="0 0 24 24" fill="none" stroke="curr
 const K = Object.fromEntries(["plan", "plot", "accent", "bf", "bf-fill", "bf-fill2", "sans"].map(v => [v, css("--" + v)])); // Farben einmal lesen, nicht bei jedem Zeichnen
 
 // Grundkarte in Farbe
-const bgLayer = new ol.layer.Tile({source: new ol.source.XYZ({url: CFG.basemap("farbe"), maxZoom: 18, crossOrigin: "anonymous", attributions: "© basemap.de / BKG"})});
+const bgLayer = new ol.layer.Tile({source: new ol.source.XYZ({url: CFG.basemap("farbe"), maxZoom: 18, crossOrigin: "anonymous", attributions: ['© <a href="https://basemap.de" target="_blank" rel="noopener">basemap.de</a> / BKG (2026) CC BY 4.0', 'Fachdaten: © Freie und Hansestadt Hamburg, <a href="https://www.govdata.de/dl-de/by-2-0" target="_blank" rel="noopener">dl-de/by-2-0</a>']})});
 // Alle festgestellten B-Plan-Grenzen im Kartenausschnitt, dünn und (nah herangezoomt) mit Namen
 const boundsSrc = new ol.source.Vector({format: new ol.format.WFS(), strategy: ol.loadingstrategy.bbox, url: ext => wfsUrlBbox(CFG.bplanWfs, CFG.bplanTypes[0].type, ext, 500)});
 boundsSrc.on("featuresloaderror", () => diag("B-Plan-Grenzen konnten nicht geladen werden"));
@@ -3385,7 +3396,7 @@ function prepareReport() {
       ${rep.links?.length ? `<tr><td colspan="2" class="rep-links"><b>Originalpläne</b>${rep.links.map(l => `<a href="${esc(l.u)}" target="_blank" rel="noopener">${esc(l.label)}</a>`).join("")}</td></tr>` : ""}</table>
     ${tiles ? `<h2>Was darf ich bauen?</h2><div class="big">${tiles}</div>` : ""}
     ${img ? `<h2>Lage</h2><img src="${img}" alt="Kartenausschnitt">` : ""}
-    <p class="rep-legal">Zusammenstellung aus offenen Daten der Freien und Hansestadt Hamburg (Datenlizenz Deutschland Namensnennung 2.0). Keine Rechtsberatung und keine Genehmigung. Ob gebaut werden darf, entscheidet allein das Bauamt (Bezirksamt); Sicherheit gibt ein Bauvorbescheid. Danach folgen alle Details.</p>`;
+    <p class="rep-legal">Zusammenstellung aus offenen Daten der Freien und Hansestadt Hamburg (Datenlizenz Deutschland Namensnennung 2.0, www.govdata.de/dl-de/by-2-0). Karte: © basemap.de / BKG (2026) CC BY 4.0, Datenquellen © GeoBasis-DE / BKG (2026). Alle Quellen am Ende des Berichts. Keine Rechtsberatung und keine Genehmigung. Ob gebaut werden darf, entscheidet allein das Bauamt (Bezirksamt); Sicherheit gibt ein Bauvorbescheid. Danach folgen alle Details.</p>`;
   body.add("report");
 }
 addEventListener("afterprint", () => body.remove("report"));
