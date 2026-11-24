@@ -899,6 +899,7 @@ dialog.pro[open] { animation: rise .28s var(--ease) both; }
 ol.steps { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 8px; line-height: 1.45; }
 ul.quellen { margin: 0 0 8px; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; font-size: 13px; line-height: 1.4; color: var(--muted); }
 ul.quellen b { color: var(--fg); font-weight: 600; }
+.card p.ki { margin: 4px 0 10px; padding: 10px 12px; border-radius: 12px; background: var(--fill); font-size: 13px; line-height: 1.4; }
 .pro button[disabled] { opacity: .55; cursor: default; }
 
 /* ---------- Merkblatt (Drucken): kompakt, höchstens drei Seiten ---------- */
@@ -2104,7 +2105,7 @@ const Bericht = (() => {
       <li><b>Schutzgebiete, Hochwasser, Überschwemmungsgebiete, Fluglärm, Gründach-Förderung:</b> Freie und Hansestadt Hamburg, Behörde für Umwelt, Klima, Energie und Agrarwirtschaft. ${L}.</li>
       <li><b>Straßennamen:</b> Freie und Hansestadt Hamburg, Behörde für Verkehr und Mobilitätswende. ${L}.</li>
       <li><b>Hintergrundkarte und Stadtplan:</b> © basemap.de / BKG (2026), CC BY 4.0 (creativecommons.org/licenses/by/4.0); Datenquellen © GeoBasis-DE / BKG (2026).</li>
-    </ul><p class="hint">MoinPlan hat die Daten ausgewählt, auf Ihr Grundstück zugeschnitten, Flächen daraus berechnet und in eigenen Worten zusammengefasst. Die Behörden haben diesen Bericht nicht geprüft.</p>`, "rep-x"));
+    </ul><p class="ki"><b>23 amtliche Datenquellen</b> wurden für diesen Bericht automatisch ausgewertet. Die Kurzfassungen der Bebauungspläne entstehen mit Hilfe von KI und können Fehler enthalten. Verbindlich ist nur der Originalplan.</p><p class="hint">MoinPlan hat die Daten ausgewählt, auf Ihr Grundstück zugeschnitten, Flächen daraus berechnet und in eigenen Worten zusammengefasst. Die Behörden haben diesen Bericht nicht geprüft.</p>`, "rep-x"));
     if (!plotPs.length) return;
 
     const ext = geom.getExtent(), center = ol.extent.getCenter(ext);
@@ -3438,7 +3439,7 @@ function prepareReport() {
       ${rep.links?.length ? `<tr><td colspan="2" class="rep-links"><b>Originalpläne</b>${rep.links.map(l => `<a href="${esc(l.u)}" target="_blank" rel="noopener">${esc(l.label)}</a>`).join("")}</td></tr>` : ""}</table>
     ${tiles ? `<h2>Was darf ich bauen?</h2><div class="big">${tiles}</div>` : ""}
     ${img ? `<h2>Lage</h2><img src="${img}" alt="Kartenausschnitt">` : ""}
-    <p class="rep-legal">Zusammenstellung aus offenen Daten der Freien und Hansestadt Hamburg (Datenlizenz Deutschland Namensnennung 2.0, www.govdata.de/dl-de/by-2-0). Karte: © basemap.de / BKG (2026) CC BY 4.0, Datenquellen © GeoBasis-DE / BKG (2026). Alle Quellen am Ende des Berichts. Keine Rechtsberatung und keine Genehmigung. Ob gebaut werden darf, entscheidet allein das Bauamt (Bezirksamt); Sicherheit gibt ein Bauvorbescheid. Danach folgen alle Details.</p>`;
+    <p class="rep-legal">Zusammenstellung aus offenen Daten der Freien und Hansestadt Hamburg (Datenlizenz Deutschland Namensnennung 2.0, www.govdata.de/dl-de/by-2-0). Karte: © basemap.de / BKG (2026) CC BY 4.0, Datenquellen © GeoBasis-DE / BKG (2026). 23 amtliche Datenquellen automatisch ausgewertet, Plan-Kurzfassungen mit Hilfe von KI erstellt. Alle Quellen am Ende des Berichts. Keine Rechtsberatung und keine Genehmigung. Ob gebaut werden darf, entscheidet allein das Bauamt (Bezirksamt); Sicherheit gibt ein Bauvorbescheid. Danach folgen alle Details.</p>`;
   body.add("report");
 }
 addEventListener("afterprint", () => body.remove("report"));
