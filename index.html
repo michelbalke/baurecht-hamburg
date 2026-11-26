@@ -670,19 +670,21 @@ body.measuring .mtip { display: flex; }
 .lpring.done { opacity: 0; border: 3px solid var(--accent); animation: lpdone .35s ease-out; }
 
 /* ---------- 3D-Ansicht: Anbau zeichnen (nur PC) ---------- */
-.v3tools { position: absolute; z-index: 3; left: 12px; top: 66px; width: 252px; grid-template-columns: 1fr 1fr; display: grid; gap: 2px; padding: 8px; border-radius: 18px; background: var(--panel); box-shadow: var(--shadow-lg); }
+.v3left { position: absolute; z-index: 3; left: 12px; top: 66px; bottom: 30px; width: 268px; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+.v3left > * { pointer-events: auto; flex: none; }
+.v3tools { grid-template-columns: repeat(6, minmax(0, 1fr)); display: grid; gap: 2px; padding: 8px; border-radius: 18px; background: var(--panel); box-shadow: var(--shadow-lg); }
 .v3tools[hidden], .v3tip[hidden], .v3stat[hidden], .v3props[hidden], .v3form[hidden], .v3sl[hidden], .v3dreh[hidden], .v3vcb[hidden], .view3d.drawing .v3info { display: none; }
 .v3th { grid-column: 1 / -1; margin: 2px 6px 6px; font-size: 11.5px; font-weight: 600; color: var(--muted); }
-.view3d .v3tools button { width: 100%; justify-content: flex-start; gap: 9px; padding: 8px 8px; border-radius: 11px; font-size: 13.5px; font-weight: 600; color: var(--fg); background: transparent; box-shadow: none; }
+.view3d .v3tools button { position: relative; width: 100%; min-width: 0; flex-direction: column; justify-content: center; gap: 4px; padding: 9px 4px 7px; border-radius: 12px; font-size: 12px; font-weight: 600; color: var(--fg); background: transparent; box-shadow: none; }
 .view3d .v3tools button:hover:not(:disabled) { background: var(--fill); }
 .view3d .v3tools button[aria-pressed="true"] { background: var(--bv); color: #fff; }
 .view3d .v3tools button:disabled { opacity: .35; cursor: default; transform: none; filter: none; }
-.v3tools svg { width: 19px; height: 19px; flex: none; }
-.v3tools span { flex: 1; text-align: left; }
-.v3tools kbd { font: 600 10.5px/1 var(--sans); padding: 3px 5px; border-radius: 5px; border: 1px solid var(--line); color: var(--muted); }
+.v3tools svg { width: 21px; height: 21px; flex: none; }
+.v3tools span { max-width: 100%; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.v3tools kbd { position: absolute; top: 4px; right: 5px; font: 600 9.5px/1 var(--sans); padding: 2px 4px; border-radius: 5px; border: 1px solid var(--line); color: var(--muted); }
 .v3tools button[aria-pressed="true"] kbd { border-color: rgba(255,255,255,.4); color: #fff; }
 .v3tools hr { grid-column: 1 / -1; width: 100%; margin: 4px 0; border: 0; border-top: 1px solid var(--line); }
-.v3tip { position: absolute; z-index: 4; left: 276px; top: 70px; width: 250px; padding: 14px 16px; border-radius: 18px; background: var(--navy); color: #fff; box-shadow: var(--shadow-lg); font-size: 13px; line-height: 1.35; animation: v3tipin .35s var(--ease) both; }
+.v3tip { position: absolute; z-index: 4; left: 292px; top: 70px; width: 250px; padding: 14px 16px; border-radius: 18px; background: var(--navy); color: #fff; box-shadow: var(--shadow-lg); font-size: 13px; line-height: 1.35; animation: v3tipin .35s var(--ease) both; }
 .v3tip::before { content: ""; position: absolute; left: -7px; top: 22px; width: 14px; height: 14px; background: var(--navy); transform: rotate(45deg); border-radius: 2px; }
 .v3tip b { font-size: 14.5px; }
 .v3tip p { margin: 4px 0 10px; }
@@ -690,14 +692,14 @@ body.measuring .mtip { display: flex; }
 .view3d .v3tip button { padding: 7px 12px; font-size: 13px; background: #fff; color: var(--navy); box-shadow: none; }
 .view3d .v3tip button.ghost { background: rgba(255,255,255,.16); color: #fff; }
 @keyframes v3tipin { from { opacity: 0; transform: translateX(-8px); } }
-.v3stat { position: absolute; z-index: 3; left: 50%; top: 12px; transform: translateX(-50%); width: max-content; max-width: min(520px, calc(100% - 440px)); display: grid; gap: 6px; padding: 9px 14px; border-radius: 16px; background: var(--panel); box-shadow: var(--shadow-lg); }
+.v3stat { position: absolute; z-index: 3; left: 292px; right: 64px; top: 12px; margin: 0 auto; width: max-content; max-width: min(520px, calc(100% - 356px)); display: grid; gap: 6px; padding: 9px 14px; border-radius: 16px; background: var(--panel); box-shadow: var(--shadow-lg); }
 .v3stat p { margin: 0; }
 #v3hint { font-size: 13.5px; font-weight: 500; line-height: 1.3; }
 .v3nav2 { font-size: 11.5px; color: var(--muted); }
 .v3vcb { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--muted); }
-.v3vcb input { flex: 0 1 140px; padding: 6px 10px; border-radius: 9px; font: 600 14px var(--sans); font-variant-numeric: tabular-nums; }
+.v3vcb input { flex: 0 1 140px; min-width: 0; width: 100%; padding: 6px 10px; border-radius: 9px; font: 600 14px var(--sans); font-variant-numeric: tabular-nums; }
 /* Großer Flächen-Balken unten in der Mitte: heute bebaut, Ihr Vorhaben, noch frei (oder zu viel) */
-.v3bil { position: absolute; z-index: 3; left: 276px; right: 12px; bottom: 30px; margin: 0 auto; max-width: 640px; padding: 14px 18px 14px; border-radius: 22px; background: var(--panel); box-shadow: var(--shadow-lg); }
+.v3bil { position: absolute; z-index: 3; left: 292px; right: 12px; bottom: 30px; margin: 0 auto; max-width: 640px; padding: 14px 18px 14px; border-radius: 22px; background: var(--panel); box-shadow: var(--shadow-lg); }
 .v3bil[hidden] { display: none; }
 .v3bil header { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 10px; font-size: 13px; color: var(--muted); }
 .v3bil header b { font: 700 15px/1.2 var(--display); color: var(--fg); }
@@ -714,7 +716,7 @@ body.measuring .mtip { display: flex; }
 .v3zahl b { font: 700 22px/1.1 var(--display); color: var(--fg); font-variant-numeric: tabular-nums; }
 .v3zahl .ok b { color: var(--ok); } .v3zahl .warn b { color: #ff453a; }
 .v3bil > p { margin: 10px 0 0; font-size: 12px; color: var(--muted); }
-.v3props { position: absolute; z-index: 3; left: 12px; top: 214px; width: 252px; max-height: calc(100% - 240px); overflow: auto; display: grid; gap: 12px; padding: 14px 16px; border-radius: 20px; background: var(--panel); box-shadow: var(--shadow-lg); }
+.v3props { flex: 0 1 auto; min-height: 0; overflow: auto; display: grid; gap: 12px; padding: 14px 16px; border-radius: 20px; background: var(--panel); box-shadow: var(--shadow-lg); }
 .v3dtext { margin: 0; font-size: 14px; font-weight: 600; line-height: 1.3; }
 .v3dtext span { display: block; margin-top: 3px; font-weight: 400; font-size: 12.5px; color: var(--muted); }
 .v3dtext b { font: 700 20px/1.05 var(--display); }
@@ -728,12 +730,41 @@ body.measuring .mtip { display: flex; }
 .v3sl output { grid-area: o; text-align: right; font-weight: 600; color: var(--fg); font-variant-numeric: tabular-nums; }
 .view3d .v3dreh { justify-self: start; background: var(--accent-soft); color: var(--accent); box-shadow: none; }
 .v3dreh svg { width: 15px; height: 15px; }
-.view3d .v3fertig { justify-content: center; box-shadow: none; }
+.view3d .v3fertig { position: sticky; bottom: 0; justify-content: center; padding: 10px; font-weight: 700; color: #fff; background: var(--bv); box-shadow: 0 0 0 8px var(--panel); }
+.view3d .v3fertig:hover { filter: brightness(1.08); }
+.view3d .v3fertig.ab { color: var(--fg); background: var(--fill); }
+.view3d .v3tools #v3undo, .view3d .v3tools #v3clear { flex-direction: row; gap: 6px; padding: 7px 4px; font-weight: 500; color: var(--muted); }
+.view3d .v3tools [data-tool] { grid-column: span 2; }
+.view3d .v3tools #v3undo, .view3d .v3tools #v3clear { grid-column: span 3; }
+.view3d .v3tools #v3undo svg, .view3d .v3tools #v3clear svg { width: 17px; height: 17px; }
 .v3hinweis3d { position: absolute; z-index: 6; left: 98px; top: 112px; min-height: 44px; display: flex; align-items: center; gap: 8px; max-width: 230px; padding: 8px 12px 8px 10px; border: 0; border-radius: 14px; font: 600 13px/1.25 var(--sans); text-align: left; color: #fff; background: var(--bv); box-shadow: var(--shadow-lg); }
 .v3hinweis3d svg { width: 18px; height: 18px; flex: none; }
 .v3hinweis3d::before { content: ""; position: absolute; left: -5px; top: 16px; width: 12px; height: 12px; background: var(--bv); transform: rotate(45deg); border-radius: 2px; }
-body:not(.has-result) .v3hinweis3d, body.measuring .v3hinweis3d, body.is3d .v3hinweis3d { display: none; }
-@media (max-width: 760px), (hover: none), (pointer: coarse) { .v3tools, .v3tip, .v3stat, .v3props, .v3bil, .v3hinweis3d { display: none !important; } }
+.v3hinweis3d[hidden], body:not(.has-result) .v3hinweis3d, body.measuring .v3hinweis3d, body.is3d .v3hinweis3d { display: none; }
+.view3d { container-type: size; }
+@container (max-width: 900px) {
+  .v3nav2 { display: none; }
+  .v3bil { left: 12px; right: 12px; bottom: 26px; padding: 10px 14px; border-radius: 18px; }
+  .v3bil header { margin-bottom: 8px; font-size: 12px; flex-wrap: wrap; }
+  .v3bil > p { display: none; }
+  .v3zahl { margin-top: 8px; }
+  .v3zahl b { font-size: 17px; }
+  .v3left { bottom: 190px; }
+}
+@container (max-height: 820px) {
+  .v3props { gap: 8px; padding: 12px 14px; }
+  .v3form { gap: 8px; }
+  .v3seg svg { height: 16px; }
+  .view3d .v3seg button { padding: 4px 2px; }
+  .v3sl { row-gap: 0; }
+  .view3d .v3fertig { padding: 8px; }
+}
+@container (max-width: 640px) {
+  .v3stat { top: auto; bottom: 172px; left: 12px; right: 12px; width: auto; max-width: none; margin: 0; }
+  .v3left { bottom: 272px; }
+}
+@media (hover: hover) and (pointer: fine) { .v3credit { white-space: nowrap; } .v3credit span { display: none; } }
+@media (max-width: 760px), (hover: none), (pointer: coarse) { .v3left, .v3tip, .v3stat, .v3props, .v3bil, .v3hinweis3d { display: none !important; } }
 
 /* ---------- 3D-Ansicht ---------- */
 .view3d { display: none; position: absolute; inset: 0; z-index: 8; overflow: hidden; touch-action: none; background: var(--v3bg); }
@@ -1172,17 +1203,16 @@ ul.quellen b { color: var(--fg); font-weight: 600; }
         <button type="button" id="v3out" aria-label="Weiter weg">−</button>
         <button type="button" class="compass" id="v3north" aria-label="Nach Norden ausrichten" title="Nach Norden ausrichten"><svg viewBox="0 0 44 44" aria-hidden="true"><g class="needle"><text x="22" y="10.5" text-anchor="middle">N</text><path d="M22 12 27 22H17z" fill="#ff3b30"/><path d="M22 34 17 22h10z" fill="currentColor" opacity=".38"/></g></svg></button>
       </div>
+      <div class="v3left">
       <div class="v3tools" id="v3tools" hidden role="toolbar" aria-label="Bauvorhaben zeichnen">
         <p class="v3th">Bauvorhaben</p>
         <button type="button" data-tool="rechteck" title="Rechteck: zwei Ecken klicken (Taste R)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="6" width="16" height="12" rx="1"/><circle cx="4" cy="6" r="1.6" fill="currentColor"/><circle cx="20" cy="18" r="1.6" fill="currentColor"/></svg><span>Rechteck</span><kbd>R</kbd></button>
         <button type="button" data-tool="vieleck" title="Vieleck: Ecke für Ecke klicken (Taste L)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 18 6 6l9-2 5 8-6 7z"/></svg><span>Vieleck</span><kbd>L</kbd></button>
+        <button type="button" data-tool="auswahl" title="Vorhaben bearbeiten: Höhe, Dach, Ecken (Taste V)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 3 14 8-6 1.5L10 19z"/></svg><span>Bearbeiten</span><kbd>V</kbd></button>
         <hr>
         <button type="button" id="v3undo" title="Rückgängig (Strg+Z)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/></svg><span>Rückgängig</span></button>
         <button type="button" id="v3clear" title="Bauvorhaben löschen (Entf)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg><span>Löschen</span></button>
       </div>
-      <div class="v3tip" id="v3tip" hidden><b>Neu: Ihr Bauvorhaben in 3D</b><p>Zeichnen Sie Anbau, Garage oder Haus direkt auf Ihr Grundstück. Rechteck wählen, zwei Ecken klicken, fertig.</p><div><button type="button" id="v3tipGo">Ausprobieren</button><button type="button" class="ghost" id="v3tipX">Später</button></div></div>
-      <div class="v3stat" id="v3stat" hidden><p id="v3hint"></p><label class="v3vcb" id="v3vcbL">Maße <input type="text" id="v3vcb" inputmode="decimal" autocomplete="off" placeholder="z. B. 6;4"> m</label><p class="v3nav2">Linke Maus ziehen: drehen · Rad: zoomen · Rechte Maus: verschieben</p></div>
-      <div class="v3bil" id="v3bil" hidden></div>
       <div class="v3props" id="v3props" hidden>
         <p class="v3dtext" id="v3dtext"></p>
         <div class="v3form" id="v3form" hidden>
@@ -1198,6 +1228,10 @@ ul.quellen b { color: var(--fg); font-weight: 600; }
         </div>
         <button type="button" class="v3fertig" id="v3done">Fertig</button>
       </div>
+      </div>
+      <div class="v3tip" id="v3tip" hidden><b>Neu: Ihr Bauvorhaben in 3D</b><p>Zeichnen Sie Anbau, Garage oder Haus direkt auf Ihr Grundstück. Rechteck wählen, zwei Ecken klicken, fertig.</p><div><button type="button" id="v3tipGo">Ausprobieren</button><button type="button" class="ghost" id="v3tipX">Später</button></div></div>
+      <div class="v3stat" id="v3stat" hidden><p id="v3hint"></p><label class="v3vcb" id="v3vcbL">Maße <input type="text" id="v3vcb" inputmode="decimal" autocomplete="off" placeholder="z. B. 6;4"> m</label><p class="v3nav2">Linke Maus ziehen: drehen · Rad: zoomen · Rechte Maus: verschieben</p></div>
+      <div class="v3bil" id="v3bil" hidden></div>
       <p class="v3status" id="v3status" hidden></p>
       <div class="v3info" id="v3info"></div>
       <p class="v3credit">3D-Stadtmodell und Gelände: FHH, LGV, dl-de/by-2-0 · Stadtplan: © basemap.de / BKG, CC BY 4.0<span>. Ziehen dreht, zwei Finger zoomen und verschieben.</span></p>
@@ -1705,7 +1739,8 @@ const View3D = (() => {
     // Antippen: Gebäudeangaben aus dem LoD2-Modell (gleiche ALKIS-Kennung)
     me.handler = new C.ScreenSpaceEventHandler(scene.canvas);
     me.handler.setInputAction(e => {
-      if (me.draw?.on) return drawClick(me, e.position);
+      if (me.draw?.on) { if (me.draw.tool) return drawClick(me, e.position); if (me.draw.closed) return; }
+      if (me.draw?.closed && !opt.shot && desktop() && onBody(me, e.position)) return drawStart(); // Klick aufs Vorhaben: bearbeiten
       const f = scene.drillPick(e.position, 4).find(x => !(x instanceof C.Cesium3DTileFeature) || x.tileset !== me.bfTileset), id = f instanceof C.Cesium3DTileFeature ? f.getProperty("id") : null;
       let i = id != null ? me.byId.get(id) : undefined;
       if (id != null && i === undefined) { // nicht im LoD2-Ausschnitt: Angaben aus dem LoD3-Modell
@@ -2080,7 +2115,8 @@ const View3D = (() => {
   }
   let hovRaf = 0;
   function hoverSelect(me, pos) {
-    const d = me.draw; if (!d?.on || !d.closed || hovRaf) return;
+    const d = me.draw; if (!d?.closed || hovRaf) return;
+    if (!d.on) { hovRaf = requestAnimationFrame(() => { hovRaf = 0; if (st === me && me.draw?.closed && !me.draw.on) cursor(me, onBody(me, pos) ? "pointer" : ""); }); return; }
     hovRaf = requestAnimationFrame(() => {
       hovRaf = 0; if (st !== me || !me.draw?.closed) return;
       const corner = me.viewer.scene.drillPick(pos, 3).some(h => h.id?.properties?.ecke), body = !corner && onBody(me, pos);
@@ -3733,7 +3769,7 @@ on("compass", "click", () => view.animate({rotation: 0, duration: 400}));
 View3D.onHeading = h => setNeedle("v3north", -h);
 // Bauvorhaben zeichnen (nur PC), bedient wie ein CAD-Programm: Werkzeugleiste links, Statuszeile mit Maßfeld unten, Eigenschaften rechts.
 // Rechts oben steht live, wie viel Grundfläche noch bebaubar ist.
-let bvStand, bvLast = null, bvAuto = "";
+let bvStand, bvLast = null, bvAuto = "", bvHat = false;
 const fl = v => Math.round(v).toLocaleString("de-DE"), fl1 = v => v.toLocaleString("de-DE", {maximumFractionDigits: 1});
 const bvMerk = (k, v) => { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch { return null; } };
 const bvDesktop = () => matchMedia("(min-width: 761px) and (hover: hover) and (pointer: fine)").matches;
@@ -3747,7 +3783,7 @@ function bvFrei(d) {
   const neuIn = Math.min(neu, Math.max(0, s.gr - ist)), ueber = Math.max(0, -rest);
   el.innerHTML = `<header><b>Grundfläche fürs Haus</b><span>erlaubt ${fl(s.gr)} m² von ${fl(s.amt)} m² Grundstück</span></header>
     <div class="v3bar" role="img" aria-label="Heute bebaut ${fl(ist)} m², Ihr Vorhaben ${fl(neu)} m², ${rest >= 0 ? "noch frei " + fl(rest) : "zu viel " + fl(-rest)} m²">
-      ${seg("ist", Math.min(ist, voll), fl(ist) + " m²")}${seg("neu", neuIn, fl(neu) + " m²")}${rest > 0 ? seg("frei", rest, fl(rest) + " m² frei") : ""}${ueber ? seg("ueber", ueber, fl(ueber) + " m² zu viel") : ""}
+      ${seg("ist", Math.min(ist, voll), fl(ist) + " m²")}${seg("neu", neuIn, fl(neu) + " m²")}${rest > 0 ? seg("frei", rest, fl(rest) + " m²") : ""}${ueber ? seg("ueber", ueber, fl(ueber) + " m²") : ""}
       ${ueber ? `<u style="left:${w(s.gr)}" title="Grenze: ${fl(s.gr)} m²"></u>` : ""}</div>
     <div class="v3zahl"><div style="--c:#7c7c82"><span>Heute bebaut</span><b>${fl(ist)} m²</b></div><div style="--c:var(--bv)"><span>Ihr Vorhaben</span><b>${fl(neu)} m²</b></div>
       <div class="${rest >= 0 ? "ok" : "warn"}" style="--c:${rest >= 0 ? "var(--ok)" : "#ff453a"}"><span>${rest >= 0 ? "Noch frei" : "Zu viel"}</span><b>${fl(Math.abs(rest))} m²</b></div></div>`;
@@ -3772,9 +3808,10 @@ function bvHint(d) {
 View3D.onHover = h => { bvHover = h; if (bvLast) bvHint(bvLast); };
 View3D.onDraw = d => {
   if (!d) { ["v3tools", "v3stat", "v3props", "v3tip", "v3bil"].forEach(i => $(i).hidden = true); $("view3d").classList.remove("drawing"); return; }
-  bvLast = d;
+  bvLast = d; bvHat = !!View3D.vorhaben();
   $("v3tools").hidden = false;
-  document.querySelectorAll("#v3tools [data-tool]").forEach(b => b.setAttribute("aria-pressed", String(d.tool === b.dataset.tool)));
+  document.querySelectorAll("#v3tools [data-tool]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.tool === "auswahl" ? !!(d.on && d.closed && !d.tool) : d.tool === b.dataset.tool)));
+  $("v3tools").querySelector('[data-tool="auswahl"]').disabled = !(d.closed || (d.tool && bvHat));
   $("v3undo").disabled = !d.n; $("v3clear").disabled = !d.n;
   const aktiv = !!(d.tool || (d.closed && d.on));
   $("view3d").classList.toggle("drawing", aktiv);
@@ -3799,6 +3836,7 @@ View3D.onDraw = d => {
     $("v3drehT").textContent = f.dach === "pult" ? "Hohe Seite drehen" : "First drehen";
   }
   $("v3done").textContent = d.closed ? "Fertig" : d.tool === "vieleck" && d.n >= 3 ? "Form schließen" : "Abbrechen";
+  $("v3done").classList.toggle("ab", !d.closed && !(d.tool === "vieleck" && d.n >= 3));
 };
 let bvLaedt = null;
 function bvLade() {
@@ -3810,7 +3848,9 @@ function bvStart(tool) {
   bvLade();
   View3D.draw.start(tool);
 }
-document.querySelectorAll("#v3tools [data-tool]").forEach(b => b.addEventListener("click", () => { if (bvLast?.tool !== b.dataset.tool) bvStart(b.dataset.tool); }));
+document.querySelectorAll("#v3tools [data-tool]").forEach(b => b.addEventListener("click", () => { if (b.dataset.tool === "auswahl") bvBearbeiten(); else if (bvLast?.tool !== b.dataset.tool) bvStart(b.dataset.tool); }));
+// Bearbeiten: fertiges Vorhaben auswählen; beim Neuzeichnen über einem Vorhaben zurück zum alten (wie Esc)
+function bvBearbeiten() { if (bvLast?.tool) View3D.draw.stop(); bvLade(); View3D.draw.start(); }
 on("v3undo", "click", () => View3D.draw.undo());
 on("v3clear", "click", () => View3D.draw.clear());
 on("v3done", "click", () => { const d = bvLast; if (d?.closed) View3D.draw.stop(); else if (d?.tool === "vieleck" && d.n >= 3) View3D.draw.finish(); else View3D.draw.stop(); });
@@ -3833,6 +3873,7 @@ document.addEventListener("keydown", e => {
   if (d.tool && d.n >= 1 && /^[0-9.,;x ]$/.test(e.key) && !e.ctrlKey) { e.preventDefault(); vcb.value += e.key; View3D.draw.vcb(vcb.value); return; }
   const k = e.key.toLowerCase();
   if (k === "r" && !e.ctrlKey) bvStart("rechteck");
+  else if (k === "v" && !e.ctrlKey) { if (bvHat) bvBearbeiten(); }
   else if (k === "l" && !e.ctrlKey) bvStart("vieleck");
   else if (e.key === "Enter") { if (vcb.value) { if (View3D.draw.typed(vcb.value)) vcb.value = ""; } else View3D.draw.finish(); }
   else if (e.key === "Backspace" && vcb.value) { vcb.value = vcb.value.slice(0, -1); View3D.draw.vcb(vcb.value); }
