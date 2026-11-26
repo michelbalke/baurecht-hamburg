@@ -676,13 +676,31 @@ body.measuring .mtip { display: flex; }
 .view3d .v3drawbtn { background: var(--navy); color: #fff; }
 .v3drawbtn:active { transform: translateX(-50%) scale(.94); }
 .v3drawbtn svg { width: 19px; height: 19px; }
-.v3draw { position: absolute; z-index: 2; left: 12px; bottom: 30px; width: min(330px, calc(100% - 24px)); display: grid; gap: 12px; padding: 14px 16px; border-radius: 22px; background: var(--panel); box-shadow: var(--shadow-lg); }
-.v3draw[hidden], .v3drawbtn[hidden], .view3d.drawing .v3info { display: none; }
+.v3draw { position: absolute; z-index: 2; left: 12px; bottom: 30px; width: min(340px, calc(100% - 24px)); max-height: calc(100% - 100px); overflow: auto; display: grid; gap: 12px; padding: 14px 16px; border-radius: 22px; background: var(--panel); box-shadow: var(--shadow-lg); }
+.v3draw[hidden], .v3drawbtn[hidden], .v3form[hidden], .view3d.drawing .v3info { display: none; }
+.v3frei { display: grid; gap: 6px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+.v3frei p { margin: 0; font-size: 12.5px; color: var(--muted); line-height: 1.35; }
+.v3frei .gross { font-size: 13px; color: var(--fg); font-weight: 600; }
+.v3frei .gross b { display: block; font: 700 26px/1.05 var(--display); color: var(--ok); transition: color .2s; }
+.v3frei .gross.zuviel b { color: #ff453a; }
+.v3balk { display: flex; height: 8px; border-radius: 99px; overflow: hidden; background: var(--fill); }
+.v3balk i { display: block; height: 100%; transition: width .15s; }
+.v3balk .ist { background: #8e8e93; } .v3balk .neu { background: #ff9f0a; } .v3balk .ueber { background: #ff453a; }
 .v3dtext { margin: 0; font-size: 14px; font-weight: 600; line-height: 1.3; }
 .v3dtext span { display: block; margin-top: 3px; font-weight: 400; font-size: 12.5px; color: var(--muted); }
-.v3dtext b { font: 700 22px/1.05 var(--display); }
-.v3dh { display: flex; align-items: center; gap: 8px; font-size: 13.5px; color: var(--muted); }
-.v3dh input { flex: none; width: 74px; padding: 7px 10px; text-align: right; }
+.v3dtext b { font: 700 20px/1.05 var(--display); }
+.v3form { display: grid; gap: 10px; }
+.v3seg { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; padding: 3px; border-radius: 14px; background: var(--fill); }
+.view3d .v3seg button { flex-direction: column; gap: 2px; padding: 6px 2px 5px; border-radius: 11px; font-size: 11.5px; font-weight: 600; color: var(--muted); background: transparent; border: 0; }
+.view3d .v3seg button[aria-checked="true"] { background: #ff9f0a; color: #1c1c1e; }
+.v3seg svg { width: 30px; height: 22px; }
+.v3sl { display: grid; grid-template-columns: 96px 1fr 52px; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
+.v3sl input { width: 100%; accent-color: #ff9f0a; }
+.v3sl output { text-align: right; font-weight: 600; color: var(--fg); font-variant-numeric: tabular-nums; }
+.v3sl[hidden] { display: none; }
+.view3d .v3dreh { justify-self: start; background: var(--accent-soft); color: var(--accent); }
+.v3dreh svg { width: 15px; height: 15px; }
+.v3dreh[hidden] { display: none; }
 .v3dbtns { display: flex; gap: 6px; }
 .v3dbtns button { flex: 1; justify-content: center; padding: 8px 10px; font-size: 13px; }
 .v3dbtns button:disabled { opacity: .4; cursor: default; filter: none; transform: none; }
@@ -1125,10 +1143,21 @@ ul.quellen b { color: var(--fg); font-weight: 600; }
         <button type="button" id="v3out" aria-label="Weiter weg">−</button>
         <button type="button" class="compass" id="v3north" aria-label="Nach Norden ausrichten" title="Nach Norden ausrichten"><svg viewBox="0 0 44 44" aria-hidden="true"><g class="needle"><text x="22" y="10.5" text-anchor="middle">N</text><path d="M22 12 27 22H17z" fill="#ff3b30"/><path d="M22 34 17 22h10z" fill="currentColor" opacity=".38"/></g></svg></button>
       </div>
-      <button type="button" class="v3drawbtn" id="v3draw" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21V11l6-4 6 4v10z"/><path d="M15 21h6v-7l-6-3"/><path d="M9 21v-5"/></svg><span>Anbau zeichnen</span></button>
+      <button type="button" class="v3drawbtn" id="v3draw" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21V11l6-4 6 4v10z"/><path d="M15 21h6v-7l-6-3"/><path d="M9 21v-5"/></svg><span>Bauvorhaben zeichnen</span></button>
       <div class="v3draw" id="v3bar" hidden>
+        <div class="v3frei" id="v3frei"></div>
         <p class="v3dtext" id="v3dtext"></p>
-        <label class="v3dh">Höhe des Anbaus <input type="number" id="v3h" min="0.5" max="40" step="0.5" value="3" inputmode="decimal"> m</label>
+        <div class="v3form" id="v3form" hidden>
+          <div class="v3seg" role="radiogroup" aria-label="Dachform">
+            <button type="button" data-dach="flach" role="radio"><svg viewBox="0 0 32 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M4 21V9h24v12z"/></svg>Flach</button>
+            <button type="button" data-dach="pult" role="radio"><svg viewBox="0 0 32 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M4 21V12l24-7v16z"/></svg>Pult</button>
+            <button type="button" data-dach="sattel" role="radio"><svg viewBox="0 0 32 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M5 21v-9l11-8 11 8v9z"/></svg>Sattel</button>
+            <button type="button" data-dach="walm" role="radio"><svg viewBox="0 0 32 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M3 21v-8l7-7h12l7 7v8z"/><path d="M10 6l-2 15M22 6l2 15" stroke-width="1.2"/></svg>Walm</button>
+          </div>
+          <label class="v3sl">Wandhöhe <input type="range" id="v3wand" min="2" max="12" step="0.25"><output id="v3wandO"></output></label>
+          <label class="v3sl" id="v3neiL">Dachneigung <input type="range" id="v3nei" min="5" max="60" step="1"><output id="v3neiO"></output></label>
+          <button type="button" class="ghost v3dreh" id="v3dreh"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>First drehen</button>
+        </div>
         <div class="v3dbtns">
           <button type="button" class="ghost" id="v3undo">Rückgängig</button>
           <button type="button" class="ghost" id="v3clear">Löschen</button>
@@ -1637,7 +1666,7 @@ const View3D = (() => {
     // Antippen: Gebäudeangaben aus dem LoD2-Modell (gleiche ALKIS-Kennung)
     me.handler = new C.ScreenSpaceEventHandler(scene.canvas);
     me.handler.setInputAction(e => {
-      if (me.draw) return drawClick(me, e.position);
+      if (me.draw?.on) return drawClick(me, e.position);
       const f = scene.drillPick(e.position, 4).find(x => !(x instanceof C.Cesium3DTileFeature) || x.tileset !== me.bfTileset), id = f instanceof C.Cesium3DTileFeature ? f.getProperty("id") : null;
       let i = id != null ? me.byId.get(id) : undefined;
       if (id != null && i === undefined) { // nicht im LoD2-Ausschnitt: Angaben aus dem LoD3-Modell
@@ -1661,16 +1690,17 @@ const View3D = (() => {
     c.minimumZoomDistance = 8;
     me.viewer.cesiumWidget.screenSpaceEventHandler.removeInputAction(C.ScreenSpaceEventType.LEFT_DOUBLE_CLICK); // kein Heranfliegen beim Doppelklick
     me.viewer.scene.canvas.addEventListener("contextmenu", e => e.preventDefault());
-    me.handler.setInputAction(e => { me.orbit = {x: e.position.x, y: e.position.y, piv: null}; }, C.ScreenSpaceEventType.LEFT_DOWN);
-    me.handler.setInputAction(() => { me.orbit = null; if (me.draw?.on && !me.draw.closed) me.viewer.scene.canvas.style.cursor = "crosshair"; }, C.ScreenSpaceEventType.LEFT_UP);
+    me.handler.setInputAction(e => { me.orbit = grabCorner(me, e.position) ? null : {x: e.position.x, y: e.position.y, piv: null}; }, C.ScreenSpaceEventType.LEFT_DOWN);
+    me.handler.setInputAction(() => { me.orbit = null; if (me.dragIdx != null) dropCorner(me); else cursor(me); }, C.ScreenSpaceEventType.LEFT_UP);
     me.handler.setInputAction(e => {
+      if (me.dragIdx != null) return dragCorner(me, e.endPosition);
       const o = me.orbit;
       if (o && (o.piv || Math.hypot(e.endPosition.x - o.x, e.endPosition.y - o.y) > 4)) return orbit(me, o, e);
       if (me.draw) drawMove(me, e.endPosition);
     }, C.ScreenSpaceEventType.MOUSE_MOVE);
     // gezeichneter Anbau bleibt beim erneuten Öffnen am selben Ort erhalten
-    if (anbau && anbau.key === key(me)) { me.draw = {pts: anbau.pts.slice(), h: anbau.h, closed: true, hover: null, on: false}; drawEntities(me); drawLabels(me); drawChanged(me); }
-    else api.onDraw?.({on: false, n: 0, closed: false, h: 3, area: 0});
+    if (anbau && anbau.key === key(me)) { me.draw = {...newDraw(), pts: anbau.pts.slice(), form: {...anbau.form}, closed: true}; drawEntities(me); drawRefresh(me); }
+    else api.onDraw?.({on: false, n: 0, closed: false, area: 0});
   }
   // Drehen wie in Karten-Apps: waagerecht ziehen dreht um die Bildmitte, senkrecht ziehen neigt
   function orbit(me, o, e) {
@@ -1692,88 +1722,223 @@ const View3D = (() => {
     cam.constrainedAxis = axis;
     sc.requestRender();
   }
-  let anbau = null; // zuletzt gezeichneter Anbau {key, pts, h}
+  // ---------- Bauvorhaben zeichnen ----------
+  // Schritt 1: Ecken auf den Boden klicken (nur Umriss, rechte Winkel rasten ein). Schritt 2 nach „Fertig“: Körper mit Dach,
+  // Dachform, Wandhöhe, Neigung und Firstrichtung einstellbar, Ecken lassen sich mit der Maus verschieben.
+  let anbau = null; // zuletzt gezeichnetes Vorhaben {key, pts, form}
   const key = me => me.opt.center.map(v => Math.round(v)).join(",");
-  // Punkt auf dem Gelände unter der Maus (geht durch Gebäude hindurch)
+  const FORM0 = {dach: "sattel", wand: 3, neigung: 30, dreh: false};
+  const ORANGE = "#ff9f0a", DACH = "#d9480f";
+  // Punkt auf dem Gelände unter der Maus (geht durch Gebäude und das Vorhaben hindurch)
   function groundAt(me, pos) {
     const sc = me.viewer.scene, hit = sc.pick(pos);
     if (!hit && sc.pickPositionSupported) { const p = sc.pickPosition(pos); if (p) return p; } // freier Boden: genau dort, wo er zu sehen ist
-    const ray = me.viewer.camera.getPickRay(pos); // auf einem Gebäude oder dem Anbau: durch sie hindurch bis zum Gelände
+    const ray = me.viewer.camera.getPickRay(pos);
     return (ray && sc.globe.pick(ray, sc)) || null;
   }
+  const newDraw = () => ({pts: [], form: {...FORM0}, closed: false, hover: null, snap: "", on: false});
   function drawStart() {
     const me = st; if (!me?.viewer) return;
-    if (!me.draw) me.draw = {pts: [], h: 3, closed: false, hover: null};
+    if (!me.draw) me.draw = newDraw();
     me.draw.on = true;
-    if (me.draw.closed && me.draw.pts.length < 3) me.draw.closed = false;
     if (!me.drawEnt) drawEntities(me);
-    me.viewer.scene.canvas.style.cursor = me.draw.closed ? "" : "crosshair";
-    drawChanged(me);
+    cursor(me); drawRefresh(me);
   }
-  function drawStop() { const me = st; if (!me?.draw) return; me.draw.on = false; me.draw.hover = null; if (!me.draw.closed) drawClear(true); else { me.viewer.scene.canvas.style.cursor = ""; drawChanged(me); } }
+  function drawStop() {
+    const me = st, d = me?.draw; if (!d) return;
+    d.on = false; d.hover = null;
+    if (!d.closed) { d.pts = []; }
+    cursor(me); drawRefresh(me);
+  }
+  const cursor = (me, c) => { me.viewer.scene.canvas.style.cursor = c ?? (me.draw?.on && !me.draw.closed ? "crosshair" : ""); };
+  // Ort im lokalen Ost-Nord-Oben-System des ersten Punkts (Meter)
+  function frame(me) {
+    const C = Cesium, d = me.draw, m = C.Transforms.eastNorthUpToFixedFrame(d.pts[0] || d.hover);
+    return {m, inv: C.Matrix4.inverseTransformation(m, new C.Matrix4()),
+      loc(p) { return C.Matrix4.multiplyByPoint(this.inv, p, new C.Cartesian3()); }, world(x, y, z) { return C.Matrix4.multiplyByPoint(m, new C.Cartesian3(x, y, z), new C.Cartesian3()); }};
+  }
+  // Einrasten: auf den ersten Punkt (schließen) und auf rechte Winkel bzw. die gerade Verlängerung zur letzten Seite
+  function snapped(me, p, pos) {
+    const C = Cesium, d = me.draw, n = d.pts.length; d.snap = "";
+    if (!p || !n) return p;
+    if (n >= 3) { const w = me.viewer.scene.cartesianToCanvasCoordinates(d.pts[0]); if (w && C.Cartesian2.distance(w, pos) < 16) { d.snap = "zu"; return d.pts[0]; } }
+    if (n < 2) return p;
+    const F = frame(me), a = F.loc(d.pts[n - 2]), b = F.loc(d.pts[n - 1]), q = F.loc(p);
+    const ex = b.x - a.x, ey = b.y - a.y, el = Math.hypot(ex, ey), vx = q.x - b.x, vy = q.y - b.y, vl = Math.hypot(vx, vy);
+    if (el < 0.01 || vl < 0.3) return p;
+    const ang = Math.atan2(ex * vy - ey * vx, ex * vx + ey * vy), k = Math.round(ang / (Math.PI / 2));
+    if (Math.abs(ang - k * Math.PI / 2) > 7 * rad || k === 2 || k === -2) return p;
+    const t = k * Math.PI / 2, ux = (ex * Math.cos(t) - ey * Math.sin(t)) / el, uy = (ex * Math.sin(t) + ey * Math.cos(t)) / el, l = vx * ux + vy * uy;
+    d.snap = k ? "rechtwinklig" : "gerade";
+    return F.world(b.x + ux * l, b.y + uy * l, q.z);
+  }
   function drawClick(me, pos) {
     const d = me.draw; if (!d.on || d.closed) return;
-    const C = Cesium, sc = me.viewer.scene;
-    // Klick auf den ersten Punkt schließt die Form
-    if (d.pts.length >= 3) { const w = sc.cartesianToCanvasCoordinates(d.pts[0]); if (w && C.Cartesian2.distance(w, pos) < 14) return drawFinish(); }
-    const p = groundAt(me, pos); if (!p) return;
-    d.pts.push(p); drawLabels(me); drawChanged(me);
+    const p = snapped(me, groundAt(me, pos), pos); if (!p) return;
+    if (d.snap === "zu") return drawFinish();
+    d.pts.push(p); d.hover = null; drawRefresh(me);
   }
   function drawMove(me, pos) {
     const d = me.draw; if (!d.on || d.closed) return;
-    d.hover = groundAt(me, pos); me.viewer.scene.requestRender();
+    d.hover = snapped(me, groundAt(me, pos), pos);
+    me.viewer.scene.requestRender(); api.onDraw?.(state(me));
   }
-  function drawFinish() { const me = st, d = me?.draw; if (!d || d.pts.length < 3) return; d.closed = true; d.hover = null; me.viewer.scene.canvas.style.cursor = ""; anbau = {key: key(me), pts: d.pts.slice(), h: d.h}; drawLabels(me); drawChanged(me); }
-  function drawUndo() { const me = st, d = me?.draw; if (!d) return; if (d.closed) d.closed = false; else d.pts.pop(); me.viewer.scene.canvas.style.cursor = d.on ? "crosshair" : ""; anbau = null; drawLabels(me); drawChanged(me); }
-  function drawClear(off) {
-    const me = st; if (!me?.draw) return;
-    me.draw.pts = []; me.draw.closed = false; me.draw.hover = null; anbau = null;
-    if (off) me.draw.on = false;
-    me.viewer.scene.canvas.style.cursor = me.draw.on ? "crosshair" : "";
-    drawLabels(me); drawChanged(me);
+  function drawFinish() {
+    const me = st, d = me?.draw; if (!d || d.pts.length < 3) return;
+    d.closed = true; d.hover = null; d.snap = "";
+    anbau = {key: key(me), pts: d.pts.slice(), form: d.form};
+    cursor(me); drawRefresh(me);
   }
-  function drawHeight(h) { const me = st, d = me?.draw; if (!d || !(h > 0)) return; d.h = Math.min(40, Math.max(0.5, h)); if (anbau && d.closed) anbau.h = d.h; drawLabels(me); drawChanged(me); }
-  const carto = p => Cesium.Cartographic.fromCartesian(p);
-  const utm = p => { const c = carto(p); return proj4("EPSG:4326", "EPSG:25832", [c.longitude / rad, c.latitude / rad]); };
-  function drawPts(me) { const d = me.draw; return d.closed || !d.hover ? d.pts : [...d.pts, d.hover]; }
-  const baseOf = pts => pts.length ? Math.min(...pts.map(p => carto(p).height)) : 0;
+  function drawUndo() {
+    const me = st, d = me?.draw; if (!d) return;
+    if (d.closed) d.closed = false; else d.pts.pop();
+    anbau = null; cursor(me); drawRefresh(me);
+  }
+  function drawClear() { const me = st; if (!me?.draw) return; const on = me.draw.on; me.draw = newDraw(); me.draw.on = on; anbau = null; cursor(me); drawRefresh(me); }
+  function drawForm(f) { const me = st, d = me?.draw; if (!d) return; Object.assign(d.form, f); d.form.wand = Math.min(30, Math.max(1, +d.form.wand || 3)); d.form.neigung = Math.min(70, Math.max(3, +d.form.neigung || 30)); drawRefresh(me); }
+  const flaeche = P => { let a = 0; for (let i = 0, j = P.length - 1; i < P.length; j = i++) a += (P[j].x + P[i].x) * (P[j].y - P[i].y); return a / 2; };
+  function state(me) {
+    const d = me.draw; if (!d) return {on: false, n: 0, closed: false, area: 0};
+    const pts = d.closed || !d.hover ? d.pts : [...d.pts, d.hover], F = pts.length ? frame(me) : null;
+    const area = pts.length >= 3 ? Math.abs(flaeche(pts.map(p => F.loc(p)))) : 0;
+    return {on: d.on, n: d.pts.length, closed: d.closed, area, form: {...d.form}, snap: d.snap, mass: d.mass || null};
+  }
+
+  // Körper mit Dach als eigene Geometrie (schattiert, damit die Flächen plastisch wirken)
+  function mass(P, f) {
+    // P: Umriss im lokalen System (x, y), gegen den Uhrzeigersinn
+    let li = 0, lb = 0; for (let i = 0; i < P.length; i++) { const q = P[(i + 1) % P.length], l = Math.hypot(q[0] - P[i][0], q[1] - P[i][1]); if (l > lb) { lb = l; li = i; } }
+    const q = P[(li + 1) % P.length]; let ux = (q[0] - P[li][0]) / lb, uy = (q[1] - P[li][1]) / lb; // First parallel zur längsten Seite
+    if (f.dreh) [ux, uy] = [-uy, ux];
+    const S = P.map(p => p[0] * ux + p[1] * uy), T = P.map(p => -p[0] * uy + p[1] * ux);
+    const s0 = Math.min(...S), s1 = Math.max(...S), t0 = Math.min(...T), t1 = Math.max(...T), sc = (s0 + s1) / 2, tc = (t0 + t1) / 2, hl = (s1 - s0) / 2, hw = (t1 - t0) / 2;
+    const k = f.dach === "flach" ? 0 : Math.tan(f.neigung * rad), st_ = p => [p[0] * ux + p[1] * uy, -p[0] * uy + p[1] * ux];
+    const roofZ = p => { const [s, t] = st_(p);
+      return f.dach === "pult" ? k * (t - t0) : f.dach === "sattel" ? k * Math.max(0, hw - Math.abs(t - tc)) : f.dach === "walm" ? k * Math.max(0, Math.min(hw - Math.abs(t - tc), hl - Math.abs(s - sc))) : 0; };
+    // Dachflächen: Umriss mit Halbebenen (a*s + b*t + c >= 0) in ebene Stücke schneiden
+    const H = (a, b, c) => p => { const [s, t] = st_(p); return a * s + b * t + c; };
+    const regions = f.dach === "sattel" ? [[H(0, 1, -tc)], [H(0, -1, tc)]]
+      : f.dach === "walm" ? [ // Seite t>tc: hw-(t-tc) <= hl-|s-sc|; Ende s>sc: hl-(s-sc) <= hw-|t-tc|
+        [H(0, 1, -tc), H(-1, 1, hl - hw + sc - tc), H(1, 1, hl - hw - sc - tc)], [H(0, -1, tc), H(-1, -1, hl - hw + sc + tc), H(1, -1, hl - hw - sc + tc)],
+        [H(1, 0, -sc), H(1, -1, hw - hl - sc + tc), H(1, 1, hw - hl - sc - tc)], [H(-1, 0, sc), H(-1, -1, hw - hl + sc + tc), H(-1, 1, hw - hl + sc - tc)]]
+      : [[]];
+    const clip = (poly, g) => { const out = []; for (let i = 0; i < poly.length; i++) { const a = poly[i], b = poly[(i + 1) % poly.length], ga = g(a), gb = g(b);
+      if (ga >= 0) out.push(a); if ((ga >= 0) !== (gb >= 0)) { const t = ga / (ga - gb); out.push([a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t]); } } return out; };
+    const pieces = regions.map(gs => gs.reduce(clip, P)).filter(r => r.length >= 3 && Math.abs(flaeche(r.map(([x, y]) => ({x, y})))) > 0.01);
+    const wall = [], roof = []; let vol = 0, top = 0;
+    const tri = (arr, a, b, c, up) => { // Dreieck mit Normale nach außen bzw. oben
+      const n = [(b[1] - a[1]) * (c[2] - a[2]) - (b[2] - a[2]) * (c[1] - a[1]), (b[2] - a[2]) * (c[0] - a[0]) - (b[0] - a[0]) * (c[2] - a[2]), (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0])];
+      if (up && n[2] < 0) { [b, c] = [c, b]; n[0] = -n[0]; n[1] = -n[1]; n[2] = -n[2]; }
+      const l = Math.hypot(...n) || 1; arr.push([a, b, c, n.map(v => v / l)]);
+    };
+    for (const r of pieces) {
+      const idx = Cesium.PolygonPipeline.triangulate(r.map(([x, y]) => new Cesium.Cartesian2(x, y)));
+      for (let i = 0; i < idx.length; i += 3) {
+        const [a, b, c] = [idx[i], idx[i + 1], idx[i + 2]].map(j => [r[j][0], r[j][1], f.wand + roofZ(r[j])]);
+        tri(roof, a, b, c, true);
+        vol += Math.abs((b[0] - a[0]) * (c[1] - a[1]) - (c[0] - a[0]) * (b[1] - a[1])) / 2 * (a[2] + b[2] + c[2]) / 3;
+        top = Math.max(top, a[2], b[2], c[2]);
+      }
+    }
+    const rim = []; // obere Kante der Wände (folgt am Giebel dem Dach)
+    for (let i = 0; i < P.length; i++) {
+      const a = P[i], b = P[(i + 1) % P.length], L = Math.hypot(b[0] - a[0], b[1] - a[1]), n = Math.max(1, Math.ceil(L / 0.25));
+      for (let j = 0; j < n; j++) {
+        const p0 = [a[0] + (b[0] - a[0]) * j / n, a[1] + (b[1] - a[1]) * j / n], p1 = [a[0] + (b[0] - a[0]) * (j + 1) / n, a[1] + (b[1] - a[1]) * (j + 1) / n];
+        const z0 = f.wand + roofZ(p0), z1 = f.wand + roofZ(p1); rim.push([...p0, z0]);
+        const nx = (b[1] - a[1]) / L, ny = -(b[0] - a[0]) / L;
+        wall.push([[...p0, 0], [...p1, 0], [...p1, z1], [nx, ny, 0]], [[...p0, 0], [...p1, z1], [...p0, z0], [nx, ny, 0]]);
+      }
+    }
+    rim.push(rim[0]);
+    return {wall, roof, rim, pieces: pieces.map(r => r.map(p => [p[0], p[1], f.wand + roofZ(p)])), vol, first: top};
+  }
+  function geom(tris) {
+    const C = Cesium, pos = new Float64Array(tris.length * 9), nor = new Float32Array(tris.length * 9);
+    tris.forEach(([a, b, c, n], i) => { pos.set([...a, ...b, ...c], i * 9); nor.set([...n, ...n, ...n], i * 9); });
+    return new C.Geometry({attributes: {position: new C.GeometryAttribute({componentDatatype: C.ComponentDatatype.DOUBLE, componentsPerAttribute: 3, values: pos}),
+      normal: new C.GeometryAttribute({componentDatatype: C.ComponentDatatype.FLOAT, componentsPerAttribute: 3, values: nor})},
+      indices: Uint32Array.from({length: tris.length * 3}, (_, i) => i), primitiveType: C.PrimitiveType.TRIANGLES, boundingSphere: C.BoundingSphere.fromVertices(pos)});
+  }
+  function buildMass(me) {
+    const C = Cesium, sc = me.viewer.scene, d = me.draw;
+    if (me.massPrim) { sc.primitives.remove(me.massPrim); me.massPrim = null; }
+    if (me.massLines) { sc.primitives.remove(me.massLines); me.massLines = null; }
+    d.mass = null;
+    if (!d.closed || d.pts.length < 3) return;
+    const F = frame(me), L = d.pts.map(p => F.loc(p)), base = Math.min(...L.map(p => p.z));
+    let P = L.map(p => [p.x, p.y]); if (flaeche(L) < 0) P = P.reverse();
+    const M = mass(P, d.form), m = C.Matrix4.multiplyByTranslation(F.m, new C.Cartesian3(0, 0, base), new C.Matrix4());
+    const inst = (tris, col) => new C.GeometryInstance({geometry: geom(tris), modelMatrix: m, attributes: {color: C.ColorGeometryInstanceAttribute.fromColor(C.Color.fromCssColorString(col))}});
+    me.massPrim = sc.primitives.add(new C.Primitive({geometryInstances: [inst(M.wall, ORANGE), ...(M.roof.length ? [inst(M.roof, d.form.dach === "flach" ? ORANGE : DACH)] : [])],
+      appearance: new C.PerInstanceColorAppearance({flat: false, translucent: false, closed: false}), asynchronous: false, compressVertices: false}));
+    const lines = me.massLines = sc.primitives.add(new C.PolylineCollection({modelMatrix: m}));
+    const v = a => new C.Cartesian3(a[0], a[1], a[2]), white = C.Material.fromType("Color", {color: C.Color.WHITE.withAlpha(0.9)});
+    for (const r of M.pieces) lines.add({positions: [...r, r[0]].map(v), width: 1.5, material: white});
+    lines.add({positions: P.concat([P[0]]).map(p => v([p[0], p[1], 0.05])), width: 2, material: white});
+    for (const p of P) lines.add({positions: [v([p[0], p[1], 0]), v([p[0], p[1], M.rim.find(r => r[0] === p[0] && r[1] === p[1])?.[2] ?? d.form.wand])], width: 1.5, material: white});
+    d.mass = {vol: M.vol, first: M.first};
+  }
   function drawEntities(me) {
-    const C = Cesium, E = me.viewer.entities, col = C.Color.fromCssColorString("#ff9f0a");
-    const top = (pts, h) => { const b = baseOf(pts); return pts.map(p => { const c = carto(p); return C.Cartesian3.fromRadians(c.longitude, c.latitude, b + h); }); };
+    const C = Cesium, E = me.viewer.entities, col = C.Color.fromCssColorString(ORANGE);
+    const lift = p => { const c = carto(p); return C.Cartesian3.fromRadians(c.longitude, c.latitude, c.height + 0.15); };
+    const font = `600 12.5px ${getComputedStyle(document.documentElement).getPropertyValue("--sans").trim() || "system-ui, sans-serif"}`;
+    me.drawFont = font;
     me.drawEnt = [
-      // Körper: ab 3 Punkten, wächst live mit der Maus (Kopien: Cesium setzt die übergebenen Punkte sonst auf Höhe 0)
-      E.add({polygon: {hierarchy: new C.CallbackProperty(() => { const p = drawPts(me); return p.length >= 3 ? new C.PolygonHierarchy(p.map(q => C.Cartesian3.clone(q))) : undefined; }, false),
-        height: new C.CallbackProperty(() => baseOf(drawPts(me)), false), extrudedHeight: new C.CallbackProperty(() => baseOf(drawPts(me)) + me.draw.h, false),
-        perPositionHeight: false, material: col.withAlpha(0.78), outline: false}}),
-      // Umriss oben und am Boden, damit die Kanten gut zu sehen sind
-      E.add({polyline: {positions: new C.CallbackProperty(() => { const p = drawPts(me); return p.length < 2 ? [] : top(me.draw.closed || p.length >= 3 ? [...p, p[0]] : p, me.draw.h); }, false),
-        width: 2.5, material: C.Color.WHITE, depthFailMaterial: C.Color.WHITE.withAlpha(0.35)}}),
-      E.add({polyline: {positions: new C.CallbackProperty(() => { const p = drawPts(me); return p.length < 2 ? [] : (me.draw.closed || p.length >= 3 ? [...p, p[0]] : p); }, false),
-        width: 3, clampToGround: true, material: col}})
+      // Umriss beim Zeichnen: gesetzte Seiten durchgezogen, die nächste Seite zur Maus gestrichelt
+      E.add({polyline: {positions: new C.CallbackProperty(() => { const d = me.draw; return d && !d.closed && d.pts.length >= 2 ? d.pts.map(lift) : []; }, false),
+        width: 3, material: col, depthFailMaterial: col.withAlpha(0.5)}}),
+      E.add({polyline: {positions: new C.CallbackProperty(() => { const d = me.draw; return d && d.on && !d.closed && d.pts.length && d.hover ? [lift(d.pts[d.pts.length - 1]), lift(d.hover)] : []; }, false),
+        width: 2.5, material: new C.PolylineDashMaterialProperty({color: col, dashLength: 12}), depthFailMaterial: new C.PolylineDashMaterialProperty({color: col.withAlpha(0.5), dashLength: 12})}}),
+      E.add({polyline: {positions: new C.CallbackProperty(() => { const d = me.draw; return d && d.on && !d.closed && d.pts.length >= 2 && d.hover && d.snap !== "zu" ? [lift(d.hover), lift(d.pts[0])] : []; }, false),
+        width: 1.5, material: new C.PolylineDashMaterialProperty({color: C.Color.WHITE.withAlpha(0.7), dashLength: 8})}}),
+      // Länge der Seite an der Maus, live
+      E.add({position: new C.CallbackProperty(() => me.draw?.hover ? lift(me.draw.hover) : undefined, false),
+        label: {text: new C.CallbackProperty(() => { const d = me.draw; if (!d?.hover || !d.pts.length) return ""; const F = frame(me), a = F.loc(d.pts[d.pts.length - 1]), b = F.loc(d.hover);
+          return `${fmt(Math.hypot(b.x - a.x, b.y - a.y))} m${d.snap === "rechtwinklig" ? "  ⦜ 90°" : d.snap === "gerade" ? "  ⟶" : d.snap === "zu" ? "  schließen" : ""}`; }, false),
+          font, fillColor: C.Color.WHITE, showBackground: true, backgroundColor: new C.CallbackProperty(() => C.Color.fromCssColorString(me.draw?.snap ? "#4766f0" : "#1c1c1e").withAlpha(0.9), false),
+          backgroundPadding: new C.Cartesian2(8, 5), pixelOffset: new C.Cartesian2(18, -18), horizontalOrigin: C.HorizontalOrigin.LEFT, disableDepthTestDistance: Infinity}})
     ];
     me.drawPtEnt = []; me.drawLbl = [];
   }
-  function drawLabels(me) {
+  function drawRefresh(me) {
     const C = Cesium, E = me.viewer.entities, d = me.draw;
     for (const e of [...me.drawPtEnt, ...me.drawLbl]) E.remove(e);
-    me.drawPtEnt = d.closed ? [] : d.pts.map((p, i) => E.add({position: p, point: {pixelSize: i === 0 && d.pts.length >= 3 ? 14 : 10, color: C.Color.WHITE, outlineColor: C.Color.fromCssColorString("#ff9f0a"), outlineWidth: 3, disableDepthTestDistance: Infinity}}));
-    const font = `600 12.5px ${getComputedStyle(document.documentElement).getPropertyValue("--sans").trim() || "system-ui, sans-serif"}`;
-    const ring = d.closed ? [...d.pts, d.pts[0]] : d.pts, b = baseOf(d.pts);
-    me.drawLbl = d.pts.length < 3 ? [] : d.pts.map(p => { const c = carto(p); // senkrechte Kanten an den Ecken
-      return E.add({polyline: {positions: [C.Cartesian3.fromRadians(c.longitude, c.latitude, b), C.Cartesian3.fromRadians(c.longitude, c.latitude, b + d.h)], width: 2, material: C.Color.WHITE, depthFailMaterial: C.Color.WHITE.withAlpha(0.35)}}); });
-    for (let i = 1; i < ring.length; i++) {
-      const [x0, y0] = utm(ring[i - 1]), [x1, y1] = utm(ring[i]), m = C.Cartesian3.midpoint(ring[i - 1], ring[i], new C.Cartesian3()), c = carto(m);
-      me.drawLbl.push(E.add({position: C.Cartesian3.fromRadians(c.longitude, c.latitude, b + d.h), label: {text: `${fmt(Math.hypot(x1 - x0, y1 - y0))} m`, font, fillColor: C.Color.WHITE,
-        showBackground: true, backgroundColor: C.Color.fromCssColorString("#1c1c1e").withAlpha(0.82), backgroundPadding: new C.Cartesian2(7, 4), pixelOffset: new C.Cartesian2(0, -12), disableDepthTestDistance: Infinity}}));
+    buildMass(me);
+    const show = d.on || d.closed;
+    // Ecken: beim Zeichnen weiß mit orangem Rand; danach Griffe zum Verschieben (nur im Bearbeiten)
+    me.drawPtEnt = !show || (d.closed && !d.on) ? [] : d.pts.map((p, i) => E.add({position: p, point: {pixelSize: d.closed ? 13 : i === 0 && d.pts.length >= 3 ? 15 : 10,
+      color: d.closed ? C.Color.fromCssColorString("#4766f0") : C.Color.WHITE, outlineColor: d.closed ? C.Color.WHITE : C.Color.fromCssColorString(ORANGE), outlineWidth: 3, disableDepthTestDistance: Infinity}, properties: {ecke: i}}));
+    const ring = d.closed ? [...d.pts, d.pts[0]] : d.pts;
+    me.drawLbl = [];
+    if (show && ring.length >= 2) {
+      const F = frame(me);
+      for (let i = 1; i < ring.length; i++) {
+        const a = F.loc(ring[i - 1]), b = F.loc(ring[i]), m = C.Cartesian3.midpoint(ring[i - 1], ring[i], new C.Cartesian3()), c = carto(m);
+        me.drawLbl.push(E.add({position: C.Cartesian3.fromRadians(c.longitude, c.latitude, c.height + 0.3), label: {text: `${fmt(Math.hypot(b.x - a.x, b.y - a.y))} m`, font: me.drawFont, fillColor: C.Color.WHITE,
+          showBackground: true, backgroundColor: C.Color.fromCssColorString("#1c1c1e").withAlpha(0.82), backgroundPadding: new C.Cartesian2(7, 4), disableDepthTestDistance: Infinity}}));
+      }
     }
+    if (anbau && d.closed) anbau = {key: key(me), pts: d.pts.slice(), form: {...d.form}};
+    api.onDraw?.(state(me));
     me.viewer.scene.requestRender();
   }
-  function drawChanged(me) {
-    const d = me.draw, P = d.pts.map(utm);
-    let a = 0; for (let i = 0, j = P.length - 1; i < P.length; j = i++) a += (P[j][0] + P[i][0]) * (P[j][1] - P[i][1]);
-    api.onDraw?.({on: !!d.on, n: d.pts.length, closed: d.closed, h: d.h, area: d.pts.length >= 3 ? Math.abs(a) / 2 : 0});
-    me.viewer.scene.requestRender();
+  // Ecke des fertigen Vorhabens mit der Maus verschieben
+  function grabCorner(me, pos) {
+    const d = me.draw; if (!d?.on || !d.closed) return false;
+    const hit = me.viewer.scene.drillPick(pos, 5).find(h => h.id?.properties?.ecke);
+    if (!hit) return false;
+    me.dragIdx = hit.id.properties.ecke.getValue(); me.viewer.scene.screenSpaceCameraController.enableInputs = false; cursor(me, "move");
+    return true;
   }
+  let dragRaf = 0;
+  function dragCorner(me, pos) {
+    const p = groundAt(me, pos); if (!p) return;
+    me.draw.pts[me.dragIdx] = p;
+    if (!dragRaf) dragRaf = requestAnimationFrame(() => { dragRaf = 0; if (st === me && me.draw) drawRefresh(me); });
+  }
+  function dropCorner(me) { me.dragIdx = null; me.viewer.scene.screenSpaceCameraController.enableInputs = true; cursor(me); }
+  const carto = p => Cesium.Cartographic.fromCartesian(p);
   function restyle(me) {
     if (!me.tileset) return;
     const q = id => `\${id} === '${String(id).replace(/'/g, "")}'`;
@@ -1874,7 +2039,7 @@ const View3D = (() => {
     return out;
   }
   const buildings = (center, r = 70) => gather(center, r + 30);
-  const draw = {start: drawStart, stop: drawStop, finish: drawFinish, undo: drawUndo, clear: () => drawClear(false), height: drawHeight, available: () => desktop() && !!st?.viewer && !st.opt.shot};
+  const draw = {start: drawStart, stop: drawStop, finish: drawFinish, undo: drawUndo, clear: drawClear, form: drawForm, available: () => desktop() && !!st?.viewer && !st.opt.shot};
   const api = {open, close, north, zoom, snapshot, buildings, draw, preload: loadCesium, isOpen: () => !!st, onHeading: null, onDraw: null};
   return api;
 })();
@@ -2353,7 +2518,22 @@ const Bericht = (() => {
     const all = Promise.allSettled([rech, sk, nb, wis, planImg, img3d]).then(() => [cRech, cSk, c3d, cNb, cWis, cPlan].forEach(c => c.classList.contains("loading") && c.remove()));
     await Promise.race([all, new Promise(res => setTimeout(res, window.__repCap || 12000))]);
   }
-  return {build, warm};
+  // Für das Bauvorhaben in 3D: erlaubte Grundfläche und was auf dem Grundstück schon steht (gleiche Rechnung wie „Bebaut und noch frei“)
+  const standCache = new Map();
+  function stand(plot) {
+    const geom = plot?.geometry, plotPs = polysOf(geom); if (!plotPs.length) return Promise.resolve(null);
+    const ext = geom.getExtent(), key = ol.extent.getCenter(ext).map(Math.round).join(",");
+    if (!standCache.has(key)) standCache.set(key, (pre?.key === key ? pre.data : loadData(plot, plotPs, ext)).then(d => {
+      if (!d) return null;
+      const haus = d.own.filter(a => !NEBEN.test(a.fn)).reduce((s, a) => s + a.onArea, 0), all = d.own.reduce((s, a) => s + a.onArea, 0);
+      const tiles = [...document.querySelectorAll("#calcOut > *")].map(t => [de(t.querySelector("b")?.textContent), t.querySelector(":scope > span")?.textContent || ""]);
+      const gr = tiles.find(([v, l]) => v && /^Grundfläche/.test(l))?.[0] || null, gr2 = tiles.find(([v, l]) => v && /Garage/.test(l))?.[0] || null;
+      const grH = gr && d.bf >= 1 && d.bf < gr ? d.bf : gr;
+      return {amt: plot.area || d.A, haus, all, gr: grH, gr2};
+    }).catch(() => null));
+    return standCache.get(key);
+  }
+  return {build, warm, stand};
 })();
 </script>
 <script>
@@ -2945,7 +3125,7 @@ async function queryAt(coord, placeName) {
 const linkBtns = p => `<div class="linkbtns">${pdfLinks(p).map(l => `<a class="btn ghostbtn" href="${esc(l.u)}" target="_blank" rel="noopener">${esc(l.label)} ansehen</a>`).join("")}</div>`;
 const li = a => a.map(x => `<li>${esc(x)}</li>`).join("");
 function renderResult(coord, placeName, plans, plot) {
-  lastPlot = plot;
+  lastPlot = plot; bvStand = undefined;
   bezahlt = false; body.remove("bezahlt"); // Kauf gilt je Grundstück
   const r = $("results"), first = !body.contains("has-result"); r.innerHTML = "";
   body.add("has-result"); body.remove("detail"); placeSearch(true); dmShow(); boundsLayer.changed();
@@ -3362,26 +3542,55 @@ const setNeedle = (id, rad) => { $(id).querySelector(".needle").style.transform 
 view.on("change:rotation", () => setNeedle("compass", view.getRotation()));
 on("compass", "click", () => view.animate({rotation: 0, duration: 400}));
 View3D.onHeading = h => setNeedle("v3north", -h);
-// Anbau zeichnen (nur PC): Klick setzt Punkte, Ziehen dreht, Mausrad zoomt; der Körper wächst live mit
+// Bauvorhaben zeichnen (nur PC): Ecken klicken, nach „Fertig“ steht der Körper mit Dach; unten links live, wie viel Grundfläche noch frei ist
+let bvStand, bvLast = null;
+const fl = v => Math.round(v).toLocaleString("de-DE"), fl1 = v => v.toLocaleString("de-DE", {maximumFractionDigits: 1});
+function bvFrei(d) {
+  const el = $("v3frei"), neu = d.area || 0;
+  if (bvStand === undefined) { el.innerHTML = `<p class="gross">Noch bebaubar<b>…</b></p><p>Wird berechnet.</p>`; return; }
+  const s = bvStand;
+  if (!s || !s.gr) { el.innerHTML = `<p class="gross">Ihr Vorhaben<b>${fl(neu)} m²</b></p><p>Für dieses Grundstück ist keine erlaubte Grundfläche als Zahl bekannt. Was gilt, steht im Originalplan.</p>`; return; }
+  const rest = s.gr - s.haus - neu, voll = Math.max(s.gr, s.haus + neu), pc = v => (Math.max(0, v) / voll * 100).toFixed(1) + "%";
+  el.innerHTML = `<p class="gross${rest < 0 ? " zuviel" : ""}">${rest < 0 ? "Zu viel" : "Noch bebaubar"}<b>${fl(Math.abs(rest))} m²</b></p>
+    <div class="v3balk" aria-hidden="true"><i class="ist" style="width:${pc(Math.min(s.haus, s.gr))}"></i><i class="neu" style="width:${pc(Math.min(neu, s.gr - Math.min(s.haus, s.gr)))}"></i><i class="ueber" style="width:${pc(-rest)}"></i></div>
+    <p>Erlaubt ${fl(s.gr)} m² fürs Haus · heute bebaut ${fl(s.haus)} m² · Vorhaben ${fl(neu)} m²</p>`;
+}
 View3D.onDraw = d => {
   const btn = $("v3draw"), bar = $("v3bar");
   if (!d) { btn.hidden = bar.hidden = true; $("view3d").classList.remove("drawing"); return; }
+  bvLast = d;
   btn.hidden = d.on; bar.hidden = !d.on; $("view3d").classList.toggle("drawing", d.on);
-  btn.querySelector("span").textContent = d.closed ? "Anbau bearbeiten" : "Anbau zeichnen";
-  if (document.activeElement !== $("v3h")) $("v3h").value = d.h;
-  const fl = v => v.toLocaleString("de-DE", {maximumFractionDigits: 1});
-  $("v3dtext").innerHTML = d.closed ? `<b>${fl(d.area)} m²</b> Grundfläche<span>${fl(d.area * d.h)} m³ umbauter Raum · Höhe ändern oder neu zeichnen</span>`
-    : d.n === 0 ? `Punkte auf den Boden klicken<span>Linke Maustaste ziehen dreht, Mausrad zoomt, rechte Maustaste verschiebt</span>`
-    : d.n < 3 ? `Weitere Ecken klicken<span>Ab drei Punkten entsteht der Anbau</span>`
-    : `${fl(d.area)} m² · weitere Ecken klicken<span>Auf den ersten Punkt klicken oder „Fertig“ (Enter)</span>`;
-  $("v3undo").disabled = d.n === 0; $("v3clear").hidden = !d.closed && d.n === 0;
+  btn.querySelector("span").textContent = d.closed ? "Bauvorhaben bearbeiten" : "Bauvorhaben zeichnen";
+  if (!d.on) return;
+  bvFrei(d);
+  const m = d.mass;
+  $("v3dtext").innerHTML = d.closed ? `<b>${fl1(d.area)} m²</b> Grundfläche<span>${m ? `Höchster Punkt ${fl1(m.first)} m · umbauter Raum ca. ${fl(m.vol)} m³<br>` : ""}Blaue Ecken mit der Maus verschieben</span>`
+    : d.n === 0 ? `Ecken auf den Boden klicken<span>Rechte Winkel rasten ein. Linke Maustaste ziehen dreht, Mausrad zoomt.</span>`
+    : d.n < 3 ? `Nächste Ecke klicken<span>Ab drei Ecken: auf den ersten Punkt klicken oder „Fertig“ (Enter)</span>`
+    : `${fl1(d.area)} m² · nächste Ecke klicken<span>Zum Abschließen auf den ersten Punkt klicken oder „Fertig“ (Enter)</span>`;
+  $("v3form").hidden = !d.closed;
+  if (d.closed) {
+    const f = d.form;
+    document.querySelectorAll(".v3seg button").forEach(b => b.setAttribute("aria-checked", String(b.dataset.dach === f.dach)));
+    $("v3wand").value = f.wand; $("v3wandO").textContent = fl1(f.wand) + " m";
+    $("v3nei").value = f.neigung; $("v3neiO").textContent = f.neigung + "°";
+    $("v3neiL").hidden = $("v3dreh").hidden = f.dach === "flach";
+  }
+  $("v3undo").hidden = d.closed; $("v3undo").disabled = d.n === 0;
+  $("v3clear").hidden = !d.closed && d.n === 0;
   $("v3done").disabled = !d.closed && d.n < 3; $("v3done").textContent = d.closed ? "Schließen" : "Fertig";
 };
-on("v3draw", "click", () => View3D.draw.start());
+on("v3draw", "click", () => {
+  if (bvStand === undefined && typeof Bericht !== "undefined") Bericht.stand(lastPlot).then(v => { bvStand = v; if (bvLast?.on) bvFrei(bvLast); });
+  View3D.draw.start();
+});
 on("v3undo", "click", () => View3D.draw.undo());
 on("v3clear", "click", () => View3D.draw.clear());
 on("v3done", "click", () => { if ($("v3done").textContent === "Schließen") View3D.draw.stop(); else View3D.draw.finish(); });
-$("v3h").addEventListener("input", e => View3D.draw.height(parseFloat(e.target.value.replace(",", "."))));
+document.querySelectorAll(".v3seg button").forEach(b => b.addEventListener("click", () => View3D.draw.form({dach: b.dataset.dach})));
+$("v3wand").addEventListener("input", e => View3D.draw.form({wand: +e.target.value}));
+$("v3nei").addEventListener("input", e => View3D.draw.form({neigung: +e.target.value}));
+on("v3dreh", "click", () => View3D.draw.form({dreh: !bvLast?.form?.dreh}));
 document.addEventListener("keydown", e => {
   if (!body.contains("is3d") || $("v3bar").hidden || e.target.matches("input, textarea, select")) return;
   if (e.key === "Enter") { e.preventDefault(); View3D.draw.finish(); }
