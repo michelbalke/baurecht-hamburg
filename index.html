@@ -672,12 +672,33 @@ body.measuring .mtip { display: flex; }
 .lpring.done { opacity: 0; border: 3px solid var(--accent); animation: lpdone .35s ease-out; }
 
 /* ---------- 3D-Ansicht: Anbau zeichnen (nur PC) ---------- */
-.v3drawbtn { position: absolute; z-index: 2; left: 50%; top: 12px; transform: translateX(-50%); padding: 10px 18px 10px 14px; font-size: 14.5px; }
-.view3d .v3drawbtn { background: var(--navy); color: #fff; }
-.v3drawbtn:active { transform: translateX(-50%) scale(.94); }
-.v3drawbtn svg { width: 19px; height: 19px; }
-.v3draw { position: absolute; z-index: 2; left: 12px; bottom: 30px; width: min(340px, calc(100% - 24px)); max-height: calc(100% - 100px); overflow: auto; display: grid; gap: 12px; padding: 14px 16px; border-radius: 22px; background: var(--panel); box-shadow: var(--shadow-lg); }
-.v3draw[hidden], .v3drawbtn[hidden], .v3form[hidden], .view3d.drawing .v3info { display: none; }
+.v3tools { position: absolute; z-index: 3; left: 12px; top: 66px; width: 252px; grid-template-columns: 1fr 1fr; display: grid; gap: 2px; padding: 8px; border-radius: 18px; background: var(--panel); box-shadow: var(--shadow-lg); }
+.v3tools[hidden], .v3tip[hidden], .v3stat[hidden], .v3props[hidden], .v3form[hidden], .v3sl[hidden], .v3dreh[hidden], .v3vcb[hidden], .view3d.drawing .v3info { display: none; }
+.v3th { grid-column: 1 / -1; margin: 2px 6px 6px; font-size: 11.5px; font-weight: 600; color: var(--muted); }
+.view3d .v3tools button { width: 100%; justify-content: flex-start; gap: 9px; padding: 8px 8px; border-radius: 11px; font-size: 13.5px; font-weight: 600; color: var(--fg); background: transparent; box-shadow: none; }
+.view3d .v3tools button:hover:not(:disabled) { background: var(--fill); }
+.view3d .v3tools button[aria-pressed="true"] { background: #ff9f0a; color: #1c1c1e; }
+.view3d .v3tools button:disabled { opacity: .35; cursor: default; transform: none; filter: none; }
+.v3tools svg { width: 19px; height: 19px; flex: none; }
+.v3tools span { flex: 1; text-align: left; }
+.v3tools kbd { font: 600 10.5px/1 var(--sans); padding: 3px 5px; border-radius: 5px; border: 1px solid var(--line); color: var(--muted); }
+.v3tools button[aria-pressed="true"] kbd { border-color: rgba(0,0,0,.25); color: #1c1c1e; }
+.v3tools hr { grid-column: 1 / -1; width: 100%; margin: 4px 0; border: 0; border-top: 1px solid var(--line); }
+.v3tip { position: absolute; z-index: 4; left: 276px; top: 70px; width: 250px; padding: 14px 16px; border-radius: 18px; background: var(--navy); color: #fff; box-shadow: var(--shadow-lg); font-size: 13px; line-height: 1.35; animation: v3tipin .35s var(--ease) both; }
+.v3tip::before { content: ""; position: absolute; left: -7px; top: 22px; width: 14px; height: 14px; background: var(--navy); transform: rotate(45deg); border-radius: 2px; }
+.v3tip b { font-size: 14.5px; }
+.v3tip p { margin: 4px 0 10px; }
+.v3tip div { display: flex; gap: 6px; }
+.view3d .v3tip button { padding: 7px 12px; font-size: 13px; background: #fff; color: var(--navy); box-shadow: none; }
+.view3d .v3tip button.ghost { background: rgba(255,255,255,.16); color: #fff; }
+@keyframes v3tipin { from { opacity: 0; transform: translateX(-8px); } }
+.v3stat { position: absolute; z-index: 3; left: 276px; right: 12px; bottom: 30px; max-width: 560px; display: grid; gap: 6px; padding: 10px 14px; border-radius: 18px; background: var(--panel); box-shadow: var(--shadow-lg); }
+.v3stat p { margin: 0; }
+#v3hint { font-size: 13.5px; font-weight: 600; line-height: 1.3; }
+.v3nav2 { font-size: 11.5px; color: var(--muted); }
+.v3vcb { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--muted); }
+.v3vcb input { flex: 0 1 140px; padding: 6px 10px; border-radius: 9px; font: 600 14px var(--sans); font-variant-numeric: tabular-nums; }
+.v3props { position: absolute; z-index: 3; left: 12px; top: 214px; width: 252px; max-height: calc(100% - 240px); overflow: auto; display: grid; gap: 12px; padding: 14px 16px; border-radius: 20px; background: var(--panel); box-shadow: var(--shadow-lg); }
 .v3frei { display: grid; gap: 6px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
 .v3frei p { margin: 0; font-size: 12.5px; color: var(--muted); line-height: 1.35; }
 .v3frei .gross { font-size: 13px; color: var(--fg); font-weight: 600; }
@@ -686,26 +707,28 @@ body.measuring .mtip { display: flex; }
 .v3balk { display: flex; height: 8px; border-radius: 99px; overflow: hidden; background: var(--fill); }
 .v3balk i { display: block; height: 100%; transition: width .15s; }
 .v3balk .ist { background: #8e8e93; } .v3balk .neu { background: #ff9f0a; } .v3balk .ueber { background: #ff453a; }
+.v3key { display: flex; flex-wrap: wrap; gap: 4px 10px; }
+.v3key span { display: inline-flex; align-items: center; gap: 5px; }
+.v3key i { width: 9px; height: 9px; border-radius: 3px; }
 .v3dtext { margin: 0; font-size: 14px; font-weight: 600; line-height: 1.3; }
 .v3dtext span { display: block; margin-top: 3px; font-weight: 400; font-size: 12.5px; color: var(--muted); }
 .v3dtext b { font: 700 20px/1.05 var(--display); }
 .v3form { display: grid; gap: 10px; }
 .v3seg { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; padding: 3px; border-radius: 14px; background: var(--fill); }
-.view3d .v3seg button { flex-direction: column; gap: 2px; padding: 6px 2px 5px; border-radius: 11px; font-size: 11.5px; font-weight: 600; color: var(--muted); background: transparent; border: 0; }
+.view3d .v3seg button { flex-direction: column; gap: 2px; padding: 6px 2px 5px; border-radius: 11px; font-size: 11.5px; font-weight: 600; color: var(--muted); background: transparent; border: 0; box-shadow: none; }
 .view3d .v3seg button[aria-checked="true"] { background: #ff9f0a; color: #1c1c1e; }
 .v3seg svg { width: 30px; height: 22px; }
-.v3sl { display: grid; grid-template-columns: 96px 1fr 52px; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
-.v3sl input { width: 100%; accent-color: #ff9f0a; }
-.v3sl output { text-align: right; font-weight: 600; color: var(--fg); font-variant-numeric: tabular-nums; }
-.v3sl[hidden] { display: none; }
-.view3d .v3dreh { justify-self: start; background: var(--accent-soft); color: var(--accent); }
+.v3sl { display: grid; grid-template-columns: 1fr 50px; grid-template-areas: 't o' 'i i'; row-gap: 2px; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
+.v3sl input { grid-area: i; width: 100%; accent-color: #ff9f0a; }
+.v3sl output { grid-area: o; text-align: right; font-weight: 600; color: var(--fg); font-variant-numeric: tabular-nums; }
+.view3d .v3dreh { justify-self: start; background: var(--accent-soft); color: var(--accent); box-shadow: none; }
 .v3dreh svg { width: 15px; height: 15px; }
-.v3dreh[hidden] { display: none; }
-.v3dbtns { display: flex; gap: 6px; }
-.v3dbtns button { flex: 1; justify-content: center; padding: 8px 10px; font-size: 13px; }
-.v3dbtns button:disabled { opacity: .4; cursor: default; filter: none; transform: none; }
-.v3dbtns button[hidden] { display: none; }
-@media (max-width: 760px), (hover: none), (pointer: coarse) { .v3drawbtn, .v3draw { display: none !important; } }
+.view3d .v3fertig { justify-content: center; box-shadow: none; }
+.v3hinweis3d { position: absolute; z-index: 6; left: 98px; top: 112px; min-height: 44px; display: flex; align-items: center; gap: 8px; max-width: 230px; padding: 8px 12px 8px 10px; border: 0; border-radius: 14px; font: 600 13px/1.25 var(--sans); text-align: left; color: #1c1c1e; background: #ff9f0a; box-shadow: var(--shadow-lg); }
+.v3hinweis3d svg { width: 18px; height: 18px; flex: none; }
+.v3hinweis3d::before { content: ""; position: absolute; left: -5px; top: 16px; width: 12px; height: 12px; background: #ff9f0a; transform: rotate(45deg); border-radius: 2px; }
+body:not(.has-result) .v3hinweis3d, body.measuring .v3hinweis3d, body.is3d .v3hinweis3d { display: none; }
+@media (max-width: 760px), (hover: none), (pointer: coarse) { .v3tools, .v3tip, .v3stat, .v3props, .v3hinweis3d { display: none !important; } }
 
 /* ---------- 3D-Ansicht ---------- */
 .view3d { display: none; position: absolute; inset: 0; z-index: 8; overflow: hidden; touch-action: none; background: var(--v3bg); }
@@ -943,7 +966,7 @@ dialog.pro[open] { animation: rise .28s var(--ease) both; }
 .rbar-key i { width: 12px; height: 8px; border-radius: 4px; background: var(--muted); } .rbar-key u { width: 3px; height: 12px; border-radius: 2px; background: var(--accent); }
 .skey { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 8px 0 4px; }
 .skey span { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; } .skey i { width: 14px; height: 10px; border-radius: 3px; box-sizing: border-box; }
-.k-plot { background: #fff4d1; border: 2px solid #d79a00; } .k-bf { background: #cfe2ff; border: 1.5px dashed #0a5fe0; } .k-own { background: #9aa0ab; border: 1px solid #5c626d; } .k-nb { background: #e3e5ea; border: 1px solid #b9bdc6; }
+.k-plot { background: #fff4d1; border: 2px solid #d79a00; } .k-bf { background: #cfe2ff; border: 1.5px dashed #0a5fe0; } .k-own { background: #9aa0ab; border: 1px solid #5c626d; } .k-bv { background: #ff9f0a; border: 1.5px solid #c25e00; } .k-nb { background: #e3e5ea; border: 1px solid #b9bdc6; }
 ol.steps { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 8px; line-height: 1.45; }
 ul.quellen { margin: 0 0 8px; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; font-size: 13px; line-height: 1.4; color: var(--muted); }
 ul.quellen b { color: var(--fg); font-weight: 600; }
@@ -1134,6 +1157,7 @@ ul.quellen b { color: var(--fg); font-weight: 600; }
     <button type="button" class="bfkey dmkey" id="dmKey" aria-pressed="true" title="Baudenkmale (Denkmalliste Hamburg) ein- oder ausblenden" hidden><i aria-hidden="true"></i><span>Baudenkmal</span></button>
     </div></div>
     <button type="button" class="btn3d" id="btn3d" aria-label="3D-Ansicht öffnen" title="Gebäude in 3D ansehen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 3 7v10l9 5 9-5V7z"/><path d="m3 7 9 5 9-5M12 12v10"/></svg>3D</button>
+    <button type="button" class="v3hinweis3d" id="bvHinweis" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21V11l6-4 6 4v10z"/><path d="M15 21h6v-7l-6-3"/></svg>Neu: Ihr Bauvorhaben in 3D zeichnen</button>
     <div class="lpring" id="lpRing" aria-hidden="true"></div>
     <p class="mtip" id="mTip" role="status"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="8" stroke-dasharray="3 3"/></svg><span></span></p>
     <div class="view3d" id="view3d">
@@ -1143,8 +1167,17 @@ ul.quellen b { color: var(--fg); font-weight: 600; }
         <button type="button" id="v3out" aria-label="Weiter weg">−</button>
         <button type="button" class="compass" id="v3north" aria-label="Nach Norden ausrichten" title="Nach Norden ausrichten"><svg viewBox="0 0 44 44" aria-hidden="true"><g class="needle"><text x="22" y="10.5" text-anchor="middle">N</text><path d="M22 12 27 22H17z" fill="#ff3b30"/><path d="M22 34 17 22h10z" fill="currentColor" opacity=".38"/></g></svg></button>
       </div>
-      <button type="button" class="v3drawbtn" id="v3draw" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21V11l6-4 6 4v10z"/><path d="M15 21h6v-7l-6-3"/><path d="M9 21v-5"/></svg><span>Bauvorhaben zeichnen</span></button>
-      <div class="v3draw" id="v3bar" hidden>
+      <div class="v3tools" id="v3tools" hidden role="toolbar" aria-label="Bauvorhaben zeichnen">
+        <p class="v3th">Bauvorhaben</p>
+        <button type="button" data-tool="rechteck" title="Rechteck: zwei Ecken klicken (Taste R)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="6" width="16" height="12" rx="1"/><circle cx="4" cy="6" r="1.6" fill="currentColor"/><circle cx="20" cy="18" r="1.6" fill="currentColor"/></svg><span>Rechteck</span><kbd>R</kbd></button>
+        <button type="button" data-tool="vieleck" title="Vieleck: Ecke für Ecke klicken (Taste L)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 18 6 6l9-2 5 8-6 7z"/></svg><span>Vieleck</span><kbd>L</kbd></button>
+        <hr>
+        <button type="button" id="v3undo" title="Rückgängig (Strg+Z)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/></svg><span>Rückgängig</span></button>
+        <button type="button" id="v3clear" title="Bauvorhaben löschen (Entf)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg><span>Löschen</span></button>
+      </div>
+      <div class="v3tip" id="v3tip" hidden><b>Neu: Ihr Bauvorhaben in 3D</b><p>Zeichnen Sie Anbau, Garage oder Haus direkt auf Ihr Grundstück. Rechteck wählen, zwei Ecken klicken, fertig.</p><div><button type="button" id="v3tipGo">Ausprobieren</button><button type="button" class="ghost" id="v3tipX">Später</button></div></div>
+      <div class="v3stat" id="v3stat" hidden><p id="v3hint"></p><label class="v3vcb" id="v3vcbL">Maße <input type="text" id="v3vcb" inputmode="decimal" autocomplete="off" placeholder="z. B. 6;4"> m</label><p class="v3nav2">Linke Maus ziehen: drehen · Rad: zoomen · Rechte Maus: verschieben</p></div>
+      <div class="v3props" id="v3props" hidden>
         <div class="v3frei" id="v3frei"></div>
         <p class="v3dtext" id="v3dtext"></p>
         <div class="v3form" id="v3form" hidden>
@@ -1158,11 +1191,7 @@ ul.quellen b { color: var(--fg); font-weight: 600; }
           <label class="v3sl" id="v3neiL">Dachneigung <input type="range" id="v3nei" min="5" max="60" step="1"><output id="v3neiO"></output></label>
           <button type="button" class="ghost v3dreh" id="v3dreh"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>First drehen</button>
         </div>
-        <div class="v3dbtns">
-          <button type="button" class="ghost" id="v3undo">Rückgängig</button>
-          <button type="button" class="ghost" id="v3clear">Löschen</button>
-          <button type="button" id="v3done">Fertig</button>
-        </div>
+        <button type="button" class="v3fertig" id="v3done">Fertig</button>
       </div>
       <p class="v3status" id="v3status" hidden></p>
       <div class="v3info" id="v3info"></div>
@@ -1426,6 +1455,7 @@ const View3D = (() => {
   const MAP_WMS = "https://geodienste.hamburg.de/HH_WMS_Cache_Stadtplan", MAP_LAYER = "stadtplan";
   const GDI3D = "https://www.daten-hamburg.de/gdi3d/datasource-data/", CESIUM_EIGEN = "cesium/", CESIUM_STADT = "https://geoportal-hamburg.de/mastercode/cesium/latest/"; // Cesium 1.145 liegt selbst auf unserem Server (Ordner cesium/), die Stadt-Kopie ist nur Rückfall
   const R = 170; // Radius des Ausschnitts in Metern
+  const SHOT_W = 1800; // Breite des 3D-Fotos im Bericht (Pixel)
 
   // ---------- Geodäsie: WGS84, ECEF und lokales Ost-Nord-Oben-System ----------
   const A = 6378137, E2 = 6.69437999014e-3, rad = Math.PI / 180;
@@ -1626,13 +1656,14 @@ const View3D = (() => {
     const scene = viewer.scene;
     // Schärfer: in voller Bildschirmauflösung rechnen (Retina/iPhone), höchstens doppelt, damit es flüssig bleibt; feinere Kacheln
     viewer.useBrowserRecommendedResolution = false;
-    viewer.resolutionScale = opt.shot ? 1260 / ((opt.el.clientWidth || 840) * (devicePixelRatio || 1)) : Math.min(1, 2 / (devicePixelRatio || 1)); // Foto für den Bericht: immer 1260 px breit, schont Speicher
-    scene.globe.maximumScreenSpaceError = 1.33;
+    viewer.resolutionScale = opt.shot ? SHOT_W / ((opt.el.clientWidth || 840) * (devicePixelRatio || 1)) : Math.min(1, 2 / (devicePixelRatio || 1)); // Foto für den Bericht: immer SHOT_W px breit, schont Speicher
+    const fein = !phone; // PC und Bericht-Foto: feinere Kacheln, damit Häuser und Gelände genauer sind
+    scene.globe.maximumScreenSpaceError = fein ? 1 : 1.33;
     if (scene.msaaSupported) scene.msaaSamples = opt.shot || phone ? 2 : 4;
     scene.globe.depthTestAgainstTerrain = true;
     viewer.clock.currentTime = C.JulianDate.fromIso8601("2026-06-21T11:00:00Z"); viewer.clock.shouldAnimate = false; // immer helles Mittagslicht
     scene.fog.enabled = true; scene.fog.density = 0.0002;
-    const ts = me.tileset = await C.Cesium3DTileset.fromUrl(GDI3D + "LoD3_untexturiert/tileset.json", {preferLeaves: true, maximumScreenSpaceError: phone ? 6 : 4});
+    const ts = me.tileset = await C.Cesium3DTileset.fromUrl(GDI3D + "LoD3_untexturiert/tileset.json", {preferLeaves: true, maximumScreenSpaceError: fein ? 2 : 6});
     if (st !== me) return;
     ts.colorBlendMode = C.Cesium3DTileColorBlendMode.MIX; ts.colorBlendAmount = 0.85; // Markierung hell, Fassade bleibt erkennbar
     scene.primitives.add(ts);
@@ -1655,6 +1686,9 @@ const View3D = (() => {
       viewer.entities.add({polyline: {positions: deg(r), width: 5, clampToGround: true, material: C.Color.fromCssColorString("#ffbe1a")}});
     }
     if (!opt.shot) streetLabels(me, lon, lat);
+    me.plotRings = plot;
+    // gezeichnetes Bauvorhaben wieder einsetzen (auch im Foto für den Bericht)
+    if (anbau && anbau.key === key(me)) { me.draw = {...newDraw(), pts: anbau.pts.slice(), form: {...anbau.form}, closed: true}; drawEntities(me); drawRefresh(me, true); }
     // Blick schräg auf das Grundstück
     let h = me.gz;
     try { const [c] = await C.sampleTerrainMostDetailed(terrainProvider, [C.Cartographic.fromDegrees(lon, lat)]); if (isFinite(c.height)) h = c.height; } catch { /* Sockelhöhe aus LoD2 */ }
@@ -1679,42 +1713,50 @@ const View3D = (() => {
     showInfo(me, true);
     scene.requestRender();
   }
-  // ---------- PC: Maus wie in Karten-Apps, Anbau zeichnen ----------
+  // ---------- PC: Maus wie in CAD- und Karten-Programmen ----------
   const desktop = () => matchMedia("(min-width: 761px) and (hover: hover) and (pointer: fine)").matches;
   function desktopControls(me) {
     const C = Cesium, c = me.viewer.scene.screenSpaceCameraController;
-    // Linke Maustaste ziehen = um die Bildmitte drehen und neigen (eigene Steuerung unten), rechte = verschieben, Mausrad = zoomen
+    // Linke Maustaste ziehen = um die Bildmitte drehen und neigen (orbit), rechte = verschieben, Mausrad = zoomen
     c.tiltEventTypes = [C.CameraEventType.MIDDLE_DRAG, {eventType: C.CameraEventType.LEFT_DRAG, modifier: C.KeyboardEventModifier.CTRL}];
     c.rotateEventTypes = [C.CameraEventType.RIGHT_DRAG, {eventType: C.CameraEventType.LEFT_DRAG, modifier: C.KeyboardEventModifier.SHIFT}];
     c.zoomEventTypes = [C.CameraEventType.WHEEL, C.CameraEventType.PINCH];
     c.minimumZoomDistance = 8;
     me.viewer.cesiumWidget.screenSpaceEventHandler.removeInputAction(C.ScreenSpaceEventType.LEFT_DOUBLE_CLICK); // kein Heranfliegen beim Doppelklick
     me.viewer.scene.canvas.addEventListener("contextmenu", e => e.preventDefault());
-    me.handler.setInputAction(e => { me.orbit = grabCorner(me, e.position) ? null : {x: e.position.x, y: e.position.y, piv: null}; }, C.ScreenSpaceEventType.LEFT_DOWN);
-    me.handler.setInputAction(() => { me.orbit = null; if (me.dragIdx != null) dropCorner(me); else cursor(me); }, C.ScreenSpaceEventType.LEFT_UP);
+    me.handler.setInputAction(e => {
+      me.orbit = null;
+      if (grabCorner(me, e.position) || grabBody(me, e.position)) return;
+      me.orbit = {x: e.position.x, y: e.position.y, piv: null};
+    }, C.ScreenSpaceEventType.LEFT_DOWN);
+    me.handler.setInputAction(() => {
+      me.orbit = null;
+      if (me.dragIdx != null || me.hDrag) { me.dragIdx = null; me.hDrag = null; me.viewer.scene.screenSpaceCameraController.enableInputs = true; drawRefresh(me); }
+      cursor(me);
+    }, C.ScreenSpaceEventType.LEFT_UP);
     me.handler.setInputAction(e => {
       if (me.dragIdx != null) return dragCorner(me, e.endPosition);
+      if (me.hDrag) return dragBody(me, e.endPosition);
       const o = me.orbit;
       if (o && (o.piv || Math.hypot(e.endPosition.x - o.x, e.endPosition.y - o.y) > 4)) return orbit(me, o, e);
-      if (me.draw) drawMove(me, e.endPosition);
+      if (o) return;
+      if (me.draw?.tool) drawMove(me, e.endPosition); else hoverSelect(me, e.endPosition);
     }, C.ScreenSpaceEventType.MOUSE_MOVE);
-    // gezeichneter Anbau bleibt beim erneuten Öffnen am selben Ort erhalten
-    if (anbau && anbau.key === key(me)) { me.draw = {...newDraw(), pts: anbau.pts.slice(), form: {...anbau.form}, closed: true}; drawEntities(me); drawRefresh(me); }
-    else api.onDraw?.({on: false, n: 0, closed: false, area: 0});
+    if (!me.draw) api.onDraw?.(state(me));
   }
-  // Drehen wie in Karten-Apps: waagerecht ziehen dreht um die Bildmitte, senkrecht ziehen neigt
+  // Drehen: waagerecht ziehen dreht um die Bildmitte, nach oben ziehen macht den Blick flacher
   function orbit(me, o, e) {
     const C = Cesium, sc = me.viewer.scene, cam = me.viewer.camera;
     if (!o.piv) {
       const mid = new C.Cartesian2(sc.canvas.clientWidth / 2, sc.canvas.clientHeight / 2), ray = cam.getPickRay(mid);
       o.piv = sc.pickPosition(mid) || (ray && sc.globe.pick(ray, sc)) || C.Cartesian3.fromDegrees(me.lon, me.lat, me.h);
-      sc.canvas.style.cursor = "grabbing";
+      cursor(me, "grabbing");
     }
     const dx = e.endPosition.x - e.startPosition.x, dy = e.endPosition.y - e.startPosition.y, axis = cam.constrainedAxis;
     cam.lookAtTransform(C.Transforms.eastNorthUpToFixedFrame(o.piv));
     cam.constrainedAxis = C.Cartesian3.UNIT_Z;
     cam.rotateRight(-dx * 0.006);
-    cam.rotateUp(-dy * 0.005); // nach oben ziehen = flacher Blick zum Horizont
+    cam.rotateUp(-dy * 0.005);
     cam.lookAtTransform(C.Matrix4.IDENTITY);
     if (cam.pitch > -0.06 || cam.pitch < -1.55) { // nicht unter den Horizont und nicht über Kopf
       cam.lookAtTransform(C.Transforms.eastNorthUpToFixedFrame(o.piv)); cam.rotateUp(dy * 0.005); cam.lookAtTransform(C.Matrix4.IDENTITY);
@@ -1722,13 +1764,17 @@ const View3D = (() => {
     cam.constrainedAxis = axis;
     sc.requestRender();
   }
+
   // ---------- Bauvorhaben zeichnen ----------
-  // Schritt 1: Ecken auf den Boden klicken (nur Umriss, rechte Winkel rasten ein). Schritt 2 nach „Fertig“: Körper mit Dach,
-  // Dachform, Wandhöhe, Neigung und Firstrichtung einstellbar, Ecken lassen sich mit der Maus verschieben.
-  let anbau = null; // zuletzt gezeichnetes Vorhaben {key, pts, form}
+  // Werkzeuge wie in CAD-Programmen: Rechteck (zwei Ecken, richtet sich an der Grundstücksgrenze aus) und Vieleck (Ecke für Ecke,
+  // rechte Winkel rasten ein). Maße lassen sich eintippen. Erst wenn die Form fertig ist, steht der Körper mit Dach. Danach:
+  // Körper nach oben/unten ziehen = Wandhöhe, blaue Ecken ziehen = Grundriss ändern; Dachform, Neigung, Firstrichtung im Panel.
+  let anbau = null; // zuletzt gezeichnetes Vorhaben {key, pts, form, area, vol, first, ring, bild, ver}
+  let anbauVer = 0;
   const key = me => me.opt.center.map(v => Math.round(v)).join(",");
   const FORM0 = {dach: "sattel", wand: 3, neigung: 30, dreh: false};
-  const ORANGE = "#ff9f0a", DACH = "#d9480f";
+  const ORANGE = "#ff9f0a", DACH = "#d9480f", BLAU = "#4766f0";
+  const r1 = v => Math.round(v * 10) / 10; // Maße auf 10 cm
   // Punkt auf dem Gelände unter der Maus (geht durch Gebäude und das Vorhaben hindurch)
   function groundAt(me, pos) {
     const sc = me.viewer.scene, hit = sc.pick(pos);
@@ -1736,72 +1782,136 @@ const View3D = (() => {
     const ray = me.viewer.camera.getPickRay(pos);
     return (ray && sc.globe.pick(ray, sc)) || null;
   }
-  const newDraw = () => ({pts: [], form: {...FORM0}, closed: false, hover: null, snap: "", on: false});
-  function drawStart() {
+  const newDraw = () => ({pts: [], form: {...FORM0}, closed: false, hover: null, snap: "", on: false, tool: null, vcb: ""});
+  // Zeichnen beginnen: ohne Vorhaben gleich mit dem Rechteck, sonst Vorhaben auswählen
+  function drawStart(tool) {
     const me = st; if (!me?.viewer) return;
     if (!me.draw) me.draw = newDraw();
-    me.draw.on = true;
     if (!me.drawEnt) drawEntities(me);
+    const d = me.draw; d.on = true;
+    if (tool || !d.closed) {
+      if (d.closed) { d.prev = d.pts; d.pts = []; d.closed = false; } // bisheriges Vorhaben bleibt, bis das neue fertig ist (Esc stellt es wieder her)
+      else if (tool !== d.tool) d.pts = [];
+      d.tool = tool || d.tool || "rechteck";
+    }
+    d.hover = null; d.vcb = ""; d.snap = "";
+    if (d.tool && !me.nah) nahran(me);
     cursor(me); drawRefresh(me);
+  }
+  // beim ersten Zeichnen näher an das Grundstück heran, damit Ecken genau sitzen
+  function nahran(me) {
+    const C = Cesium, cam = me.viewer.camera; me.nah = true;
+    const ext = (me.plotRings || []).flat().reduce((m, xy) => Math.max(m, Math.hypot(xy[0] - me.opt.center[0], xy[1] - me.opt.center[1])), 0);
+    const want = Math.max(55, Math.min(110, ext * 2.4)), now = C.Cartesian3.distance(cam.position, C.Cartesian3.fromDegrees(me.lon, me.lat, me.h));
+    if (now > want * 1.25) cam.flyToBoundingSphere(new C.BoundingSphere(C.Cartesian3.fromDegrees(me.lon, me.lat, me.h + 2), 1), {offset: new C.HeadingPitchRange(cam.heading, -0.62, want), duration: 0.8});
   }
   function drawStop() {
-    const me = st, d = me?.draw; if (!d) return;
-    d.on = false; d.hover = null;
-    if (!d.closed) { d.pts = []; }
+    const me = st, d = me?.draw; if (!d) return Promise.resolve();
+    d.on = false; d.tool = null; d.hover = null; d.vcb = "";
+    if (!d.closed) { d.pts = d.prev || []; d.closed = !!d.prev; }
+    d.prev = null;
     cursor(me); drawRefresh(me);
+    return capture(me);
   }
-  const cursor = (me, c) => { me.viewer.scene.canvas.style.cursor = c ?? (me.draw?.on && !me.draw.closed ? "crosshair" : ""); };
-  // Ort im lokalen Ost-Nord-Oben-System des ersten Punkts (Meter)
-  function frame(me) {
-    const C = Cesium, d = me.draw, m = C.Transforms.eastNorthUpToFixedFrame(d.pts[0] || d.hover);
+  const cursor = (me, c) => { me.viewer.scene.canvas.style.cursor = c ?? (me.draw?.tool ? "crosshair" : ""); };
+  // lokales Ost-Nord-Oben-System (Meter) am ersten Punkt
+  function frame(me, at) {
+    const C = Cesium, d = me.draw, m = C.Transforms.eastNorthUpToFixedFrame(at || d.pts[0] || d.hover);
     return {m, inv: C.Matrix4.inverseTransformation(m, new C.Matrix4()),
       loc(p) { return C.Matrix4.multiplyByPoint(this.inv, p, new C.Cartesian3()); }, world(x, y, z) { return C.Matrix4.multiplyByPoint(m, new C.Cartesian3(x, y, z), new C.Cartesian3()); }};
   }
-  // Einrasten: auf den ersten Punkt (schließen) und auf rechte Winkel bzw. die gerade Verlängerung zur letzten Seite
+  // Richtung der Grundstücksgrenze, die der Ecke am nächsten liegt (Rechtecke stehen parallel dazu)
+  function alignDir(me, F, a) {
+    let best = null, bd = 1e9;
+    const h = carto(me.draw.pts[0]).height;
+    for (const r of me.plotRings || []) {
+      const L = r.map(xy => { const [lo, la] = toLonLat(xy); return F.loc(Cesium.Cartesian3.fromDegrees(lo, la, h)); });
+      for (let i = 1; i < L.length; i++) {
+        const p = L[i - 1], q = L[i], dx = q.x - p.x, dy = q.y - p.y, l = dx * dx + dy * dy; if (l < 1) continue;
+        const t = Math.max(0, Math.min(1, ((a.x - p.x) * dx + (a.y - p.y) * dy) / l)), dd = Math.hypot(a.x - p.x - t * dx, a.y - p.y - t * dy);
+        if (dd < bd) { bd = dd; const s = Math.sqrt(l); best = [dx / s, dy / s]; }
+      }
+    }
+    return best || [1, 0];
+  }
+  // Rechteck aus erster Ecke und Maus (oder eingetippten Maßen)
+  function rect(me, B, dims) {
+    const d = me.draw, F = frame(me), a = F.loc(d.pts[0]), b = F.loc(B), [ux, uy] = me.rectDir || (me.rectDir = alignDir(me, F, a)), vx = -uy, vy = ux;
+    let du = (b.x - a.x) * ux + (b.y - a.y) * uy, dv = (b.x - a.x) * vx + (b.y - a.y) * vy;
+    if (dims) { du = (du < 0 ? -1 : 1) * dims[0]; dv = (dv < 0 ? -1 : 1) * (dims[1] ?? dims[0]); } else { du = r1(du); dv = r1(dv); }
+    const z = a.z, P = [[0, 0], [du, 0], [du, dv], [0, dv]].map(([s, t]) => F.world(a.x + s * ux + t * vx, a.y + s * uy + t * vy, z));
+    return {P, du: Math.abs(du), dv: Math.abs(dv)};
+  }
+  // Vieleck: einrasten auf den ersten Punkt (schließen), rechte Winkel und gerade Verlängerung; Längen auf 10 cm
   function snapped(me, p, pos) {
     const C = Cesium, d = me.draw, n = d.pts.length; d.snap = "";
-    if (!p || !n) return p;
+    if (!p || !n || d.tool !== "vieleck") return p;
     if (n >= 3) { const w = me.viewer.scene.cartesianToCanvasCoordinates(d.pts[0]); if (w && C.Cartesian2.distance(w, pos) < 16) { d.snap = "zu"; return d.pts[0]; } }
-    if (n < 2) return p;
-    const F = frame(me), a = F.loc(d.pts[n - 2]), b = F.loc(d.pts[n - 1]), q = F.loc(p);
-    const ex = b.x - a.x, ey = b.y - a.y, el = Math.hypot(ex, ey), vx = q.x - b.x, vy = q.y - b.y, vl = Math.hypot(vx, vy);
-    if (el < 0.01 || vl < 0.3) return p;
-    const ang = Math.atan2(ex * vy - ey * vx, ex * vx + ey * vy), k = Math.round(ang / (Math.PI / 2));
-    if (Math.abs(ang - k * Math.PI / 2) > 7 * rad || k === 2 || k === -2) return p;
-    const t = k * Math.PI / 2, ux = (ex * Math.cos(t) - ey * Math.sin(t)) / el, uy = (ex * Math.sin(t) + ey * Math.cos(t)) / el, l = vx * ux + vy * uy;
-    d.snap = k ? "rechtwinklig" : "gerade";
-    return F.world(b.x + ux * l, b.y + uy * l, q.z);
+    const F = frame(me), b = F.loc(d.pts[n - 1]), q = F.loc(p);
+    let vx = q.x - b.x, vy = q.y - b.y; const vl = Math.hypot(vx, vy); if (vl < 0.3) return p;
+    if (n >= 2) {
+      const a = F.loc(d.pts[n - 2]), ex = b.x - a.x, ey = b.y - a.y, el = Math.hypot(ex, ey);
+      const ang = Math.atan2(ex * vy - ey * vx, ex * vx + ey * vy), k = Math.round(ang / (Math.PI / 2));
+      if (el > 0.01 && Math.abs(ang - k * Math.PI / 2) <= 7 * rad && Math.abs(k) < 2) {
+        const t = k * Math.PI / 2, ux = (ex * Math.cos(t) - ey * Math.sin(t)) / el, uy = (ex * Math.sin(t) + ey * Math.cos(t)) / el, l = vx * ux + vy * uy;
+        d.snap = k ? "rechtwinklig" : "gerade"; vx = ux * l; vy = uy * l;
+      }
+    }
+    const l = Math.hypot(vx, vy), L = r1(l);
+    return F.world(b.x + vx / l * L, b.y + vy / l * L, q.z);
   }
   function drawClick(me, pos) {
-    const d = me.draw; if (!d.on || d.closed) return;
-    const p = snapped(me, groundAt(me, pos), pos); if (!p) return;
+    const d = me.draw; if (!d.tool) return;
+    const g = groundAt(me, pos); if (!g) return;
+    if (d.tool === "rechteck") {
+      if (!d.pts.length) { d.pts = [g]; me.rectDir = null; d.hover = null; return drawRefresh(me); }
+      d.pts = rect(me, g).P; return drawFinish();
+    }
+    const p = snapped(me, g, pos);
     if (d.snap === "zu") return drawFinish();
-    d.pts.push(p); d.hover = null; drawRefresh(me);
+    d.pts.push(p); d.hover = null; d.vcb = ""; drawRefresh(me);
   }
   function drawMove(me, pos) {
-    const d = me.draw; if (!d.on || d.closed) return;
+    const d = me.draw; if (!d.tool) return;
     d.hover = snapped(me, groundAt(me, pos), pos);
     me.viewer.scene.requestRender(); api.onDraw?.(state(me));
   }
+  // eingetippte Maße: Rechteck „6;4“ (Breite;Tiefe), Vieleck „5“ (Länge der nächsten Seite in Richtung Maus)
+  function drawTyped(txt) {
+    const me = st, d = me?.draw; if (!d?.tool) return false;
+    const v = String(txt).split(/[;x×*\s]+/).map(t => parseFloat(t.replace(",", "."))).filter(x => x > 0);
+    if (!v.length || !d.pts.length || !d.hover) return false;
+    if (d.tool === "rechteck") { d.pts = rect(me, d.hover, v).P; drawFinish(); return true; }
+    const F = frame(me), b = F.loc(d.pts[d.pts.length - 1]), q = F.loc(d.hover), l = Math.hypot(q.x - b.x, q.y - b.y); if (l < 0.01) return false;
+    d.pts.push(F.world(b.x + (q.x - b.x) / l * v[0], b.y + (q.y - b.y) / l * v[0], q.z)); d.vcb = ""; d.hover = null; drawRefresh(me); return true;
+  }
+  function drawVcb(t) { const me = st; if (!me?.draw) return; me.draw.vcb = t; me.viewer.scene.requestRender(); api.onDraw?.(state(me)); }
   function drawFinish() {
     const me = st, d = me?.draw; if (!d || d.pts.length < 3) return;
-    d.closed = true; d.hover = null; d.snap = "";
-    anbau = {key: key(me), pts: d.pts.slice(), form: d.form};
+    d.closed = true; d.tool = null; d.hover = null; d.snap = ""; d.vcb = ""; d.prev = null;
     cursor(me); drawRefresh(me);
   }
   function drawUndo() {
     const me = st, d = me?.draw; if (!d) return;
-    if (d.closed) d.closed = false; else d.pts.pop();
-    anbau = null; cursor(me); drawRefresh(me);
+    if (d.closed) { d.closed = false; d.tool = "vieleck"; d.on = true; } else d.pts.pop();
+    cursor(me); drawRefresh(me);
   }
-  function drawClear() { const me = st; if (!me?.draw) return; const on = me.draw.on; me.draw = newDraw(); me.draw.on = on; anbau = null; cursor(me); drawRefresh(me); }
+  function drawClear() { const me = st; if (!me?.draw) return; me.draw.prev = null; const {on, form} = me.draw; me.draw = {...newDraw(), on, form, tool: on ? "rechteck" : null}; cursor(me); drawRefresh(me); }
   function drawForm(f) { const me = st, d = me?.draw; if (!d) return; Object.assign(d.form, f); d.form.wand = Math.min(30, Math.max(1, +d.form.wand || 3)); d.form.neigung = Math.min(70, Math.max(3, +d.form.neigung || 30)); drawRefresh(me); }
   const flaeche = P => { let a = 0; for (let i = 0, j = P.length - 1; i < P.length; j = i++) a += (P[j].x + P[i].x) * (P[j].y - P[i].y); return a / 2; };
+  // Umriss, wie er gerade zu sehen ist (beim Rechteck die Vorschau)
+  function outline(me) {
+    const d = me.draw; if (!d) return [];
+    if (d.tool === "rechteck" && d.pts.length === 1 && d.hover) return rect(me, d.hover).P;
+    return d.pts;
+  }
   function state(me) {
-    const d = me.draw; if (!d) return {on: false, n: 0, closed: false, area: 0};
-    const pts = d.closed || !d.hover ? d.pts : [...d.pts, d.hover], F = pts.length ? frame(me) : null;
-    const area = pts.length >= 3 ? Math.abs(flaeche(pts.map(p => F.loc(p)))) : 0;
-    return {on: d.on, n: d.pts.length, closed: d.closed, area, form: {...d.form}, snap: d.snap, mass: d.mass || null};
+    const d = me.draw; if (!d) return {on: false, n: 0, closed: false, area: 0, tool: null};
+    let pts = outline(me); if (d.tool === "vieleck" && d.hover && d.snap !== "zu") pts = [...pts, d.hover];
+    const F = pts.length ? frame(me, pts[0]) : null, area = pts.length >= 3 ? Math.abs(flaeche(pts.map(p => F.loc(p)))) : 0;
+    let dims = "";
+    if (d.tool === "rechteck" && d.pts.length === 1 && d.hover) { const r = rect(me, d.hover); dims = `${fmt(r.du)} × ${fmt(r.dv)} m`; }
+    return {on: d.on, tool: d.tool, n: d.pts.length, closed: d.closed, area, dims, form: {...d.form}, snap: d.snap, vcb: d.vcb, mass: d.mass || null};
   }
 
   // Körper mit Dach als eigene Geometrie (schattiert, damit die Flächen plastisch wirken)
@@ -1840,18 +1950,17 @@ const View3D = (() => {
         top = Math.max(top, a[2], b[2], c[2]);
       }
     }
-    const rim = []; // obere Kante der Wände (folgt am Giebel dem Dach)
+    const tops = [];
     for (let i = 0; i < P.length; i++) {
       const a = P[i], b = P[(i + 1) % P.length], L = Math.hypot(b[0] - a[0], b[1] - a[1]), n = Math.max(1, Math.ceil(L / 0.25));
+      tops.push(f.wand + roofZ(a));
       for (let j = 0; j < n; j++) {
         const p0 = [a[0] + (b[0] - a[0]) * j / n, a[1] + (b[1] - a[1]) * j / n], p1 = [a[0] + (b[0] - a[0]) * (j + 1) / n, a[1] + (b[1] - a[1]) * (j + 1) / n];
-        const z0 = f.wand + roofZ(p0), z1 = f.wand + roofZ(p1); rim.push([...p0, z0]);
-        const nx = (b[1] - a[1]) / L, ny = -(b[0] - a[0]) / L;
+        const z0 = f.wand + roofZ(p0), z1 = f.wand + roofZ(p1), nx = (b[1] - a[1]) / L, ny = -(b[0] - a[0]) / L;
         wall.push([[...p0, 0], [...p1, 0], [...p1, z1], [nx, ny, 0]], [[...p0, 0], [...p1, z1], [...p0, z0], [nx, ny, 0]]);
       }
     }
-    rim.push(rim[0]);
-    return {wall, roof, rim, pieces: pieces.map(r => r.map(p => [p[0], p[1], f.wand + roofZ(p)])), vol, first: top};
+    return {wall, roof, tops, pieces: pieces.map(r => r.map(p => [p[0], p[1], f.wand + roofZ(p)])), vol, first: top};
   }
   function geom(tris) {
     const C = Cesium, pos = new Float64Array(tris.length * 9), nor = new Float32Array(tris.length * 9);
@@ -1869,61 +1978,77 @@ const View3D = (() => {
     const F = frame(me), L = d.pts.map(p => F.loc(p)), base = Math.min(...L.map(p => p.z));
     let P = L.map(p => [p.x, p.y]); if (flaeche(L) < 0) P = P.reverse();
     const M = mass(P, d.form), m = C.Matrix4.multiplyByTranslation(F.m, new C.Cartesian3(0, 0, base), new C.Matrix4());
-    const inst = (tris, col) => new C.GeometryInstance({geometry: geom(tris), modelMatrix: m, attributes: {color: C.ColorGeometryInstanceAttribute.fromColor(C.Color.fromCssColorString(col))}});
+    const hi = me.hDrag || me.hoverBody, col = c => C.Color.fromCssColorString(c).brighten(hi ? 0.12 : 0, new C.Color());
+    const inst = (tris, c) => new C.GeometryInstance({geometry: geom(tris), modelMatrix: m, attributes: {color: C.ColorGeometryInstanceAttribute.fromColor(col(c))}});
     me.massPrim = sc.primitives.add(new C.Primitive({geometryInstances: [inst(M.wall, ORANGE), ...(M.roof.length ? [inst(M.roof, d.form.dach === "flach" ? ORANGE : DACH)] : [])],
       appearance: new C.PerInstanceColorAppearance({flat: false, translucent: false, closed: false}), asynchronous: false, compressVertices: false}));
+    me.massPrim.vorhaben = true;
     const lines = me.massLines = sc.primitives.add(new C.PolylineCollection({modelMatrix: m}));
-    const v = a => new C.Cartesian3(a[0], a[1], a[2]), white = C.Material.fromType("Color", {color: C.Color.WHITE.withAlpha(0.9)});
+    const v = a => new C.Cartesian3(a[0], a[1], a[2]), white = C.Material.fromType("Color", {color: C.Color.WHITE.withAlpha(0.95)});
     for (const r of M.pieces) lines.add({positions: [...r, r[0]].map(v), width: 1.5, material: white});
     lines.add({positions: P.concat([P[0]]).map(p => v([p[0], p[1], 0.05])), width: 2, material: white});
-    for (const p of P) lines.add({positions: [v([p[0], p[1], 0]), v([p[0], p[1], M.rim.find(r => r[0] === p[0] && r[1] === p[1])?.[2] ?? d.form.wand])], width: 1.5, material: white});
-    d.mass = {vol: M.vol, first: M.first};
+    P.forEach((p, i) => lines.add({positions: [v([p[0], p[1], 0]), v([p[0], p[1], M.tops[i]])], width: 1.5, material: white}));
+    d.mass = {vol: M.vol, first: M.first, base, F, P};
   }
   function drawEntities(me) {
     const C = Cesium, E = me.viewer.entities, col = C.Color.fromCssColorString(ORANGE);
     const lift = p => { const c = carto(p); return C.Cartesian3.fromRadians(c.longitude, c.latitude, c.height + 0.15); };
-    const font = `600 12.5px ${getComputedStyle(document.documentElement).getPropertyValue("--sans").trim() || "system-ui, sans-serif"}`;
-    me.drawFont = font;
+    me.drawFont = `600 12.5px ${getComputedStyle(document.documentElement).getPropertyValue("--sans").trim() || "system-ui, sans-serif"}`;
+    const open = () => { const d = me.draw; return d && d.tool && !d.closed; };
     me.drawEnt = [
-      // Umriss beim Zeichnen: gesetzte Seiten durchgezogen, die nächste Seite zur Maus gestrichelt
-      E.add({polyline: {positions: new C.CallbackProperty(() => { const d = me.draw; return d && !d.closed && d.pts.length >= 2 ? d.pts.map(lift) : []; }, false),
+      // Umriss beim Zeichnen (Rechteck: Vorschau mit Fläche), die nächste Seite zur Maus gestrichelt
+      E.add({polyline: {positions: new C.CallbackProperty(() => { if (!open()) return []; const o = outline(me); return o.length < 2 ? [] : (me.draw.tool === "rechteck" ? [...o, o[0]] : o).map(lift); }, false),
         width: 3, material: col, depthFailMaterial: col.withAlpha(0.5)}}),
-      E.add({polyline: {positions: new C.CallbackProperty(() => { const d = me.draw; return d && d.on && !d.closed && d.pts.length && d.hover ? [lift(d.pts[d.pts.length - 1]), lift(d.hover)] : []; }, false),
+      E.add({polygon: {hierarchy: new C.CallbackProperty(() => open() && me.draw.tool === "rechteck" && me.draw.hover ? new C.PolygonHierarchy(outline(me).map(lift)) : undefined, false),
+        perPositionHeight: true, material: col.withAlpha(0.25)}}),
+      E.add({polyline: {positions: new C.CallbackProperty(() => { const d = me.draw; return open() && d.tool === "vieleck" && d.pts.length && d.hover ? [lift(d.pts[d.pts.length - 1]), lift(d.hover)] : []; }, false),
         width: 2.5, material: new C.PolylineDashMaterialProperty({color: col, dashLength: 12}), depthFailMaterial: new C.PolylineDashMaterialProperty({color: col.withAlpha(0.5), dashLength: 12})}}),
-      E.add({polyline: {positions: new C.CallbackProperty(() => { const d = me.draw; return d && d.on && !d.closed && d.pts.length >= 2 && d.hover && d.snap !== "zu" ? [lift(d.hover), lift(d.pts[0])] : []; }, false),
+      E.add({polyline: {positions: new C.CallbackProperty(() => { const d = me.draw; return open() && d.tool === "vieleck" && d.pts.length >= 2 && d.hover && d.snap !== "zu" ? [lift(d.hover), lift(d.pts[0])] : []; }, false),
         width: 1.5, material: new C.PolylineDashMaterialProperty({color: C.Color.WHITE.withAlpha(0.7), dashLength: 8})}}),
-      // Länge der Seite an der Maus, live
-      E.add({position: new C.CallbackProperty(() => me.draw?.hover ? lift(me.draw.hover) : undefined, false),
-        label: {text: new C.CallbackProperty(() => { const d = me.draw; if (!d?.hover || !d.pts.length) return ""; const F = frame(me), a = F.loc(d.pts[d.pts.length - 1]), b = F.loc(d.hover);
-          return `${fmt(Math.hypot(b.x - a.x, b.y - a.y))} m${d.snap === "rechtwinklig" ? "  ⦜ 90°" : d.snap === "gerade" ? "  ⟶" : d.snap === "zu" ? "  schließen" : ""}`; }, false),
-          font, fillColor: C.Color.WHITE, showBackground: true, backgroundColor: new C.CallbackProperty(() => C.Color.fromCssColorString(me.draw?.snap ? "#4766f0" : "#1c1c1e").withAlpha(0.9), false),
+      // Maß an der Maus, live (wie das Maßfeld in CAD-Programmen)
+      E.add({position: new C.CallbackProperty(() => open() && me.draw.hover ? lift(me.draw.hover) : undefined, false),
+        label: {text: new C.CallbackProperty(() => {
+          const d = me.draw; if (!open() || !d.hover) return "";
+          if (!d.pts.length) return d.tool === "rechteck" ? "Erste Ecke" : "Erste Ecke";
+          if (d.vcb) return `${d.vcb} m ↵`;
+          if (d.tool === "rechteck") return state(me).dims;
+          const F = frame(me), a = F.loc(d.pts[d.pts.length - 1]), b = F.loc(d.hover);
+          return `${fmt(Math.hypot(b.x - a.x, b.y - a.y))} m${d.snap === "rechtwinklig" ? "  ∟ 90°" : d.snap === "gerade" ? "  gerade" : d.snap === "zu" ? "  schließen" : ""}`; }, false),
+          font: me.drawFont, fillColor: C.Color.WHITE, showBackground: true, backgroundColor: new C.CallbackProperty(() => C.Color.fromCssColorString(me.draw?.snap || me.draw?.vcb ? BLAU : "#1c1c1e").withAlpha(0.92), false),
           backgroundPadding: new C.Cartesian2(8, 5), pixelOffset: new C.Cartesian2(18, -18), horizontalOrigin: C.HorizontalOrigin.LEFT, disableDepthTestDistance: Infinity}})
     ];
     me.drawPtEnt = []; me.drawLbl = [];
   }
-  function drawRefresh(me) {
+  function drawRefresh(me, still) {
     const C = Cesium, E = me.viewer.entities, d = me.draw;
     for (const e of [...me.drawPtEnt, ...me.drawLbl]) E.remove(e);
     buildMass(me);
-    const show = d.on || d.closed;
-    // Ecken: beim Zeichnen weiß mit orangem Rand; danach Griffe zum Verschieben (nur im Bearbeiten)
-    me.drawPtEnt = !show || (d.closed && !d.on) ? [] : d.pts.map((p, i) => E.add({position: p, point: {pixelSize: d.closed ? 13 : i === 0 && d.pts.length >= 3 ? 15 : 10,
-      color: d.closed ? C.Color.fromCssColorString("#4766f0") : C.Color.WHITE, outlineColor: d.closed ? C.Color.WHITE : C.Color.fromCssColorString(ORANGE), outlineWidth: 3, disableDepthTestDistance: Infinity}, properties: {ecke: i}}));
-    const ring = d.closed ? [...d.pts, d.pts[0]] : d.pts;
+    const sel = d.on && d.closed; // ausgewählt: Griffe an den Ecken
+    me.drawPtEnt = !d.on ? [] : (d.tool === "rechteck" ? d.pts.slice(0, 1) : d.pts).map((p, i) => E.add({position: p, point: {pixelSize: sel ? 13 : i === 0 && d.pts.length >= 3 ? 15 : 10,
+      color: sel ? C.Color.fromCssColorString(BLAU) : C.Color.WHITE, outlineColor: sel ? C.Color.WHITE : C.Color.fromCssColorString(ORANGE), outlineWidth: 3, disableDepthTestDistance: Infinity}, properties: {ecke: i}}));
     me.drawLbl = [];
-    if (show && ring.length >= 2) {
+    const ring = d.closed ? [...d.pts, d.pts[0]] : d.tool === "vieleck" ? d.pts : [];
+    if ((d.on || d.closed) && ring.length >= 2) {
       const F = frame(me);
       for (let i = 1; i < ring.length; i++) {
         const a = F.loc(ring[i - 1]), b = F.loc(ring[i]), m = C.Cartesian3.midpoint(ring[i - 1], ring[i], new C.Cartesian3()), c = carto(m);
         me.drawLbl.push(E.add({position: C.Cartesian3.fromRadians(c.longitude, c.latitude, c.height + 0.3), label: {text: `${fmt(Math.hypot(b.x - a.x, b.y - a.y))} m`, font: me.drawFont, fillColor: C.Color.WHITE,
-          showBackground: true, backgroundColor: C.Color.fromCssColorString("#1c1c1e").withAlpha(0.82), backgroundPadding: new C.Cartesian2(7, 4), disableDepthTestDistance: Infinity}}));
+          showBackground: true, backgroundColor: C.Color.fromCssColorString("#1c1c1e").withAlpha(0.82), backgroundPadding: new C.Cartesian2(7, 4), disableDepthTestDistance: Infinity,
+          distanceDisplayCondition: new C.DistanceDisplayCondition(0, me.opt.shot ? 0 : 170)}}));
       }
     }
-    if (anbau && d.closed) anbau = {key: key(me), pts: d.pts.slice(), form: {...d.form}};
-    api.onDraw?.(state(me));
+    // gemerkt für erneutes Öffnen und für den Bericht; neue Fassung nur, wenn sich Form oder Maße wirklich ändern
+    if (!me.opt.shot) {
+      if (d.closed) {
+        const ring = d.pts.map(p => { const c = carto(p); return proj4("EPSG:4326", "EPSG:25832", [c.longitude / rad, c.latitude / rad]); });
+        const sig = JSON.stringify([ring.map(p => p.map(v => v.toFixed(2))), d.form]);
+        if (anbau?.sig !== sig) anbau = {key: key(me), sig, pts: d.pts.slice(), form: {...d.form}, area: state(me).area, vol: d.mass?.vol || 0, first: d.mass?.first || 0, ring, bild: "", ver: ++anbauVer};
+      } else if (anbau?.key === key(me) && !still && !d.prev) anbau = null;
+    }
+    if (!me.opt.shot) api.onDraw?.(state(me));
     me.viewer.scene.requestRender();
   }
-  // Ecke des fertigen Vorhabens mit der Maus verschieben
+  // ausgewähltes Vorhaben: Ecke mit der Maus verschieben, Körper nach oben/unten ziehen = Wandhöhe
   function grabCorner(me, pos) {
     const d = me.draw; if (!d?.on || !d.closed) return false;
     const hit = me.viewer.scene.drillPick(pos, 5).find(h => h.id?.properties?.ecke);
@@ -1932,12 +2057,49 @@ const View3D = (() => {
     return true;
   }
   let dragRaf = 0;
-  function dragCorner(me, pos) {
-    const p = groundAt(me, pos); if (!p) return;
-    me.draw.pts[me.dragIdx] = p;
-    if (!dragRaf) dragRaf = requestAnimationFrame(() => { dragRaf = 0; if (st === me && me.draw) drawRefresh(me); });
+  const later = me => { if (!dragRaf) dragRaf = requestAnimationFrame(() => { dragRaf = 0; if (st === me && me.draw) drawRefresh(me); }); };
+  function dragCorner(me, pos) { const p = groundAt(me, pos); if (!p) return; me.draw.pts[me.dragIdx] = p; later(me); }
+  function onBody(me, pos) { return !!me.massPrim && me.viewer.scene.drillPick(pos, 4).some(h => h.primitive === me.massPrim); }
+  function grabBody(me, pos) {
+    const d = me.draw; if (!d?.on || !d.closed || !d.mass || !onBody(me, pos)) return false;
+    const C = Cesium, {F, P, base} = d.mass, cx = P.reduce((s, p) => s + p[0], 0) / P.length, cy = P.reduce((s, p) => s + p[1], 0) / P.length, sc = me.viewer.scene;
+    const a = sc.cartesianToCanvasCoordinates(F.world(cx, cy, base + d.form.wand)), b = sc.cartesianToCanvasCoordinates(F.world(cx, cy, base + d.form.wand + 1));
+    if (!a || !b) return false;
+    me.hDrag = {y0: pos.y, h0: d.form.wand, ppm: Math.max(4, Math.abs(a.y - b.y))};
+    sc.screenSpaceCameraController.enableInputs = false; cursor(me, "ns-resize");
+    return true;
   }
-  function dropCorner(me) { me.dragIdx = null; me.viewer.scene.screenSpaceCameraController.enableInputs = true; cursor(me); }
+  function dragBody(me, pos) {
+    const h = me.hDrag, w = Math.round((h.h0 + (h.y0 - pos.y) / h.ppm) * 4) / 4; // auf 25 cm
+    if (w !== me.draw.form.wand) { me.draw.form.wand = Math.min(30, Math.max(1, w)); later(me); }
+  }
+  let hovRaf = 0;
+  function hoverSelect(me, pos) {
+    const d = me.draw; if (!d?.on || !d.closed || hovRaf) return;
+    hovRaf = requestAnimationFrame(() => {
+      hovRaf = 0; if (st !== me || !me.draw?.closed) return;
+      const corner = me.viewer.scene.drillPick(pos, 3).some(h => h.id?.properties?.ecke), body = !corner && onBody(me, pos);
+      cursor(me, corner ? "move" : body ? "ns-resize" : "");
+      if (body !== !!me.hoverBody) { me.hoverBody = body; buildMass(me); me.viewer.scene.requestRender(); }
+      api.onHover?.(corner ? "ecke" : body ? "koerper" : "");
+    });
+  }
+  // Bild vom Vorhaben für den Bericht: kurz bildfüllend aus der jetzigen Blickrichtung aufnehmen, dann zurück zur Ansicht
+  async function capture(me) {
+    if (!me?.viewer || !me.draw?.closed || !anbau || anbau.key !== key(me) || anbau.bild) return;
+    const C = Cesium, cam = me.viewer.camera, d = me.draw, m = d.mass; if (!m) return;
+    const back = {destination: cam.position.clone(), orientation: {heading: cam.heading, pitch: cam.pitch, roll: cam.roll}};
+    const [cx, cy] = m.P.reduce((a, p) => [a[0] + p[0] / m.P.length, a[1] + p[1] / m.P.length], [0, 0]), top = m.F.world(cx, cy, m.base + m.first / 2);
+    const r = Math.max(4, ...m.P.map(p => Math.hypot(p[0] - cx, p[1] - cy))) + m.first * 0.4;
+    cam.viewBoundingSphere(new C.BoundingSphere(top, r), new C.HeadingPitchRange(cam.heading, Math.min(-0.45, Math.max(-0.8, cam.pitch)), r * 3.4));
+    cam.lookAtTransform(C.Matrix4.IDENTITY);
+    const ents = me.drawPtEnt; ents.forEach(e => e.show = false);
+    await new Promise(res => setTimeout(res, 900)); // feinere Kacheln nachladen lassen
+    const url = await grab(me);
+    ents.forEach(e => e.show = true);
+    if (st === me) { cam.setView(back); me.viewer.scene.requestRender(); }
+    if (url && anbau) anbau.bild = url;
+  }
   const carto = p => Cesium.Cartographic.fromCartesian(p);
   function restyle(me) {
     if (!me.tileset) return;
@@ -2039,8 +2201,10 @@ const View3D = (() => {
     return out;
   }
   const buildings = (center, r = 70) => gather(center, r + 30);
-  const draw = {start: drawStart, stop: drawStop, finish: drawFinish, undo: drawUndo, clear: drawClear, form: drawForm, available: () => desktop() && !!st?.viewer && !st.opt.shot};
-  const api = {open, close, north, zoom, snapshot, buildings, draw, preload: loadCesium, isOpen: () => !!st, onHeading: null, onDraw: null};
+  const draw = {start: drawStart, stop: drawStop, finish: drawFinish, undo: drawUndo, clear: drawClear, form: drawForm, typed: drawTyped, vcb: drawVcb, available: () => desktop() && !!st?.viewer && !st.opt.shot};
+  // gezeichnetes Vorhaben für den Bericht (Umriss in UTM 32, Maße, Bild aus der 3D-Ansicht)
+  const vorhaben = center => anbau && (!center || anbau.key === center.map(v => Math.round(v)).join(",")) ? {ring: anbau.ring, form: {...anbau.form}, area: anbau.area, vol: anbau.vol, first: anbau.first, bild: anbau.bild, ver: anbau.ver} : null;
+  const api = {open, close, north, zoom, snapshot, buildings, draw, vorhaben, capture: () => capture(st), preload: loadCesium, isOpen: () => !!st, onHeading: null, onDraw: null, onHover: null};
   return api;
 })();
 </script>
@@ -2217,7 +2381,7 @@ const Bericht = (() => {
   const loadImg = (src, cors) => new Promise(res => { const i = new Image(); if (cors) i.crossOrigin = "anonymous"; i.onload = () => res(i); i.onerror = () => res(null); i.src = src; });
 
   // ---------- Zeichnung: Grundstück, Baufenster, Gebäude mit Maßen ----------
-  function sketch(plotPs, bfPs, own, others) {
+  function sketch(plotPs, bfPs, own, others, vh) {
     const ext = ol.extent.buffer(plotPs.reduce((e, p) => ol.extent.extend(e, p.getExtent()), ol.extent.createEmpty()), 7);
     const W = 640, sc = W / (ext[2] - ext[0]), H = Math.round((ext[3] - ext[1]) * sc);
     const X = c => ((c[0] - ext[0]) * sc).toFixed(1), Y = c => ((ext[3] - c[1]) * sc).toFixed(1);
@@ -2245,6 +2409,7 @@ const Bericht = (() => {
       <path d="${path(plotPs)}" fill="none" stroke="#d79a00" stroke-width="3" stroke-linejoin="round"/>
       <path d="${path(others)}" fill="#e3e5ea" stroke="#b9bdc6" stroke-width="1"/>
       <path d="${path(own)}" fill="#9aa0ab" stroke="#5c626d" stroke-width="1.2"/>
+      ${vh ? `<path d="M${vh.ring.map(c => X(c) + " " + Y(c)).join("L")}Z" fill="#ff9f0a" fill-opacity=".85" stroke="#c25e00" stroke-width="2" stroke-linejoin="round"/>` : ""}
       <g fill="#7a5200" font-weight="600" stroke="#fff" stroke-width="3.5" paint-order="stroke">${labels.filter(l => l.includes('"mp"')).join("")}</g>
       <g fill="#0a4fc0" font-weight="600" stroke="#fff" stroke-width="3.5" paint-order="stroke">${labels.filter(l => l.includes('"mb"')).join("")}</g>
       <g transform="translate(${W - 34} 34)"><circle r="18" fill="#fff" stroke="#b9bdc6"/><path d="M0 -13 5 6 0 2 -5 6Z" fill="#1c1c1e"/><text y="-21" text-anchor="middle" font-size="11" font-weight="700" fill="#1c1c1e" stroke="#fff" stroke-width="3" paint-order="stroke">N</text></g>
@@ -2268,7 +2433,7 @@ const Bericht = (() => {
       pre.plan = planUrl(plotPs, ext, center).catch(() => "");
       pre.wissen = loadWissen(plotPs, ext);
     }
-    if (with3d && !pre.shot && !(typeof View3D !== "undefined" && View3D.isOpen())) { const p = pre; p.shot = p.data.then(d => shot3d(p, d)).then(u => { if (!u) p.shot = null; return u; }); }
+    if (with3d && !pre.shot && !(typeof View3D !== "undefined" && View3D.isOpen())) { const p = pre; p.shotVer = vorhabenOf(p.center)?.ver ?? null; p.shot = p.data.then(d => shot3d(p, d)).then(u => { if (!u) p.shot = null; return u; }); }
     return pre;
   }
   const loadData = (plot, plotPs, ext) => (async () => {
@@ -2420,6 +2585,16 @@ const Bericht = (() => {
     return `<div>${rowsHtml(rows)}<p class="hint">Aus offenen Daten der Stadt Hamburg (Bodenrichtwerte, Schutzgebiete, Solarpotenzial, Hochwasser, Fluglärm). Baulasten, Altlasten und Grundbuch sind dort nicht frei verfügbar: Auskunft gibt das Bezirksamt (Baulastenverzeichnis) und das Grundbuchamt.</p></div>`;
   }
 
+  // erlaubte Grundfläche und heutige Bebauung (für „Bebaut und noch frei“, „Ihr Bauvorhaben“ und die 3D-Ansicht)
+  function bilanz(d, plot) {
+    const haus = d.own.filter(a => !NEBEN.test(a.fn)).reduce((s, a) => s + a.onArea, 0), all = d.own.reduce((s, a) => s + a.onArea, 0);
+    const tiles = [...document.querySelectorAll("#calcOut > *")].map(t => [de(t.querySelector("b")?.textContent), t.querySelector(":scope > span")?.textContent || ""]);
+    const gr = tiles.find(([v, l]) => v && /^Grundfläche/.test(l))?.[0] || null, gr2 = tiles.find(([v, l]) => v && /Garage/.test(l))?.[0] || null;
+    const bfKlein = !!(gr && d.bf >= 1 && d.bf < gr);
+    return {amt: plot.area || d.A, haus, all, gr, gr2, bfKlein, grH: bfKlein ? d.bf : gr};
+  }
+  const DACHNAME = {flach: "Flachdach", pult: "Pultdach", sattel: "Satteldach", walm: "Walmdach"};
+  const vorhabenOf = center => typeof View3D !== "undefined" && View3D.vorhaben ? View3D.vorhaben(center) : null;
   async function build(r, plot, rep) {
     r.querySelectorAll(".rep-x").forEach(x => x.remove());
     const geom = plot?.geometry, plotPs = polysOf(geom);
@@ -2442,27 +2617,29 @@ const Bericht = (() => {
     </ul><p class="ki"><b>23 amtliche Datenquellen</b> wurden für diesen Bericht automatisch ausgewertet. Die Kurzfassungen der Bebauungspläne entstehen mit Hilfe von KI und können Fehler enthalten. Verbindlich ist nur der Originalplan.</p><p class="hint">MoinPlan hat die Daten ausgewählt, auf Ihr Grundstück zugeschnitten, Flächen daraus berechnet und in eigenen Worten zusammengefasst. Die Behörden haben diesen Bericht nicht geprüft.</p>`, "rep-x"));
     if (!plotPs.length) return;
 
-    const ext = geom.getExtent(), center = ol.extent.getCenter(ext);
+    const ext = geom.getExtent(), center = ol.extent.getCenter(ext), vh = vorhabenOf(center);
+    if (rep) rep.bvVer = vh?.ver ?? null;
     const calcSec = r.querySelector("#calcOut")?.closest("section");
     const mk = (title, cls) => { const c = card(title, `<p class="hint">wird erstellt …</p>`, "rep-x loading " + cls); return c; };
     const cRech = mk("Bebaut und noch frei", "rep-rech"), cSk = mk("Grundstück mit Maßen", "rep-sk"), c3d = mk("3D-Ansicht mit Baufenster", "rep-3d"), cNb = mk("Nachbarhäuser", "rep-nb"), cPlan = mk("Ausschnitt aus dem Originalplan", "rep-plan"); const cWis = mk("Gut zu wissen vor dem Kauf", "rep-wis");
     if (calcSec) calcSec.after(cRech, cSk, c3d); else r.append(cRech, cSk, c3d);
     const orig = [...r.querySelectorAll("section.card")].find(s => /Originalplan|Kurzfassung/.test(s.querySelector("h2")?.textContent || ""));
     orig ? orig.after(cPlan) : c3d.after(cPlan);
+    const cBv = vh ? mk("Ihr Bauvorhaben", "rep-bv") : null;
     steps.before(cNb); c3d.after(cWis); // „Gut zu wissen“ direkt hinter der 3D-Ansicht
+    if (cBv) c3d.after(cBv); // eigenes Fenster für das gezeichnete Vorhaben, direkt hinter der 3D-Ansicht
     const done = (c, html) => { if (html) { c.classList.remove("loading"); c.querySelector("h2").nextElementSibling.outerHTML = html; } else c.remove(); };
 
     const pre = warm(plot, true), dataP = pre.data;
 
     const rech = dataP.then(d => {
       if (!d) return done(cRech, "");
-      const amt = plot.area || d.A, haus = d.own.filter(a => !NEBEN.test(a.fn)).reduce((s, a) => s + a.onArea, 0), all = d.own.reduce((s, a) => s + a.onArea, 0);
-      const tiles = [...document.querySelectorAll("#calcOut > *")].map(t => [de(t.querySelector("b")?.textContent), t.querySelector(":scope > span")?.textContent || ""]);
-      const gr = tiles.find(([v, l]) => v && /^Grundfläche/.test(l))?.[0], gr2 = tiles.find(([v, l]) => v && /Garage/.test(l))?.[0];
+      const {amt, haus, all, gr, gr2, bfKlein, grH} = bilanz(d, plot);
       const frei = (soll, ist) => soll - ist >= 0 ? `<b class="ok">${m0(soll - ist)} m²</b> noch frei` : `<b class="warn">${m0(ist - soll)} m²</b> mehr als heute erlaubt`;
       const rows = [["Grundstück", `<b>${m0(amt)} m²</b>`], ["Heute bebaut", `<b>${m0(all)} m²</b> (${m0(all / amt * 100)} %)${d.own.length ? `<br><span class="hint">${d.own.map(a => `${esc(a.fn)} ${m0(a.onArea)} m²`).join(", ")}</span>` : ""}`]];
-      const neben = all - haus, bfKlein = gr && d.bf >= 1 && d.bf < gr, grH = bfKlein ? d.bf : gr; // Baufenster kleiner als GRZ-Fläche: dann begrenzt das Baufenster
+      const neben = all - haus; // Baufenster kleiner als GRZ-Fläche: dann begrenzt das Baufenster (bilanz)
       if (gr) rows.push(["Haus: erlaubt " + m0(grH) + " m²", `bebaut ${m0(haus)} m², ${frei(grH, haus)}`]);
+      if (gr && vh) rows.push(["Mit Ihrem Bauvorhaben", `+ ${m0(vh.area)} m², ${frei(grH, haus + vh.area)}`, "bv"]);
       if (gr2) rows.push(["Mit Garage und Nebengebäuden: erlaubt " + m0(gr2) + " m²", `bebaut ${m0(all)} m², ${frei(gr2, all)}`]);
       else if (gr && neben >= 1) rows.push(["Garage und Nebengebäude", `${m0(neben)} m²<br><span class="hint">Für ältere Pläne (vor 1990) zählen sie meist nicht zur erlaubten Grundfläche des Hauses. Im Zweifel beim Bauamt fragen.</span>`]);
       if (d.bfPs.length && d.bf < 1) rows.push(["Baufenster", `<span class="hint">In den Daten der Stadt liegt kein Baufenster auf diesem Grundstück. Bitte im Originalplan prüfen.</span>`]);
@@ -2484,8 +2661,8 @@ const Bericht = (() => {
       const dmin = inside.length ? Math.min(...inside.map(c => ringDist(c, rings))) : null;
       const note = !mine.length ? "Für diesen Plan liegen keine Baufenster als Daten vor. Die Skizze zeigt Grundstück und Gebäude."
         : `Blau gestrichelt ist das Baufenster: Nur dort darf das Haus stehen.${dmin != null && dmin > 0.3 ? ` Es liegt mindestens ${m1(dmin)} m von der Grundstücksgrenze entfernt.` : ""}${over ? " Es reicht über die Grundstücksgrenze hinaus und gilt dort für die Nachbarn." : ""}`;
-      done(cSk, `<div>${sketch(plotPs, d.bfPs, d.own.flatMap(a => a.polys), d.rest.flatMap(a => a.polys))}
-        <p class="hint skey"><span><i class="k-plot"></i>Grundstück</span><span><i class="k-bf"></i>Baufenster</span><span><i class="k-own"></i>Gebäude</span><span><i class="k-nb"></i>Nachbarn</span></p>
+      done(cSk, `<div>${sketch(plotPs, d.bfPs, d.own.flatMap(a => a.polys), d.rest.flatMap(a => a.polys), vh)}
+        <p class="hint skey"><span><i class="k-plot"></i>Grundstück</span><span><i class="k-bf"></i>Baufenster</span><span><i class="k-own"></i>Gebäude</span>${vh ? `<span><i class="k-bv"></i>Ihr Bauvorhaben</span>` : ""}<span><i class="k-nb"></i>Nachbarn</span></p>
         <p class="hint">${esc(note)} Maße aus den Daten der Stadt gerechnet, nicht vermessen.</p></div>`);
     });
 
@@ -2506,16 +2683,27 @@ const Bericht = (() => {
         <p class="hint">Wichtig, wenn sich ein Neubau in die Umgebung einfügen muss (§ 34 BauGB) oder das Amt über Ausnahmen entscheidet. Höhe: Gelände bis höchster Punkt des Dachs, aus dem 3D-Stadtmodell.</p></div>`);
     });
 
+    const bv = !cBv ? null : dataP.then(d => {
+      const b = d ? bilanz(d, plot) : null, f = vh.form;
+      const rows = [["Grundfläche", `<b>${m1(vh.area)} m²</b>`], ["Dach", `${DACHNAME[f.dach] || ""}${f.dach !== "flach" ? `, ${m0(f.neigung)}° Neigung` : ""}`],
+        ["Wandhöhe", `${m1(f.wand)} m`], ["Höchster Punkt", `${m1(vh.first)} m über dem Gelände`], ["Umbauter Raum", `ca. ${m0(vh.vol)} m³`]];
+      if (b?.grH) { const rest = b.grH - b.haus - vh.area;
+        rows.push(["Grundfläche fürs Haus", `erlaubt ${m0(b.grH)} m², heute bebaut ${m0(b.haus)} m², mit Vorhaben ${m0(b.haus + vh.area)} m²<br>${rest >= 0 ? `<b class="ok">${m0(rest)} m²</b> noch frei` : `<b class="warn">${m0(-rest)} m²</b> mehr als erlaubt`}`]); }
+      done(cBv, `<div>${vh.bild ? `<img class="rimg" src="${vh.bild}" alt="Ihr Bauvorhaben in der 3D-Ansicht, orange">` : ""}${rowsHtml(rows)}
+        <p class="hint">Ihre eigene Skizze aus der 3D-Ansicht, nicht vermessen. Ob das Vorhaben so gebaut werden darf, entscheidet das Bauamt, zum Beispiel nach Baufenster, Abständen zum Nachbarn und Zahl der Geschosse.</p></div>`);
+    });
     const wis = (pre.wissen || loadWissen(plotPs, ext)).then(w => done(cWis, wissenHtml(w, plot.area || plotPs.reduce((a, p) => a + p.getArea(), 0))));
     const planImg = pre.plan.then(url => done(cPlan, url ? `<div><img class="rimg" src="${url}" alt="Ausschnitt aus der Planzeichnung, Grundstück gelb umrandet">
         <p class="hint">Gescannte Planzeichnung der Stadt, Ihr Grundstück ist gelb umrandet. Die Zeichen erklärt die Legende im Originalplan (Link in diesem Bericht). Quelle: Freie und Hansestadt Hamburg, dl-de/by-2-0.</p></div>` : ""));
+    if (pre.shotVer !== (vh?.ver ?? null)) pre.shot = null; // Foto ohne bzw. mit älterem Vorhaben: neu aufnehmen
+    pre.shotVer = vh?.ver ?? null;
     if (!pre.shot) pre.shot = dataP.then(d => shot3d(pre, d, true));
     const img3d = Promise.all([dataP, pre.shot]).then(([d, url]) => { if (!url) pre.shot = null;
       done(c3d, url ? `<div><img class="rimg" src="${url}" alt="3D-Ansicht: Grundstück gelb, Baufenster blau">
-        <p class="hint">Gelb: Ihr Grundstück. Blau: das Baufenster aus dem Bebauungsplan${d?.bfPs.length ? "" : " (für diesen Plan liegen keine Baufenster als Daten vor)"}. Grau: Gebäude aus dem 3D-Stadtmodell der Stadt Hamburg. Quelle: FHH, LGV, dl-de/by-2-0; Stadtplan © basemap.de / BKG (2026) CC BY 4.0.</p></div>` : ""); });
+        <p class="hint">Gelb: Ihr Grundstück. Blau: das Baufenster aus dem Bebauungsplan${d?.bfPs.length ? "" : " (für diesen Plan liegen keine Baufenster als Daten vor)"}.${vh ? " Orange: Ihr Bauvorhaben." : ""} Grau: Gebäude aus dem 3D-Stadtmodell der Stadt Hamburg. Quelle: FHH, LGV, dl-de/by-2-0; Stadtplan © basemap.de / BKG (2026) CC BY 4.0.</p>${vh ? "" : `<p class="hint noprint">Tipp: Am Computer können Sie in der 3D-Ansicht Ihr Bauvorhaben einzeichnen. Es erscheint dann hier im Bericht.</p>`}</div>` : ""); });
 
     // Fertig, sobald alles da ist, spätestens nach 12 s. Was länger braucht (Planbild, 3D-Bild), erscheint danach von selbst.
-    const all = Promise.allSettled([rech, sk, nb, wis, planImg, img3d]).then(() => [cRech, cSk, c3d, cNb, cWis, cPlan].forEach(c => c.classList.contains("loading") && c.remove()));
+    const all = Promise.allSettled([rech, sk, nb, wis, planImg, img3d, bv]).then(() => [cRech, cSk, c3d, cNb, cWis, cPlan, cBv].forEach(c => c?.classList.contains("loading") && c.remove()));
     await Promise.race([all, new Promise(res => setTimeout(res, window.__repCap || 12000))]);
   }
   // Für das Bauvorhaben in 3D: erlaubte Grundfläche und was auf dem Grundstück schon steht (gleiche Rechnung wie „Bebaut und noch frei“)
@@ -2525,15 +2713,12 @@ const Bericht = (() => {
     const ext = geom.getExtent(), key = ol.extent.getCenter(ext).map(Math.round).join(",");
     if (!standCache.has(key)) standCache.set(key, (pre?.key === key ? pre.data : loadData(plot, plotPs, ext)).then(d => {
       if (!d) return null;
-      const haus = d.own.filter(a => !NEBEN.test(a.fn)).reduce((s, a) => s + a.onArea, 0), all = d.own.reduce((s, a) => s + a.onArea, 0);
-      const tiles = [...document.querySelectorAll("#calcOut > *")].map(t => [de(t.querySelector("b")?.textContent), t.querySelector(":scope > span")?.textContent || ""]);
-      const gr = tiles.find(([v, l]) => v && /^Grundfläche/.test(l))?.[0] || null, gr2 = tiles.find(([v, l]) => v && /Garage/.test(l))?.[0] || null;
-      const grH = gr && d.bf >= 1 && d.bf < gr ? d.bf : gr;
-      return {amt: plot.area || d.A, haus, all, gr: grH, gr2};
+      const b = bilanz(d, plot); return {amt: b.amt, haus: b.haus, all: b.all, gr: b.grH, gr2: b.gr2};
     }).catch(() => null));
     return standCache.get(key);
   }
-  return {build, warm, stand};
+  const neu = () => { if (pre) pre.shot = null; }; // Bauvorhaben geändert: 3D-Bild neu aufnehmen
+  return {build, warm, stand, neu};
 })();
 </script>
 <script>
@@ -3533,7 +3718,7 @@ function open3d() {
 function close3d() { if (!body.contains("is3d")) return; View3D.close(); body.remove("is3d"); }
 on("btn3d", "click", open3d);
 for (const ev of ["pointerenter", "pointerdown", "focus"]) $("btn3d").addEventListener(ev, () => View3D.preload(), {passive: true}); // Cesium schon beim Antippen/Überfahren laden
-on("v3close", "click", close3d);
+on("v3close", "click", close3dUi);
 on("v3in", "click", () => View3D.zoom(0.7));
 on("v3out", "click", () => View3D.zoom(1.4));
 on("v3north", "click", () => View3D.north());
@@ -3542,32 +3727,57 @@ const setNeedle = (id, rad) => { $(id).querySelector(".needle").style.transform 
 view.on("change:rotation", () => setNeedle("compass", view.getRotation()));
 on("compass", "click", () => view.animate({rotation: 0, duration: 400}));
 View3D.onHeading = h => setNeedle("v3north", -h);
-// Bauvorhaben zeichnen (nur PC): Ecken klicken, nach „Fertig“ steht der Körper mit Dach; unten links live, wie viel Grundfläche noch frei ist
-let bvStand, bvLast = null;
+// Bauvorhaben zeichnen (nur PC), bedient wie ein CAD-Programm: Werkzeugleiste links, Statuszeile mit Maßfeld unten, Eigenschaften rechts.
+// Rechts oben steht live, wie viel Grundfläche noch bebaubar ist.
+let bvStand, bvLast = null, bvAuto = "";
 const fl = v => Math.round(v).toLocaleString("de-DE"), fl1 = v => v.toLocaleString("de-DE", {maximumFractionDigits: 1});
+const bvMerk = (k, v) => { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch { return null; } };
+const bvDesktop = () => matchMedia("(min-width: 761px) and (hover: hover) and (pointer: fine)").matches;
 function bvFrei(d) {
   const el = $("v3frei"), neu = d.area || 0;
   if (bvStand === undefined) { el.innerHTML = `<p class="gross">Noch bebaubar<b>…</b></p><p>Wird berechnet.</p>`; return; }
   const s = bvStand;
   if (!s || !s.gr) { el.innerHTML = `<p class="gross">Ihr Vorhaben<b>${fl(neu)} m²</b></p><p>Für dieses Grundstück ist keine erlaubte Grundfläche als Zahl bekannt. Was gilt, steht im Originalplan.</p>`; return; }
   const rest = s.gr - s.haus - neu, voll = Math.max(s.gr, s.haus + neu), pc = v => (Math.max(0, v) / voll * 100).toFixed(1) + "%";
-  el.innerHTML = `<p class="gross${rest < 0 ? " zuviel" : ""}">${rest < 0 ? "Zu viel" : "Noch bebaubar"}<b>${fl(Math.abs(rest))} m²</b></p>
+  el.innerHTML = `<p class="gross${rest < 0 ? " zuviel" : ""}">${rest < 0 ? "Zu viel für dieses Grundstück" : "Noch bebaubar"}<b>${fl(Math.abs(rest))} m²</b></p>
     <div class="v3balk" aria-hidden="true"><i class="ist" style="width:${pc(Math.min(s.haus, s.gr))}"></i><i class="neu" style="width:${pc(Math.min(neu, s.gr - Math.min(s.haus, s.gr)))}"></i><i class="ueber" style="width:${pc(-rest)}"></i></div>
-    <p>Erlaubt ${fl(s.gr)} m² fürs Haus · heute bebaut ${fl(s.haus)} m² · Vorhaben ${fl(neu)} m²</p>`;
+    <p class="v3key"><span><i style="background:#8e8e93"></i>heute ${fl(s.haus)} m²</span><span><i style="background:#ff9f0a"></i>Vorhaben ${fl(neu)} m²</span><span>erlaubt ${fl(s.gr)} m²</span></p>`;
 }
+const BV_HINT = {
+  rechteck0: "<b>Rechteck:</b> Klicken Sie die erste Ecke auf den Boden.",
+  rechteck1: "<b>Rechteck:</b> Klicken Sie die gegenüberliegende Ecke. Oder Maße eintippen, z. B. 6;4 und Enter.",
+  vieleck0: "<b>Vieleck:</b> Klicken Sie die erste Ecke auf den Boden.",
+  vieleck1: "<b>Vieleck:</b> Nächste Ecke klicken oder Länge eintippen. Rechte Winkel rasten ein.",
+  vieleck3: "<b>Vieleck:</b> Nächste Ecke klicken. Zum Abschließen auf den ersten Punkt klicken oder Enter.",
+  sel: "<b>Bearbeiten:</b> Körper nach oben oder unten ziehen ändert die Höhe. Blaue Ecken ziehen ändert den Grundriss.",
+  ecke: "<b>Ecke verschieben:</b> gedrückt halten und ziehen.", koerper: "<b>Höhe ändern:</b> gedrückt halten und nach oben oder unten ziehen.",
+  aus: "Wählen Sie links ein Werkzeug, um Ihr Bauvorhaben zu zeichnen."
+};
+let bvHover = "";
+function bvHint(d) {
+  const k = d.tool ? d.tool + (d.tool === "rechteck" ? Math.min(d.n, 1) : d.n >= 3 ? 3 : Math.min(d.n, 1)) : d.closed && d.on ? (bvHover || "sel") : "aus";
+  $("v3hint").innerHTML = BV_HINT[k];
+  $("v3vcbL").hidden = !(d.tool && d.n >= 1);
+  if (document.activeElement !== $("v3vcb")) $("v3vcb").value = d.vcb || "";
+}
+View3D.onHover = h => { bvHover = h; if (bvLast) bvHint(bvLast); };
 View3D.onDraw = d => {
-  const btn = $("v3draw"), bar = $("v3bar");
-  if (!d) { btn.hidden = bar.hidden = true; $("view3d").classList.remove("drawing"); return; }
+  if (!d) { ["v3tools", "v3stat", "v3props", "v3tip"].forEach(i => $(i).hidden = true); $("view3d").classList.remove("drawing"); return; }
   bvLast = d;
-  btn.hidden = d.on; bar.hidden = !d.on; $("view3d").classList.toggle("drawing", d.on);
-  btn.querySelector("span").textContent = d.closed ? "Bauvorhaben bearbeiten" : "Bauvorhaben zeichnen";
-  if (!d.on) return;
-  bvFrei(d);
+  $("v3tools").hidden = false;
+  document.querySelectorAll("#v3tools [data-tool]").forEach(b => b.setAttribute("aria-pressed", String(d.tool === b.dataset.tool)));
+  $("v3undo").disabled = !d.n; $("v3clear").disabled = !d.n;
+  const aktiv = !!(d.tool || (d.closed && d.on));
+  $("view3d").classList.toggle("drawing", aktiv);
+  $("v3stat").hidden = $("v3props").hidden = !aktiv;
+  if (aktiv) { $("v3tip").hidden = true; bvMerk("moinplan-bv", "1"); $("bvHinweis").hidden = true; }
+  else if (!bvMerk("moinplan-bv") && !d.n) $("v3tip").hidden = false;
+  if (bvAuto && !d.tool && !d.closed) { const t = bvAuto; bvAuto = ""; return View3D.draw.start(t); }
+  if (!aktiv) return;
+  bvHint(d); bvFrei(d);
   const m = d.mass;
-  $("v3dtext").innerHTML = d.closed ? `<b>${fl1(d.area)} m²</b> Grundfläche<span>${m ? `Höchster Punkt ${fl1(m.first)} m · umbauter Raum ca. ${fl(m.vol)} m³<br>` : ""}Blaue Ecken mit der Maus verschieben</span>`
-    : d.n === 0 ? `Ecken auf den Boden klicken<span>Rechte Winkel rasten ein. Linke Maustaste ziehen dreht, Mausrad zoomt.</span>`
-    : d.n < 3 ? `Nächste Ecke klicken<span>Ab drei Ecken: auf den ersten Punkt klicken oder „Fertig“ (Enter)</span>`
-    : `${fl1(d.area)} m² · nächste Ecke klicken<span>Zum Abschließen auf den ersten Punkt klicken oder „Fertig“ (Enter)</span>`;
+  $("v3dtext").innerHTML = d.closed ? `<b>${fl1(d.area)} m²</b> Grundfläche<span>${m ? `Höchster Punkt ${fl1(m.first)} m · umbauter Raum ca. ${fl(m.vol)} m³` : ""}</span>`
+    : d.area ? `<b>${fl1(d.area)} m²</b> Grundfläche${d.dims ? `<span>${d.dims}</span>` : ""}` : `Ihr Bauvorhaben<span>Erst den Grundriss zeichnen. Danach wählen Sie Höhe und Dach.</span>`;
   $("v3form").hidden = !d.closed;
   if (d.closed) {
     const f = d.form;
@@ -3576,27 +3786,53 @@ View3D.onDraw = d => {
     $("v3nei").value = f.neigung; $("v3neiO").textContent = f.neigung + "°";
     $("v3neiL").hidden = $("v3dreh").hidden = f.dach === "flach";
   }
-  $("v3undo").hidden = d.closed; $("v3undo").disabled = d.n === 0;
-  $("v3clear").hidden = !d.closed && d.n === 0;
-  $("v3done").disabled = !d.closed && d.n < 3; $("v3done").textContent = d.closed ? "Schließen" : "Fertig";
+  $("v3done").textContent = d.closed ? "Fertig" : d.tool === "vieleck" && d.n >= 3 ? "Form schließen" : "Abbrechen";
 };
-on("v3draw", "click", () => {
-  if (bvStand === undefined && typeof Bericht !== "undefined") Bericht.stand(lastPlot).then(v => { bvStand = v; if (bvLast?.on) bvFrei(bvLast); });
-  View3D.draw.start();
-});
+function bvStart(tool) {
+  if (bvStand === undefined && typeof Bericht !== "undefined") Bericht.stand(lastPlot).then(v => { bvStand = v; if (bvLast) bvFrei(bvLast); });
+  View3D.draw.start(tool);
+}
+document.querySelectorAll("#v3tools [data-tool]").forEach(b => b.addEventListener("click", () => { if (bvLast?.tool !== b.dataset.tool) bvStart(b.dataset.tool); }));
 on("v3undo", "click", () => View3D.draw.undo());
 on("v3clear", "click", () => View3D.draw.clear());
-on("v3done", "click", () => { if ($("v3done").textContent === "Schließen") View3D.draw.stop(); else View3D.draw.finish(); });
+on("v3done", "click", () => { const d = bvLast; if (d?.closed) View3D.draw.stop(); else if (d?.tool === "vieleck" && d.n >= 3) View3D.draw.finish(); else View3D.draw.stop(); });
+on("v3tipGo", "click", () => bvStart("rechteck"));
+on("v3tipX", "click", () => { $("v3tip").hidden = true; bvMerk("moinplan-bv", "1"); });
 document.querySelectorAll(".v3seg button").forEach(b => b.addEventListener("click", () => View3D.draw.form({dach: b.dataset.dach})));
 $("v3wand").addEventListener("input", e => View3D.draw.form({wand: +e.target.value}));
 $("v3nei").addEventListener("input", e => View3D.draw.form({neigung: +e.target.value}));
 on("v3dreh", "click", () => View3D.draw.form({dreh: !bvLast?.form?.dreh}));
+$("v3vcb").addEventListener("input", e => View3D.draw.vcb(e.target.value));
+$("v3vcb").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); if (View3D.draw.typed(e.target.value)) e.target.value = ""; e.target.blur(); } });
+// Hinweis auf der Karte (nur PC): bis man das Zeichnen einmal benutzt hat
+const bvHinweisZeigen = () => { $("bvHinweis").hidden = !bvDesktop() || !!bvMerk("moinplan-bv"); };
+bvHinweisZeigen();
+on("bvHinweis", "click", () => { bvAuto = "rechteck"; open3d(); bvStart("rechteck"); });
+// Tastatur wie in CAD-Programmen: R Rechteck, L Vieleck, Zahlen = Maße, Enter, Rücktaste, Esc, Entf
 document.addEventListener("keydown", e => {
-  if (!body.contains("is3d") || $("v3bar").hidden || e.target.matches("input, textarea, select")) return;
-  if (e.key === "Enter") { e.preventDefault(); View3D.draw.finish(); }
-  else if (e.key === "Backspace" || (e.key === "z" && (e.metaKey || e.ctrlKey))) { e.preventDefault(); View3D.draw.undo(); }
-  else if (e.key === "Escape") { e.preventDefault(); View3D.draw.stop(); }
+  if (!body.contains("is3d") || $("v3tools").hidden || e.target.matches("input, textarea, select") || e.metaKey && e.key !== "z" || e.altKey) return;
+  const d = bvLast || {}, vcb = $("v3vcb");
+  if (d.tool && d.n >= 1 && /^[0-9.,;x ]$/.test(e.key) && !e.ctrlKey) { e.preventDefault(); vcb.value += e.key; View3D.draw.vcb(vcb.value); return; }
+  const k = e.key.toLowerCase();
+  if (k === "r" && !e.ctrlKey) bvStart("rechteck");
+  else if (k === "l" && !e.ctrlKey) bvStart("vieleck");
+  else if (e.key === "Enter") { if (vcb.value) { if (View3D.draw.typed(vcb.value)) vcb.value = ""; } else View3D.draw.finish(); }
+  else if (e.key === "Backspace" && vcb.value) { vcb.value = vcb.value.slice(0, -1); View3D.draw.vcb(vcb.value); }
+  else if (e.key === "Backspace" || (k === "z" && (e.metaKey || e.ctrlKey))) View3D.draw.undo();
+  else if (e.key === "Delete") View3D.draw.clear();
+  else if (e.key === "Escape") { if (vcb.value) { vcb.value = ""; View3D.draw.vcb(""); } else View3D.draw.stop(); }
+  else return;
+  e.preventDefault();
 });
+// 3D schließen: Bild vom Vorhaben merken; ist der Bericht schon gekauft, wird er mit dem neuen Vorhaben neu erstellt
+async function close3dUi() {
+  await View3D.capture().catch(() => {});
+  close3d();
+  const vh = lastPlot && View3D.vorhaben();
+  if (bezahlt && lastPlot && (vh?.ver ?? null) !== (rep.bvVer ?? null)) { Bericht.neu(); unlock(true); }
+  bvHinweisZeigen();
+}
+
 
 // ---------- Rechner ----------
 const ROMAN = {I: 1, II: 2, III: 3, IV: 4, V: 5, VI: 6, VII: 7, VIII: 8, IX: 9, X: 10, XI: 11, XII: 12};
