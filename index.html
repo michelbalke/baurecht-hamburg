@@ -385,7 +385,7 @@
 :root {
   --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif; --display: var(--sans);
   --bg: #000; --panel: #1c1c1e; --fg: #fff; --muted: rgba(235,235,245,.6); --line: rgba(255,255,255,.12); --fill: #2c2c2e;
-  --navy: #4766f0; --accent: #8ea2ff; --accent-soft: rgba(120,145,255,.17); --accent-fill: #4766f0; --ok: #30d158; --ok-soft: rgba(48,209,88,.16); --warn: #ff9f0a; --warn-soft: rgba(255,159,10,.16);
+  --bv: #8b74f2; --navy: #4766f0; --accent: #8ea2ff; --accent-soft: rgba(120,145,255,.17); --accent-fill: #4766f0; --ok: #30d158; --ok-soft: rgba(48,209,88,.16); --warn: #ff9f0a; --warn-soft: rgba(255,159,10,.16);
   --plan: #c8102e; --plot: #e0a100; --bf: #2f55e4; --bf-fill: rgba(47,85,228,.36); --bf-fill2: rgba(47,85,228,.16); --dm: #ff3b30; --dm-fill: rgba(255,59,48,.42); --ease: cubic-bezier(.2, .8, .2, 1);
   --gl-strong: rgba(28,28,30,.94); --gl-edge: 0 0 0 .5px rgba(255,255,255,.1); --gl-shadow: 0 6px 20px rgba(0,0,0,.14); --gl-blur: blur(20px) saturate(1.8);
   --search-bg: #2c2c2e; --search-ring: 0 0 0 1px rgba(255,255,255,.08); --search-shadow: 0 12px 30px rgba(0,0,0,.14); --search-ph: rgba(235,235,245,.5); --v3bg: #10141a;
@@ -677,12 +677,12 @@ body.measuring .mtip { display: flex; }
 .v3th { grid-column: 1 / -1; margin: 2px 6px 6px; font-size: 11.5px; font-weight: 600; color: var(--muted); }
 .view3d .v3tools button { width: 100%; justify-content: flex-start; gap: 9px; padding: 8px 8px; border-radius: 11px; font-size: 13.5px; font-weight: 600; color: var(--fg); background: transparent; box-shadow: none; }
 .view3d .v3tools button:hover:not(:disabled) { background: var(--fill); }
-.view3d .v3tools button[aria-pressed="true"] { background: #ff9f0a; color: #1c1c1e; }
+.view3d .v3tools button[aria-pressed="true"] { background: var(--bv); color: #fff; }
 .view3d .v3tools button:disabled { opacity: .35; cursor: default; transform: none; filter: none; }
 .v3tools svg { width: 19px; height: 19px; flex: none; }
 .v3tools span { flex: 1; text-align: left; }
 .v3tools kbd { font: 600 10.5px/1 var(--sans); padding: 3px 5px; border-radius: 5px; border: 1px solid var(--line); color: var(--muted); }
-.v3tools button[aria-pressed="true"] kbd { border-color: rgba(0,0,0,.25); color: #1c1c1e; }
+.v3tools button[aria-pressed="true"] kbd { border-color: rgba(255,255,255,.4); color: #fff; }
 .v3tools hr { grid-column: 1 / -1; width: 100%; margin: 4px 0; border: 0; border-top: 1px solid var(--line); }
 .v3tip { position: absolute; z-index: 4; left: 276px; top: 70px; width: 250px; padding: 14px 16px; border-radius: 18px; background: var(--navy); color: #fff; box-shadow: var(--shadow-lg); font-size: 13px; line-height: 1.35; animation: v3tipin .35s var(--ease) both; }
 .v3tip::before { content: ""; position: absolute; left: -7px; top: 22px; width: 14px; height: 14px; background: var(--navy); transform: rotate(45deg); border-radius: 2px; }
@@ -692,43 +692,50 @@ body.measuring .mtip { display: flex; }
 .view3d .v3tip button { padding: 7px 12px; font-size: 13px; background: #fff; color: var(--navy); box-shadow: none; }
 .view3d .v3tip button.ghost { background: rgba(255,255,255,.16); color: #fff; }
 @keyframes v3tipin { from { opacity: 0; transform: translateX(-8px); } }
-.v3stat { position: absolute; z-index: 3; left: 276px; right: 12px; bottom: 30px; max-width: 560px; display: grid; gap: 6px; padding: 10px 14px; border-radius: 18px; background: var(--panel); box-shadow: var(--shadow-lg); }
+.v3stat { position: absolute; z-index: 3; left: 50%; top: 12px; transform: translateX(-50%); width: max-content; max-width: min(520px, calc(100% - 440px)); display: grid; gap: 6px; padding: 9px 14px; border-radius: 16px; background: var(--panel); box-shadow: var(--shadow-lg); }
 .v3stat p { margin: 0; }
-#v3hint { font-size: 13.5px; font-weight: 600; line-height: 1.3; }
+#v3hint { font-size: 13.5px; font-weight: 500; line-height: 1.3; }
 .v3nav2 { font-size: 11.5px; color: var(--muted); }
 .v3vcb { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--muted); }
 .v3vcb input { flex: 0 1 140px; padding: 6px 10px; border-radius: 9px; font: 600 14px var(--sans); font-variant-numeric: tabular-nums; }
+/* Großer Flächen-Balken unten in der Mitte: heute bebaut, Ihr Vorhaben, noch frei (oder zu viel) */
+.v3bil { position: absolute; z-index: 3; left: 276px; right: 12px; bottom: 30px; margin: 0 auto; max-width: 640px; padding: 14px 18px 14px; border-radius: 22px; background: var(--panel); box-shadow: var(--shadow-lg); }
+.v3bil[hidden] { display: none; }
+.v3bil header { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 10px; font-size: 13px; color: var(--muted); }
+.v3bil header b { font: 700 15px/1.2 var(--display); color: var(--fg); }
+.v3bar { position: relative; display: flex; height: 34px; border-radius: 11px; overflow: hidden; background: var(--fill); }
+.v3bar i { position: relative; display: flex; align-items: center; justify-content: center; min-width: 0; height: 100%; overflow: hidden; font: 700 13px/1 var(--sans); font-style: normal; white-space: nowrap; color: #fff; transition: width .25s var(--ease); }
+.v3bar i + i { box-shadow: inset 2px 0 0 var(--panel); }
+.v3bar .ist { background: #7c7c82; } .v3bar .neu { background: var(--bv); } .v3bar .frei { background: color-mix(in srgb, var(--ok) 28%, transparent); color: var(--ok); }
+.v3bar .ueber { background: repeating-linear-gradient(135deg, #ff453a 0 8px, #d70015 8px 16px); }
+.v3bar u { position: absolute; top: -4px; bottom: -4px; width: 3px; margin-left: -1.5px; background: var(--fg); border-radius: 2px; text-decoration: none; }
+.v3zahl { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
+.v3zahl div { display: grid; gap: 2px; font-size: 12px; color: var(--muted); }
+.v3zahl div span { display: inline-flex; align-items: center; gap: 6px; }
+.v3zahl div span::before { content: ""; width: 10px; height: 10px; border-radius: 3px; background: var(--c); }
+.v3zahl b { font: 700 22px/1.1 var(--display); color: var(--fg); font-variant-numeric: tabular-nums; }
+.v3zahl .ok b { color: var(--ok); } .v3zahl .warn b { color: #ff453a; }
+.v3bil > p { margin: 10px 0 0; font-size: 12px; color: var(--muted); }
 .v3props { position: absolute; z-index: 3; left: 12px; top: 214px; width: 252px; max-height: calc(100% - 240px); overflow: auto; display: grid; gap: 12px; padding: 14px 16px; border-radius: 20px; background: var(--panel); box-shadow: var(--shadow-lg); }
-.v3frei { display: grid; gap: 6px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
-.v3frei p { margin: 0; font-size: 12.5px; color: var(--muted); line-height: 1.35; }
-.v3frei .gross { font-size: 13px; color: var(--fg); font-weight: 600; }
-.v3frei .gross b { display: block; font: 700 26px/1.05 var(--display); color: var(--ok); transition: color .2s; }
-.v3frei .gross.zuviel b { color: #ff453a; }
-.v3balk { display: flex; height: 8px; border-radius: 99px; overflow: hidden; background: var(--fill); }
-.v3balk i { display: block; height: 100%; transition: width .15s; }
-.v3balk .ist { background: #8e8e93; } .v3balk .neu { background: #ff9f0a; } .v3balk .ueber { background: #ff453a; }
-.v3key { display: flex; flex-wrap: wrap; gap: 4px 10px; }
-.v3key span { display: inline-flex; align-items: center; gap: 5px; }
-.v3key i { width: 9px; height: 9px; border-radius: 3px; }
 .v3dtext { margin: 0; font-size: 14px; font-weight: 600; line-height: 1.3; }
 .v3dtext span { display: block; margin-top: 3px; font-weight: 400; font-size: 12.5px; color: var(--muted); }
 .v3dtext b { font: 700 20px/1.05 var(--display); }
 .v3form { display: grid; gap: 10px; }
 .v3seg { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; padding: 3px; border-radius: 14px; background: var(--fill); }
 .view3d .v3seg button { flex-direction: column; gap: 2px; padding: 6px 2px 5px; border-radius: 11px; font-size: 11.5px; font-weight: 600; color: var(--muted); background: transparent; border: 0; box-shadow: none; }
-.view3d .v3seg button[aria-checked="true"] { background: #ff9f0a; color: #1c1c1e; }
+.view3d .v3seg button[aria-checked="true"] { background: var(--bv); color: #fff; }
 .v3seg svg { width: 30px; height: 22px; }
 .v3sl { display: grid; grid-template-columns: 1fr 50px; grid-template-areas: 't o' 'i i'; row-gap: 2px; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
-.v3sl input { grid-area: i; width: 100%; accent-color: #ff9f0a; }
+.v3sl input { grid-area: i; width: 100%; accent-color: var(--bv); }
 .v3sl output { grid-area: o; text-align: right; font-weight: 600; color: var(--fg); font-variant-numeric: tabular-nums; }
 .view3d .v3dreh { justify-self: start; background: var(--accent-soft); color: var(--accent); box-shadow: none; }
 .v3dreh svg { width: 15px; height: 15px; }
 .view3d .v3fertig { justify-content: center; box-shadow: none; }
-.v3hinweis3d { position: absolute; z-index: 6; left: 98px; top: 112px; min-height: 44px; display: flex; align-items: center; gap: 8px; max-width: 230px; padding: 8px 12px 8px 10px; border: 0; border-radius: 14px; font: 600 13px/1.25 var(--sans); text-align: left; color: #1c1c1e; background: #ff9f0a; box-shadow: var(--shadow-lg); }
+.v3hinweis3d { position: absolute; z-index: 6; left: 98px; top: 112px; min-height: 44px; display: flex; align-items: center; gap: 8px; max-width: 230px; padding: 8px 12px 8px 10px; border: 0; border-radius: 14px; font: 600 13px/1.25 var(--sans); text-align: left; color: #fff; background: var(--bv); box-shadow: var(--shadow-lg); }
 .v3hinweis3d svg { width: 18px; height: 18px; flex: none; }
-.v3hinweis3d::before { content: ""; position: absolute; left: -5px; top: 16px; width: 12px; height: 12px; background: #ff9f0a; transform: rotate(45deg); border-radius: 2px; }
+.v3hinweis3d::before { content: ""; position: absolute; left: -5px; top: 16px; width: 12px; height: 12px; background: var(--bv); transform: rotate(45deg); border-radius: 2px; }
 body:not(.has-result) .v3hinweis3d, body.measuring .v3hinweis3d, body.is3d .v3hinweis3d { display: none; }
-@media (max-width: 760px), (hover: none), (pointer: coarse) { .v3tools, .v3tip, .v3stat, .v3props, .v3hinweis3d { display: none !important; } }
+@media (max-width: 760px), (hover: none), (pointer: coarse) { .v3tools, .v3tip, .v3stat, .v3props, .v3bil, .v3hinweis3d { display: none !important; } }
 
 /* ---------- 3D-Ansicht ---------- */
 .view3d { display: none; position: absolute; inset: 0; z-index: 8; overflow: hidden; touch-action: none; background: var(--v3bg); }
@@ -966,7 +973,7 @@ dialog.pro[open] { animation: rise .28s var(--ease) both; }
 .rbar-key i { width: 12px; height: 8px; border-radius: 4px; background: var(--muted); } .rbar-key u { width: 3px; height: 12px; border-radius: 2px; background: var(--accent); }
 .skey { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 8px 0 4px; }
 .skey span { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; } .skey i { width: 14px; height: 10px; border-radius: 3px; box-sizing: border-box; }
-.k-plot { background: #fff4d1; border: 2px solid #d79a00; } .k-bf { background: #cfe2ff; border: 1.5px dashed #0a5fe0; } .k-own { background: #9aa0ab; border: 1px solid #5c626d; } .k-bv { background: #ff9f0a; border: 1.5px solid #c25e00; } .k-nb { background: #e3e5ea; border: 1px solid #b9bdc6; }
+.k-plot { background: #fff4d1; border: 2px solid #d79a00; } .k-bf { background: #cfe2ff; border: 1.5px dashed #0a5fe0; } .k-own { background: #9aa0ab; border: 1px solid #5c626d; } .k-bv { background: #9b87f5; border: 1.5px solid #5b3fc4; } .k-nb { background: #e3e5ea; border: 1px solid #b9bdc6; }
 ol.steps { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 8px; line-height: 1.45; }
 ul.quellen { margin: 0 0 8px; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; font-size: 13px; line-height: 1.4; color: var(--muted); }
 ul.quellen b { color: var(--fg); font-weight: 600; }
@@ -1177,8 +1184,8 @@ ul.quellen b { color: var(--fg); font-weight: 600; }
       </div>
       <div class="v3tip" id="v3tip" hidden><b>Neu: Ihr Bauvorhaben in 3D</b><p>Zeichnen Sie Anbau, Garage oder Haus direkt auf Ihr Grundstück. Rechteck wählen, zwei Ecken klicken, fertig.</p><div><button type="button" id="v3tipGo">Ausprobieren</button><button type="button" class="ghost" id="v3tipX">Später</button></div></div>
       <div class="v3stat" id="v3stat" hidden><p id="v3hint"></p><label class="v3vcb" id="v3vcbL">Maße <input type="text" id="v3vcb" inputmode="decimal" autocomplete="off" placeholder="z. B. 6;4"> m</label><p class="v3nav2">Linke Maus ziehen: drehen · Rad: zoomen · Rechte Maus: verschieben</p></div>
+      <div class="v3bil" id="v3bil" hidden></div>
       <div class="v3props" id="v3props" hidden>
-        <div class="v3frei" id="v3frei"></div>
         <p class="v3dtext" id="v3dtext"></p>
         <div class="v3form" id="v3form" hidden>
           <div class="v3seg" role="radiogroup" aria-label="Dachform">
@@ -1189,7 +1196,7 @@ ul.quellen b { color: var(--fg); font-weight: 600; }
           </div>
           <label class="v3sl">Wandhöhe <input type="range" id="v3wand" min="2" max="12" step="0.25"><output id="v3wandO"></output></label>
           <label class="v3sl" id="v3neiL">Dachneigung <input type="range" id="v3nei" min="5" max="60" step="1"><output id="v3neiO"></output></label>
-          <button type="button" class="ghost v3dreh" id="v3dreh"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>First drehen</button>
+          <button type="button" class="ghost v3dreh" id="v3dreh"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg><span id="v3drehT">First drehen</span></button>
         </div>
         <button type="button" class="v3fertig" id="v3done">Fertig</button>
       </div>
@@ -1772,8 +1779,8 @@ const View3D = (() => {
   let anbau = null; // zuletzt gezeichnetes Vorhaben {key, pts, form, area, vol, first, ring, bild, ver}
   let anbauVer = 0;
   const key = me => me.opt.center.map(v => Math.round(v)).join(",");
-  const FORM0 = {dach: "sattel", wand: 3, neigung: 30, dreh: false};
-  const ORANGE = "#ff9f0a", DACH = "#d9480f", BLAU = "#4766f0";
+  const FORM0 = {dach: "sattel", wand: 3, neigung: 30, dreh: 0}; // dreh: Firstrichtung in 90°-Schritten (0 bis 3)
+  const ORANGE = "#9b87f5", DACH = "#6e56cf", BLAU = "#4766f0"; // Vorhaben in Lila: hebt sich von Grundstück (gelb), Baufenster (blau) und Häusern (grau) ab
   const r1 = v => Math.round(v * 10) / 10; // Maße auf 10 cm
   // Punkt auf dem Gelände unter der Maus (geht durch Gebäude und das Vorhaben hindurch)
   function groundAt(me, pos) {
@@ -1919,7 +1926,7 @@ const View3D = (() => {
     // P: Umriss im lokalen System (x, y), gegen den Uhrzeigersinn
     let li = 0, lb = 0; for (let i = 0; i < P.length; i++) { const q = P[(i + 1) % P.length], l = Math.hypot(q[0] - P[i][0], q[1] - P[i][1]); if (l > lb) { lb = l; li = i; } }
     const q = P[(li + 1) % P.length]; let ux = (q[0] - P[li][0]) / lb, uy = (q[1] - P[li][1]) / lb; // First parallel zur längsten Seite
-    if (f.dreh) [ux, uy] = [-uy, ux];
+    for (let i = 0; i < (+f.dreh || 0) % 4; i++) [ux, uy] = [-uy, ux]; // jede Stufe 90° weiter; beim Pultdach zeigt die hohe Seite so in alle vier Richtungen
     const S = P.map(p => p[0] * ux + p[1] * uy), T = P.map(p => -p[0] * uy + p[1] * ux);
     const s0 = Math.min(...S), s1 = Math.max(...S), t0 = Math.min(...T), t1 = Math.max(...T), sc = (s0 + s1) / 2, tc = (t0 + t1) / 2, hl = (s1 - s0) / 2, hw = (t1 - t0) / 2;
     const k = f.dach === "flach" ? 0 : Math.tan(f.neigung * rad), st_ = p => [p[0] * ux + p[1] * uy, -p[0] * uy + p[1] * ux];
@@ -2409,7 +2416,7 @@ const Bericht = (() => {
       <path d="${path(plotPs)}" fill="none" stroke="#d79a00" stroke-width="3" stroke-linejoin="round"/>
       <path d="${path(others)}" fill="#e3e5ea" stroke="#b9bdc6" stroke-width="1"/>
       <path d="${path(own)}" fill="#9aa0ab" stroke="#5c626d" stroke-width="1.2"/>
-      ${vh ? `<path d="M${vh.ring.map(c => X(c) + " " + Y(c)).join("L")}Z" fill="#ff9f0a" fill-opacity=".85" stroke="#c25e00" stroke-width="2" stroke-linejoin="round"/>` : ""}
+      ${vh ? `<path d="M${vh.ring.map(c => X(c) + " " + Y(c)).join("L")}Z" fill="#9b87f5" fill-opacity=".85" stroke="#5b3fc4" stroke-width="2" stroke-linejoin="round"/>` : ""}
       <g fill="#7a5200" font-weight="600" stroke="#fff" stroke-width="3.5" paint-order="stroke">${labels.filter(l => l.includes('"mp"')).join("")}</g>
       <g fill="#0a4fc0" font-weight="600" stroke="#fff" stroke-width="3.5" paint-order="stroke">${labels.filter(l => l.includes('"mb"')).join("")}</g>
       <g transform="translate(${W - 34} 34)"><circle r="18" fill="#fff" stroke="#b9bdc6"/><path d="M0 -13 5 6 0 2 -5 6Z" fill="#1c1c1e"/><text y="-21" text-anchor="middle" font-size="11" font-weight="700" fill="#1c1c1e" stroke="#fff" stroke-width="3" paint-order="stroke">N</text></g>
@@ -2689,7 +2696,7 @@ const Bericht = (() => {
         ["Wandhöhe", `${m1(f.wand)} m`], ["Höchster Punkt", `${m1(vh.first)} m über dem Gelände`], ["Umbauter Raum", `ca. ${m0(vh.vol)} m³`]];
       if (b?.grH) { const rest = b.grH - b.haus - vh.area;
         rows.push(["Grundfläche fürs Haus", `erlaubt ${m0(b.grH)} m², heute bebaut ${m0(b.haus)} m², mit Vorhaben ${m0(b.haus + vh.area)} m²<br>${rest >= 0 ? `<b class="ok">${m0(rest)} m²</b> noch frei` : `<b class="warn">${m0(-rest)} m²</b> mehr als erlaubt`}`]); }
-      done(cBv, `<div>${vh.bild ? `<img class="rimg" src="${vh.bild}" alt="Ihr Bauvorhaben in der 3D-Ansicht, orange">` : ""}${rowsHtml(rows)}
+      done(cBv, `<div>${vh.bild ? `<img class="rimg" src="${vh.bild}" alt="Ihr Bauvorhaben in der 3D-Ansicht, lila">` : ""}${rowsHtml(rows)}
         <p class="hint">Ihre eigene Skizze aus der 3D-Ansicht, nicht vermessen. Ob das Vorhaben so gebaut werden darf, entscheidet das Bauamt, zum Beispiel nach Baufenster, Abständen zum Nachbarn und Zahl der Geschosse.</p></div>`);
     });
     const wis = (pre.wissen || loadWissen(plotPs, ext)).then(w => done(cWis, wissenHtml(w, plot.area || plotPs.reduce((a, p) => a + p.getArea(), 0))));
@@ -2700,7 +2707,7 @@ const Bericht = (() => {
     if (!pre.shot) pre.shot = dataP.then(d => shot3d(pre, d, true));
     const img3d = Promise.all([dataP, pre.shot]).then(([d, url]) => { if (!url) pre.shot = null;
       done(c3d, url ? `<div><img class="rimg" src="${url}" alt="3D-Ansicht: Grundstück gelb, Baufenster blau">
-        <p class="hint">Gelb: Ihr Grundstück. Blau: das Baufenster aus dem Bebauungsplan${d?.bfPs.length ? "" : " (für diesen Plan liegen keine Baufenster als Daten vor)"}.${vh ? " Orange: Ihr Bauvorhaben." : ""} Grau: Gebäude aus dem 3D-Stadtmodell der Stadt Hamburg. Quelle: FHH, LGV, dl-de/by-2-0; Stadtplan © basemap.de / BKG (2026) CC BY 4.0.</p>${vh ? "" : `<p class="hint noprint">Tipp: Am Computer können Sie in der 3D-Ansicht Ihr Bauvorhaben einzeichnen. Es erscheint dann hier im Bericht.</p>`}</div>` : ""); });
+        <p class="hint">Gelb: Ihr Grundstück. Blau: das Baufenster aus dem Bebauungsplan${d?.bfPs.length ? "" : " (für diesen Plan liegen keine Baufenster als Daten vor)"}.${vh ? " Lila: Ihr Bauvorhaben." : ""} Grau: Gebäude aus dem 3D-Stadtmodell der Stadt Hamburg. Quelle: FHH, LGV, dl-de/by-2-0; Stadtplan © basemap.de / BKG (2026) CC BY 4.0.</p>${vh ? "" : `<p class="hint noprint">Tipp: Am Computer können Sie in der 3D-Ansicht Ihr Bauvorhaben einzeichnen. Es erscheint dann hier im Bericht.</p>`}</div>` : ""); });
 
     // Fertig, sobald alles da ist, spätestens nach 12 s. Was länger braucht (Planbild, 3D-Bild), erscheint danach von selbst.
     const all = Promise.allSettled([rech, sk, nb, wis, planImg, img3d, bv]).then(() => [cRech, cSk, c3d, cNb, cWis, cPlan, cBv].forEach(c => c?.classList.contains("loading") && c.remove()));
@@ -3734,14 +3741,19 @@ const fl = v => Math.round(v).toLocaleString("de-DE"), fl1 = v => v.toLocaleStri
 const bvMerk = (k, v) => { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch { return null; } };
 const bvDesktop = () => matchMedia("(min-width: 761px) and (hover: hover) and (pointer: fine)").matches;
 function bvFrei(d) {
-  const el = $("v3frei"), neu = d.area || 0;
-  if (bvStand === undefined) { el.innerHTML = `<p class="gross">Noch bebaubar<b>…</b></p><p>Wird berechnet.</p>`; return; }
+  const el = $("v3bil"), neu = d.area || 0;
+  if (bvStand === undefined) { bvLade(); el.innerHTML = `<header><b>Grundfläche fürs Haus</b><span>wird berechnet …</span></header><div class="v3bar"></div>`; return; }
   const s = bvStand;
-  if (!s || !s.gr) { el.innerHTML = `<p class="gross">Ihr Vorhaben<b>${fl(neu)} m²</b></p><p>Für dieses Grundstück ist keine erlaubte Grundfläche als Zahl bekannt. Was gilt, steht im Originalplan.</p>`; return; }
-  const rest = s.gr - s.haus - neu, voll = Math.max(s.gr, s.haus + neu), pc = v => (Math.max(0, v) / voll * 100).toFixed(1) + "%";
-  el.innerHTML = `<p class="gross${rest < 0 ? " zuviel" : ""}">${rest < 0 ? "Zu viel für dieses Grundstück" : "Noch bebaubar"}<b>${fl(Math.abs(rest))} m²</b></p>
-    <div class="v3balk" aria-hidden="true"><i class="ist" style="width:${pc(Math.min(s.haus, s.gr))}"></i><i class="neu" style="width:${pc(Math.min(neu, s.gr - Math.min(s.haus, s.gr)))}"></i><i class="ueber" style="width:${pc(-rest)}"></i></div>
-    <p class="v3key"><span><i style="background:#8e8e93"></i>heute ${fl(s.haus)} m²</span><span><i style="background:#ff9f0a"></i>Vorhaben ${fl(neu)} m²</span><span>erlaubt ${fl(s.gr)} m²</span></p>`;
+  if (!s || !s.gr) { el.innerHTML = `<header><b>Ihr Vorhaben: ${fl(neu)} m² Grundfläche</b></header><p>Für dieses Grundstück ist keine erlaubte Grundfläche als Zahl bekannt. Was gilt, steht im Originalplan.</p>`; return; }
+  const ist = s.haus, rest = s.gr - ist - neu, voll = Math.max(s.gr, ist + neu), w = v => (Math.max(0, v) / voll * 100).toFixed(2) + "%";
+  const seg = (cls, v, txt) => `<i class="${cls}" style="width:${w(v)}" title="${txt}">${v / voll > 0.12 ? txt : ""}</i>`;
+  const neuIn = Math.min(neu, Math.max(0, s.gr - ist)), ueber = Math.max(0, -rest);
+  el.innerHTML = `<header><b>Grundfläche fürs Haus</b><span>erlaubt ${fl(s.gr)} m² von ${fl(s.amt)} m² Grundstück</span></header>
+    <div class="v3bar" role="img" aria-label="Heute bebaut ${fl(ist)} m², Ihr Vorhaben ${fl(neu)} m², ${rest >= 0 ? "noch frei " + fl(rest) : "zu viel " + fl(-rest)} m²">
+      ${seg("ist", Math.min(ist, voll), fl(ist) + " m²")}${seg("neu", neuIn, fl(neu) + " m²")}${rest > 0 ? seg("frei", rest, fl(rest) + " m² frei") : ""}${ueber ? seg("ueber", ueber, fl(ueber) + " m² zu viel") : ""}
+      ${ueber ? `<u style="left:${w(s.gr)}" title="Grenze: ${fl(s.gr)} m²"></u>` : ""}</div>
+    <div class="v3zahl"><div style="--c:#7c7c82"><span>Heute bebaut</span><b>${fl(ist)} m²</b></div><div style="--c:var(--bv)"><span>Ihr Vorhaben</span><b>${fl(neu)} m²</b></div>
+      <div class="${rest >= 0 ? "ok" : "warn"}" style="--c:${rest >= 0 ? "var(--ok)" : "#ff453a"}"><span>${rest >= 0 ? "Noch frei" : "Zu viel"}</span><b>${fl(Math.abs(rest))} m²</b></div></div>`;
 }
 const BV_HINT = {
   rechteck0: "<b>Rechteck:</b> Klicken Sie die erste Ecke auf den Boden.",
@@ -3762,7 +3774,7 @@ function bvHint(d) {
 }
 View3D.onHover = h => { bvHover = h; if (bvLast) bvHint(bvLast); };
 View3D.onDraw = d => {
-  if (!d) { ["v3tools", "v3stat", "v3props", "v3tip"].forEach(i => $(i).hidden = true); $("view3d").classList.remove("drawing"); return; }
+  if (!d) { ["v3tools", "v3stat", "v3props", "v3tip", "v3bil"].forEach(i => $(i).hidden = true); $("view3d").classList.remove("drawing"); return; }
   bvLast = d;
   $("v3tools").hidden = false;
   document.querySelectorAll("#v3tools [data-tool]").forEach(b => b.setAttribute("aria-pressed", String(d.tool === b.dataset.tool)));
@@ -3770,11 +3782,13 @@ View3D.onDraw = d => {
   const aktiv = !!(d.tool || (d.closed && d.on));
   $("view3d").classList.toggle("drawing", aktiv);
   $("v3stat").hidden = $("v3props").hidden = !aktiv;
+  $("v3bil").hidden = !(aktiv || d.n);
   if (aktiv) { $("v3tip").hidden = true; bvMerk("moinplan-bv", "1"); $("bvHinweis").hidden = true; }
   else if (!bvMerk("moinplan-bv") && !d.n) $("v3tip").hidden = false;
   if (bvAuto && !d.tool && !d.closed) { const t = bvAuto; bvAuto = ""; return View3D.draw.start(t); }
+  if (aktiv || d.n) bvFrei(d);
   if (!aktiv) return;
-  bvHint(d); bvFrei(d);
+  bvHint(d);
   const m = d.mass;
   $("v3dtext").innerHTML = d.closed ? `<b>${fl1(d.area)} m²</b> Grundfläche<span>${m ? `Höchster Punkt ${fl1(m.first)} m · umbauter Raum ca. ${fl(m.vol)} m³` : ""}</span>`
     : d.area ? `<b>${fl1(d.area)} m²</b> Grundfläche${d.dims ? `<span>${d.dims}</span>` : ""}` : `Ihr Bauvorhaben<span>Erst den Grundriss zeichnen. Danach wählen Sie Höhe und Dach.</span>`;
@@ -3785,11 +3799,18 @@ View3D.onDraw = d => {
     $("v3wand").value = f.wand; $("v3wandO").textContent = fl1(f.wand) + " m";
     $("v3nei").value = f.neigung; $("v3neiO").textContent = f.neigung + "°";
     $("v3neiL").hidden = $("v3dreh").hidden = f.dach === "flach";
+    $("v3drehT").textContent = f.dach === "pult" ? "Hohe Seite drehen" : "First drehen";
   }
   $("v3done").textContent = d.closed ? "Fertig" : d.tool === "vieleck" && d.n >= 3 ? "Form schließen" : "Abbrechen";
 };
+let bvLaedt = null;
+function bvLade() {
+  if (bvStand !== undefined || typeof Bericht === "undefined" || bvLaedt === lastPlot) return;
+  const plot = bvLaedt = lastPlot;
+  Bericht.stand(plot).then(v => { if (plot !== lastPlot) return; bvStand = v; bvLaedt = null; if (bvLast && !$("v3bil").hidden) bvFrei(bvLast); });
+}
 function bvStart(tool) {
-  if (bvStand === undefined && typeof Bericht !== "undefined") Bericht.stand(lastPlot).then(v => { bvStand = v; if (bvLast) bvFrei(bvLast); });
+  bvLade();
   View3D.draw.start(tool);
 }
 document.querySelectorAll("#v3tools [data-tool]").forEach(b => b.addEventListener("click", () => { if (bvLast?.tool !== b.dataset.tool) bvStart(b.dataset.tool); }));
@@ -3801,7 +3822,7 @@ on("v3tipX", "click", () => { $("v3tip").hidden = true; bvMerk("moinplan-bv", "1
 document.querySelectorAll(".v3seg button").forEach(b => b.addEventListener("click", () => View3D.draw.form({dach: b.dataset.dach})));
 $("v3wand").addEventListener("input", e => View3D.draw.form({wand: +e.target.value}));
 $("v3nei").addEventListener("input", e => View3D.draw.form({neigung: +e.target.value}));
-on("v3dreh", "click", () => View3D.draw.form({dreh: !bvLast?.form?.dreh}));
+on("v3dreh", "click", () => View3D.draw.form({dreh: ((+bvLast?.form?.dreh || 0) + 1) % 4}));
 $("v3vcb").addEventListener("input", e => View3D.draw.vcb(e.target.value));
 $("v3vcb").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); if (View3D.draw.typed(e.target.value)) e.target.value = ""; e.target.blur(); } });
 // Hinweis auf der Karte (nur PC): bis man das Zeichnen einmal benutzt hat
