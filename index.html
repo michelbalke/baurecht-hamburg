@@ -671,6 +671,24 @@ body.measuring .mtip { display: flex; }
 .lpring.grow { opacity: 1; border: 3px solid var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); animation: lpgrow .45s linear forwards; }
 .lpring.done { opacity: 0; border: 3px solid var(--accent); animation: lpdone .35s ease-out; }
 
+/* ---------- 3D-Ansicht: Anbau zeichnen (nur PC) ---------- */
+.v3drawbtn { position: absolute; z-index: 2; left: 50%; top: 12px; transform: translateX(-50%); padding: 10px 18px 10px 14px; font-size: 14.5px; }
+.view3d .v3drawbtn { background: var(--navy); color: #fff; }
+.v3drawbtn:active { transform: translateX(-50%) scale(.94); }
+.v3drawbtn svg { width: 19px; height: 19px; }
+.v3draw { position: absolute; z-index: 2; left: 12px; bottom: 30px; width: min(330px, calc(100% - 24px)); display: grid; gap: 12px; padding: 14px 16px; border-radius: 22px; background: var(--panel); box-shadow: var(--shadow-lg); }
+.v3draw[hidden], .v3drawbtn[hidden], .view3d.drawing .v3info { display: none; }
+.v3dtext { margin: 0; font-size: 14px; font-weight: 600; line-height: 1.3; }
+.v3dtext span { display: block; margin-top: 3px; font-weight: 400; font-size: 12.5px; color: var(--muted); }
+.v3dtext b { font: 700 22px/1.05 var(--display); }
+.v3dh { display: flex; align-items: center; gap: 8px; font-size: 13.5px; color: var(--muted); }
+.v3dh input { flex: none; width: 74px; padding: 7px 10px; text-align: right; }
+.v3dbtns { display: flex; gap: 6px; }
+.v3dbtns button { flex: 1; justify-content: center; padding: 8px 10px; font-size: 13px; }
+.v3dbtns button:disabled { opacity: .4; cursor: default; filter: none; transform: none; }
+.v3dbtns button[hidden] { display: none; }
+@media (max-width: 760px), (hover: none), (pointer: coarse) { .v3drawbtn, .v3draw { display: none !important; } }
+
 /* ---------- 3D-Ansicht ---------- */
 .view3d { display: none; position: absolute; inset: 0; z-index: 8; overflow: hidden; touch-action: none; background: var(--v3bg); }
 body.is3d .view3d { display: block; }
@@ -1106,6 +1124,16 @@ ul.quellen b { color: var(--fg); font-weight: 600; }
         <button type="button" id="v3in" aria-label="Näher heran">+</button>
         <button type="button" id="v3out" aria-label="Weiter weg">−</button>
         <button type="button" class="compass" id="v3north" aria-label="Nach Norden ausrichten" title="Nach Norden ausrichten"><svg viewBox="0 0 44 44" aria-hidden="true"><g class="needle"><text x="22" y="10.5" text-anchor="middle">N</text><path d="M22 12 27 22H17z" fill="#ff3b30"/><path d="M22 34 17 22h10z" fill="currentColor" opacity=".38"/></g></svg></button>
+      </div>
+      <button type="button" class="v3drawbtn" id="v3draw" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21V11l6-4 6 4v10z"/><path d="M15 21h6v-7l-6-3"/><path d="M9 21v-5"/></svg><span>Anbau zeichnen</span></button>
+      <div class="v3draw" id="v3bar" hidden>
+        <p class="v3dtext" id="v3dtext"></p>
+        <label class="v3dh">Höhe des Anbaus <input type="number" id="v3h" min="0.5" max="40" step="0.5" value="3" inputmode="decimal"> m</label>
+        <div class="v3dbtns">
+          <button type="button" class="ghost" id="v3undo">Rückgängig</button>
+          <button type="button" class="ghost" id="v3clear">Löschen</button>
+          <button type="button" id="v3done">Fertig</button>
+        </div>
       </div>
       <p class="v3status" id="v3status" hidden></p>
       <div class="v3info" id="v3info"></div>
@@ -1609,6 +1637,7 @@ const View3D = (() => {
     // Antippen: Gebäudeangaben aus dem LoD2-Modell (gleiche ALKIS-Kennung)
     me.handler = new C.ScreenSpaceEventHandler(scene.canvas);
     me.handler.setInputAction(e => {
+      if (me.draw) return drawClick(me, e.position);
       const f = scene.drillPick(e.position, 4).find(x => !(x instanceof C.Cesium3DTileFeature) || x.tileset !== me.bfTileset), id = f instanceof C.Cesium3DTileFeature ? f.getProperty("id") : null;
       let i = id != null ? me.byId.get(id) : undefined;
       if (id != null && i === undefined) { // nicht im LoD2-Ausschnitt: Angaben aus dem LoD3-Modell
@@ -1617,8 +1646,133 @@ const View3D = (() => {
       }
       me.sel = i ?? me.home; restyle(me); showInfo(me, false); scene.requestRender();
     }, C.ScreenSpaceEventType.LEFT_CLICK);
+    if (!opt.shot && desktop()) desktopControls(me);
     showInfo(me, true);
     scene.requestRender();
+  }
+  // ---------- PC: Maus wie in Karten-Apps, Anbau zeichnen ----------
+  const desktop = () => matchMedia("(min-width: 761px) and (hover: hover) and (pointer: fine)").matches;
+  function desktopControls(me) {
+    const C = Cesium, c = me.viewer.scene.screenSpaceCameraController;
+    // Linke Maustaste ziehen = um die Bildmitte drehen und neigen (eigene Steuerung unten), rechte = verschieben, Mausrad = zoomen
+    c.tiltEventTypes = [C.CameraEventType.MIDDLE_DRAG, {eventType: C.CameraEventType.LEFT_DRAG, modifier: C.KeyboardEventModifier.CTRL}];
+    c.rotateEventTypes = [C.CameraEventType.RIGHT_DRAG, {eventType: C.CameraEventType.LEFT_DRAG, modifier: C.KeyboardEventModifier.SHIFT}];
+    c.zoomEventTypes = [C.CameraEventType.WHEEL, C.CameraEventType.PINCH];
+    c.minimumZoomDistance = 8;
+    me.viewer.cesiumWidget.screenSpaceEventHandler.removeInputAction(C.ScreenSpaceEventType.LEFT_DOUBLE_CLICK); // kein Heranfliegen beim Doppelklick
+    me.viewer.scene.canvas.addEventListener("contextmenu", e => e.preventDefault());
+    me.handler.setInputAction(e => { me.orbit = {x: e.position.x, y: e.position.y, piv: null}; }, C.ScreenSpaceEventType.LEFT_DOWN);
+    me.handler.setInputAction(() => { me.orbit = null; if (me.draw?.on && !me.draw.closed) me.viewer.scene.canvas.style.cursor = "crosshair"; }, C.ScreenSpaceEventType.LEFT_UP);
+    me.handler.setInputAction(e => {
+      const o = me.orbit;
+      if (o && (o.piv || Math.hypot(e.endPosition.x - o.x, e.endPosition.y - o.y) > 4)) return orbit(me, o, e);
+      if (me.draw) drawMove(me, e.endPosition);
+    }, C.ScreenSpaceEventType.MOUSE_MOVE);
+    // gezeichneter Anbau bleibt beim erneuten Öffnen am selben Ort erhalten
+    if (anbau && anbau.key === key(me)) { me.draw = {pts: anbau.pts.slice(), h: anbau.h, closed: true, hover: null, on: false}; drawEntities(me); drawLabels(me); drawChanged(me); }
+    else api.onDraw?.({on: false, n: 0, closed: false, h: 3, area: 0});
+  }
+  // Drehen wie in Karten-Apps: waagerecht ziehen dreht um die Bildmitte, senkrecht ziehen neigt
+  function orbit(me, o, e) {
+    const C = Cesium, sc = me.viewer.scene, cam = me.viewer.camera;
+    if (!o.piv) {
+      const mid = new C.Cartesian2(sc.canvas.clientWidth / 2, sc.canvas.clientHeight / 2), ray = cam.getPickRay(mid);
+      o.piv = sc.pickPosition(mid) || (ray && sc.globe.pick(ray, sc)) || C.Cartesian3.fromDegrees(me.lon, me.lat, me.h);
+      sc.canvas.style.cursor = "grabbing";
+    }
+    const dx = e.endPosition.x - e.startPosition.x, dy = e.endPosition.y - e.startPosition.y, axis = cam.constrainedAxis;
+    cam.lookAtTransform(C.Transforms.eastNorthUpToFixedFrame(o.piv));
+    cam.constrainedAxis = C.Cartesian3.UNIT_Z;
+    cam.rotateRight(-dx * 0.006);
+    cam.rotateUp(-dy * 0.005); // nach oben ziehen = flacher Blick zum Horizont
+    cam.lookAtTransform(C.Matrix4.IDENTITY);
+    if (cam.pitch > -0.06 || cam.pitch < -1.55) { // nicht unter den Horizont und nicht über Kopf
+      cam.lookAtTransform(C.Transforms.eastNorthUpToFixedFrame(o.piv)); cam.rotateUp(dy * 0.005); cam.lookAtTransform(C.Matrix4.IDENTITY);
+    }
+    cam.constrainedAxis = axis;
+    sc.requestRender();
+  }
+  let anbau = null; // zuletzt gezeichneter Anbau {key, pts, h}
+  const key = me => me.opt.center.map(v => Math.round(v)).join(",");
+  // Punkt auf dem Gelände unter der Maus (geht durch Gebäude hindurch)
+  function groundAt(me, pos) {
+    const sc = me.viewer.scene, hit = sc.pick(pos);
+    if (!hit && sc.pickPositionSupported) { const p = sc.pickPosition(pos); if (p) return p; } // freier Boden: genau dort, wo er zu sehen ist
+    const ray = me.viewer.camera.getPickRay(pos); // auf einem Gebäude oder dem Anbau: durch sie hindurch bis zum Gelände
+    return (ray && sc.globe.pick(ray, sc)) || null;
+  }
+  function drawStart() {
+    const me = st; if (!me?.viewer) return;
+    if (!me.draw) me.draw = {pts: [], h: 3, closed: false, hover: null};
+    me.draw.on = true;
+    if (me.draw.closed && me.draw.pts.length < 3) me.draw.closed = false;
+    if (!me.drawEnt) drawEntities(me);
+    me.viewer.scene.canvas.style.cursor = me.draw.closed ? "" : "crosshair";
+    drawChanged(me);
+  }
+  function drawStop() { const me = st; if (!me?.draw) return; me.draw.on = false; me.draw.hover = null; if (!me.draw.closed) drawClear(true); else { me.viewer.scene.canvas.style.cursor = ""; drawChanged(me); } }
+  function drawClick(me, pos) {
+    const d = me.draw; if (!d.on || d.closed) return;
+    const C = Cesium, sc = me.viewer.scene;
+    // Klick auf den ersten Punkt schließt die Form
+    if (d.pts.length >= 3) { const w = sc.cartesianToCanvasCoordinates(d.pts[0]); if (w && C.Cartesian2.distance(w, pos) < 14) return drawFinish(); }
+    const p = groundAt(me, pos); if (!p) return;
+    d.pts.push(p); drawLabels(me); drawChanged(me);
+  }
+  function drawMove(me, pos) {
+    const d = me.draw; if (!d.on || d.closed) return;
+    d.hover = groundAt(me, pos); me.viewer.scene.requestRender();
+  }
+  function drawFinish() { const me = st, d = me?.draw; if (!d || d.pts.length < 3) return; d.closed = true; d.hover = null; me.viewer.scene.canvas.style.cursor = ""; anbau = {key: key(me), pts: d.pts.slice(), h: d.h}; drawLabels(me); drawChanged(me); }
+  function drawUndo() { const me = st, d = me?.draw; if (!d) return; if (d.closed) d.closed = false; else d.pts.pop(); me.viewer.scene.canvas.style.cursor = d.on ? "crosshair" : ""; anbau = null; drawLabels(me); drawChanged(me); }
+  function drawClear(off) {
+    const me = st; if (!me?.draw) return;
+    me.draw.pts = []; me.draw.closed = false; me.draw.hover = null; anbau = null;
+    if (off) me.draw.on = false;
+    me.viewer.scene.canvas.style.cursor = me.draw.on ? "crosshair" : "";
+    drawLabels(me); drawChanged(me);
+  }
+  function drawHeight(h) { const me = st, d = me?.draw; if (!d || !(h > 0)) return; d.h = Math.min(40, Math.max(0.5, h)); if (anbau && d.closed) anbau.h = d.h; drawLabels(me); drawChanged(me); }
+  const carto = p => Cesium.Cartographic.fromCartesian(p);
+  const utm = p => { const c = carto(p); return proj4("EPSG:4326", "EPSG:25832", [c.longitude / rad, c.latitude / rad]); };
+  function drawPts(me) { const d = me.draw; return d.closed || !d.hover ? d.pts : [...d.pts, d.hover]; }
+  const baseOf = pts => pts.length ? Math.min(...pts.map(p => carto(p).height)) : 0;
+  function drawEntities(me) {
+    const C = Cesium, E = me.viewer.entities, col = C.Color.fromCssColorString("#ff9f0a");
+    const top = (pts, h) => { const b = baseOf(pts); return pts.map(p => { const c = carto(p); return C.Cartesian3.fromRadians(c.longitude, c.latitude, b + h); }); };
+    me.drawEnt = [
+      // Körper: ab 3 Punkten, wächst live mit der Maus (Kopien: Cesium setzt die übergebenen Punkte sonst auf Höhe 0)
+      E.add({polygon: {hierarchy: new C.CallbackProperty(() => { const p = drawPts(me); return p.length >= 3 ? new C.PolygonHierarchy(p.map(q => C.Cartesian3.clone(q))) : undefined; }, false),
+        height: new C.CallbackProperty(() => baseOf(drawPts(me)), false), extrudedHeight: new C.CallbackProperty(() => baseOf(drawPts(me)) + me.draw.h, false),
+        perPositionHeight: false, material: col.withAlpha(0.78), outline: false}}),
+      // Umriss oben und am Boden, damit die Kanten gut zu sehen sind
+      E.add({polyline: {positions: new C.CallbackProperty(() => { const p = drawPts(me); return p.length < 2 ? [] : top(me.draw.closed || p.length >= 3 ? [...p, p[0]] : p, me.draw.h); }, false),
+        width: 2.5, material: C.Color.WHITE, depthFailMaterial: C.Color.WHITE.withAlpha(0.35)}}),
+      E.add({polyline: {positions: new C.CallbackProperty(() => { const p = drawPts(me); return p.length < 2 ? [] : (me.draw.closed || p.length >= 3 ? [...p, p[0]] : p); }, false),
+        width: 3, clampToGround: true, material: col}})
+    ];
+    me.drawPtEnt = []; me.drawLbl = [];
+  }
+  function drawLabels(me) {
+    const C = Cesium, E = me.viewer.entities, d = me.draw;
+    for (const e of [...me.drawPtEnt, ...me.drawLbl]) E.remove(e);
+    me.drawPtEnt = d.closed ? [] : d.pts.map((p, i) => E.add({position: p, point: {pixelSize: i === 0 && d.pts.length >= 3 ? 14 : 10, color: C.Color.WHITE, outlineColor: C.Color.fromCssColorString("#ff9f0a"), outlineWidth: 3, disableDepthTestDistance: Infinity}}));
+    const font = `600 12.5px ${getComputedStyle(document.documentElement).getPropertyValue("--sans").trim() || "system-ui, sans-serif"}`;
+    const ring = d.closed ? [...d.pts, d.pts[0]] : d.pts, b = baseOf(d.pts);
+    me.drawLbl = d.pts.length < 3 ? [] : d.pts.map(p => { const c = carto(p); // senkrechte Kanten an den Ecken
+      return E.add({polyline: {positions: [C.Cartesian3.fromRadians(c.longitude, c.latitude, b), C.Cartesian3.fromRadians(c.longitude, c.latitude, b + d.h)], width: 2, material: C.Color.WHITE, depthFailMaterial: C.Color.WHITE.withAlpha(0.35)}}); });
+    for (let i = 1; i < ring.length; i++) {
+      const [x0, y0] = utm(ring[i - 1]), [x1, y1] = utm(ring[i]), m = C.Cartesian3.midpoint(ring[i - 1], ring[i], new C.Cartesian3()), c = carto(m);
+      me.drawLbl.push(E.add({position: C.Cartesian3.fromRadians(c.longitude, c.latitude, b + d.h), label: {text: `${fmt(Math.hypot(x1 - x0, y1 - y0))} m`, font, fillColor: C.Color.WHITE,
+        showBackground: true, backgroundColor: C.Color.fromCssColorString("#1c1c1e").withAlpha(0.82), backgroundPadding: new C.Cartesian2(7, 4), pixelOffset: new C.Cartesian2(0, -12), disableDepthTestDistance: Infinity}}));
+    }
+    me.viewer.scene.requestRender();
+  }
+  function drawChanged(me) {
+    const d = me.draw, P = d.pts.map(utm);
+    let a = 0; for (let i = 0, j = P.length - 1; i < P.length; j = i++) a += (P[j][0] + P[i][0]) * (P[j][1] - P[i][1]);
+    api.onDraw?.({on: !!d.on, n: d.pts.length, closed: d.closed, h: d.h, area: d.pts.length >= 3 ? Math.abs(a) / 2 : 0});
+    me.viewer.scene.requestRender();
   }
   function restyle(me) {
     if (!me.tileset) return;
@@ -1656,7 +1810,7 @@ const View3D = (() => {
   }
   function close() {
     const me = st; if (!me) return;
-    st = null;
+    st = null; api.onDraw?.(null);
     if (me.viewer) { me.handler?.destroy(); me.viewer.destroy(); }
     me.box?.remove();
   }
@@ -1720,7 +1874,8 @@ const View3D = (() => {
     return out;
   }
   const buildings = (center, r = 70) => gather(center, r + 30);
-  const api = {open, close, north, zoom, snapshot, buildings, preload: loadCesium, isOpen: () => !!st, onHeading: null};
+  const draw = {start: drawStart, stop: drawStop, finish: drawFinish, undo: drawUndo, clear: () => drawClear(false), height: drawHeight, available: () => desktop() && !!st?.viewer && !st.opt.shot};
+  const api = {open, close, north, zoom, snapshot, buildings, draw, preload: loadCesium, isOpen: () => !!st, onHeading: null, onDraw: null};
   return api;
 })();
 </script>
@@ -3207,6 +3362,32 @@ const setNeedle = (id, rad) => { $(id).querySelector(".needle").style.transform 
 view.on("change:rotation", () => setNeedle("compass", view.getRotation()));
 on("compass", "click", () => view.animate({rotation: 0, duration: 400}));
 View3D.onHeading = h => setNeedle("v3north", -h);
+// Anbau zeichnen (nur PC): Klick setzt Punkte, Ziehen dreht, Mausrad zoomt; der Körper wächst live mit
+View3D.onDraw = d => {
+  const btn = $("v3draw"), bar = $("v3bar");
+  if (!d) { btn.hidden = bar.hidden = true; $("view3d").classList.remove("drawing"); return; }
+  btn.hidden = d.on; bar.hidden = !d.on; $("view3d").classList.toggle("drawing", d.on);
+  btn.querySelector("span").textContent = d.closed ? "Anbau bearbeiten" : "Anbau zeichnen";
+  if (document.activeElement !== $("v3h")) $("v3h").value = d.h;
+  const fl = v => v.toLocaleString("de-DE", {maximumFractionDigits: 1});
+  $("v3dtext").innerHTML = d.closed ? `<b>${fl(d.area)} m²</b> Grundfläche<span>${fl(d.area * d.h)} m³ umbauter Raum · Höhe ändern oder neu zeichnen</span>`
+    : d.n === 0 ? `Punkte auf den Boden klicken<span>Linke Maustaste ziehen dreht, Mausrad zoomt, rechte Maustaste verschiebt</span>`
+    : d.n < 3 ? `Weitere Ecken klicken<span>Ab drei Punkten entsteht der Anbau</span>`
+    : `${fl(d.area)} m² · weitere Ecken klicken<span>Auf den ersten Punkt klicken oder „Fertig“ (Enter)</span>`;
+  $("v3undo").disabled = d.n === 0; $("v3clear").hidden = !d.closed && d.n === 0;
+  $("v3done").disabled = !d.closed && d.n < 3; $("v3done").textContent = d.closed ? "Schließen" : "Fertig";
+};
+on("v3draw", "click", () => View3D.draw.start());
+on("v3undo", "click", () => View3D.draw.undo());
+on("v3clear", "click", () => View3D.draw.clear());
+on("v3done", "click", () => { if ($("v3done").textContent === "Schließen") View3D.draw.stop(); else View3D.draw.finish(); });
+$("v3h").addEventListener("input", e => View3D.draw.height(parseFloat(e.target.value.replace(",", "."))));
+document.addEventListener("keydown", e => {
+  if (!body.contains("is3d") || $("v3bar").hidden || e.target.matches("input, textarea, select")) return;
+  if (e.key === "Enter") { e.preventDefault(); View3D.draw.finish(); }
+  else if (e.key === "Backspace" || (e.key === "z" && (e.metaKey || e.ctrlKey))) { e.preventDefault(); View3D.draw.undo(); }
+  else if (e.key === "Escape") { e.preventDefault(); View3D.draw.stop(); }
+});
 
 // ---------- Rechner ----------
 const ROMAN = {I: 1, II: 2, III: 3, IV: 4, V: 5, VI: 6, VII: 7, VIII: 8, IX: 9, X: 10, XI: 11, XII: 12};
