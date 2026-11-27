@@ -2113,16 +2113,23 @@ const View3D = (() => {
         properties: {hoehe: 1}}));
     }
     me.drawLbl = [];
-    const ring = d.closed ? [...d.pts, d.pts[0]] : d.tool === "vieleck" ? d.pts : [];
-    if ((d.on || d.closed) && ring.length >= 2) {
-      const F = frame(me);
+    // Seitenlängen an jedem Vorhaben (auch abgestellte), damit sie auf den Bildern für den Bericht stehen
+    const kanten = (ring, weit) => {
+      if (ring.length < 2) return;
+      const F = frame(me, ring[0]), L = ring.map(p => F.loc(p)), zu = ring.length > 3 && ring[0] === ring[ring.length - 1];
+      const mx = L.reduce((s, p) => s + p.x, 0) / L.length, my = L.reduce((s, p) => s + p.y, 0) / L.length;
       for (let i = 1; i < ring.length; i++) {
-        const a = F.loc(ring[i - 1]), b = F.loc(ring[i]), m = C.Cartesian3.midpoint(ring[i - 1], ring[i], new C.Cartesian3()), c = carto(m);
-        me.drawLbl.push(E.add({position: C.Cartesian3.fromRadians(c.longitude, c.latitude, c.height + 0.3), label: {text: `${fmt(Math.hypot(b.x - a.x, b.y - a.y))} m`, font: me.drawFont, fillColor: C.Color.WHITE,
-          showBackground: true, backgroundColor: C.Color.fromCssColorString("#1c1c1e").withAlpha(0.82), backgroundPadding: new C.Cartesian2(7, 4), disableDepthTestDistance: Infinity,
-          distanceDisplayCondition: new C.DistanceDisplayCondition(0, me.opt.shot ? 0 : 170)}}));
+        const a = L[i - 1], b = L[i], len = Math.hypot(b.x - a.x, b.y - a.y); if (len < 0.05) continue;
+        let nx = -(b.y - a.y) / len, ny = (b.x - a.x) / len; const cx = (a.x + b.x) / 2, cy = (a.y + b.y) / 2;
+        if (zu && nx * (cx - mx) + ny * (cy - my) < 0) { nx = -nx; ny = -ny; } // Maß außen neben die Seite, nicht auf den Körper
+        const off = zu ? 1.8 : 0;
+        me.drawLbl.push(E.add({position: F.world(cx + nx * off, cy + ny * off, Math.min(a.z, b.z) + 0.3), label: {text: `${fmt(len)} m`, font: me.drawFont, fillColor: C.Color.WHITE,
+          showBackground: true, backgroundColor: C.Color.fromCssColorString(weit ? "#5b3fc4" : "#1c1c1e").withAlpha(0.88), backgroundPadding: new C.Cartesian2(7, 4), disableDepthTestDistance: Infinity,
+          distanceDisplayCondition: new C.DistanceDisplayCondition(0, me.opt.shot ? 1e6 : 170)}}));
       }
-    }
+    };
+    if (d.on || d.closed) kanten(d.closed ? [...d.pts, d.pts[0]] : d.tool === "vieleck" ? d.pts : [], false);
+    for (const it of me.fest) if (it.pts.length >= 3) kanten([...it.pts, it.pts[0]], true);
     // gemerkt für erneutes Öffnen und für den Bericht; neue Fassung nur, wenn sich Form oder Maße wirklich ändern
     if (!me.opt.shot) {
       const all = [...me.fest, ...(d.closed ? [{id: d.id, pts: d.pts, form: d.form, mass: d.mass, area: state(me).area}] : [])].sort((a, b) => a.id - b.id);
@@ -2492,7 +2499,7 @@ const Bericht = (() => {
 
   // ---------- Zeichnung: Grundstück, Baufenster, Gebäude mit Maßen ----------
   function sketch(plotPs, bfPs, own, others, vh) {
-    const ext = ol.extent.buffer(plotPs.reduce((e, p) => ol.extent.extend(e, p.getExtent()), ol.extent.createEmpty()), 7);
+    const ext = ol.extent.buffer([...plotPs.map(p => p.getExtent()), ...(vh?.rings || (vh ? [vh.ring] : [])).map(r => ol.extent.boundingExtent(r))].reduce((e, x) => ol.extent.extend(e, x), ol.extent.createEmpty()), 7); // auch Vorhaben neben dem Grundstück ganz zeigen
     const W = 640, sc = W / (ext[2] - ext[0]), H = Math.round((ext[3] - ext[1]) * sc);
     const X = c => ((c[0] - ext[0]) * sc).toFixed(1), Y = c => ((ext[3] - c[1]) * sc).toFixed(1);
     const path = ps => ps.map(p => p.getCoordinates().map(r => "M" + r.map(c => X(c) + " " + Y(c)).join("L") + "Z").join("")).join("");
@@ -2511,6 +2518,10 @@ const Bericht = (() => {
       .sort((s, t) => Math.hypot(t[1][0] - t[0][0], t[1][1] - t[0][1]) - Math.hypot(s[1][0] - s[0][0], s[1][1] - s[0][1])).slice(0, 10).forEach(([a, b]) => label(a, b, "mp", false, plotPs));
     bfPs.flatMap(p => sides(p.getCoordinates()[0]).map(s => [...s, p])).filter(([a, b]) => Math.hypot(b[0] - a[0], b[1] - a[1]) >= minLen && inAny(plotPs, [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]))
       .sort((s, t) => Math.hypot(t[1][0] - t[0][0], t[1][1] - t[0][1]) - Math.hypot(s[1][0] - s[0][0], s[1][1] - s[0][1])).slice(0, 6).forEach(([a, b, p]) => label(a, b, "mb", true, [p]));
+    for (const r of vh?.rings || (vh ? [vh.ring] : [])) { // Seitenlängen der eigenen Bauvorhaben, außen an jeder Seite
+      const poly = new ol.geom.Polygon([[...r, r[0]]]);
+      r.forEach((a, i) => { const q = r[(i + 1) % r.length]; if (Math.hypot(q[0] - a[0], q[1] - a[1]) >= 1) label(a, q, "mv", false, [poly]); });
+    }
     const bar = [5, 10, 20, 50].find(v => v * sc >= 60) || 100;
     return `<svg class="skizze" viewBox="0 0 ${W} ${H}" role="img" aria-label="Skizze: Grundstück mit Baufenster und Maßen" font-family="-apple-system, system-ui, 'Segoe UI', sans-serif" font-size="${fs}">
       <rect width="${W}" height="${H}" fill="#fff"/>
@@ -2522,6 +2533,7 @@ const Bericht = (() => {
       ${vh ? `<path d="${(vh.rings || [vh.ring]).map(r => "M" + r.map(c => X(c) + " " + Y(c)).join("L") + "Z").join("")}" fill="#9b87f5" fill-opacity=".85" stroke="#5b3fc4" stroke-width="2" stroke-linejoin="round"/>` : ""}
       <g fill="#7a5200" font-weight="600" stroke="#fff" stroke-width="3.5" paint-order="stroke">${labels.filter(l => l.includes('"mp"')).join("")}</g>
       <g fill="#0a4fc0" font-weight="600" stroke="#fff" stroke-width="3.5" paint-order="stroke">${labels.filter(l => l.includes('"mb"')).join("")}</g>
+      <g fill="#5b3fc4" font-weight="700" stroke="#fff" stroke-width="3.5" paint-order="stroke">${labels.filter(l => l.includes('"mv"')).join("")}</g>
       <g transform="translate(${W - 34} 34)"><circle r="18" fill="#fff" stroke="#b9bdc6"/><path d="M0 -13 5 6 0 2 -5 6Z" fill="#1c1c1e"/><text y="-21" text-anchor="middle" font-size="11" font-weight="700" fill="#1c1c1e" stroke="#fff" stroke-width="3" paint-order="stroke">N</text></g>
       <g transform="translate(14 ${H - 16})" fill="#1c1c1e"><rect width="${(bar * sc).toFixed(1)}" height="4"/><text x="${(bar * sc + 6).toFixed(1)}" y="5" font-size="12" stroke="#fff" stroke-width="3" paint-order="stroke">${bar} m</text></g>
     </svg>`;
