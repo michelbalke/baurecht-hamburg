@@ -1568,7 +1568,8 @@ const View3D = (() => {
       pt: P => { const d = [P[0] - c[0], P[1] - c[1], P[2] - c[2]]; return [e[0] * d[0] + e[1] * d[1], n[0] * d[0] + n[1] * d[1] + n[2] * d[2], u[0] * d[0] + u[1] * d[1] + u[2] * d[2]]; }
     };
   }
-  const toLonLat = xy => proj4("EPSG:25832", "EPSG:4326", [xy[0], xy[1]]); // nur x/y: proj4 kürzt sonst das übergebene Array
+  let LL; const utm = () => LL ||= proj4("EPSG:4326", "EPSG:25832"); // Umrechner einmal bauen, nicht bei jedem Punkt
+  const toLonLat = xy => utm().inverse([xy[0], xy[1]]); // nur x/y: proj4 kürzt sonst das übergebene Array
 
   // ---------- 3D-Kachel (b3dm mit glTF 2.0) lesen ----------
   function readB3dm(buf, frame) {
@@ -1693,7 +1694,7 @@ const View3D = (() => {
   // Straßennamen aus dem Straßennetz Hamburg (WFS), klein und waagerecht über der Straße
   const NETZ = "https://geodienste.hamburg.de/HH_WFS_Strassen_und_Wegenetz?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=de.hh.up:strassennetz_gesamt&OUTPUTFORMAT=application/geo%2Bjson";
   async function streetLabels(me, lon, lat) {
-    const C = Cesium, [x, y] = proj4("EPSG:4326", "EPSG:25832", [lon, lat]), r = 450;
+    const C = Cesium, [x, y] = utm().forward([lon, lat]), r = 450;
     let js;
     try { js = await (await fetch(`${NETZ}&BBOX=${x - r},${y - r},${x + r},${y + r},urn:ogc:def:crs:EPSG::25832`)).json(); } catch (e) { console.warn("Straßennamen", e); return; }
     if (st !== me || !me.viewer) return;
@@ -1923,7 +1924,7 @@ const View3D = (() => {
   // "" = passt, "seite" = ragt aus dem Baufenster, "hoch" = höher als erlaubt
   function zuViel(me, pts, form, first) {
     if (!me.glasAn || me.opt.shot || !me.glas?.length || pts.length < 3) return "";
-    const xy = pts.map(p => { const c = carto(p); return proj4("EPSG:4326", "EPSG:25832", [c.longitude / rad, c.latitude / rad]); });
+    const xy = pts.map(p => { const c = carto(p); return utm().forward([c.longitude / rad, c.latitude / rad]); });
     const probe = xy.flatMap((p, i) => { const q = xy[(i + 1) % xy.length]; return [p, [(p[0] + q[0]) / 2, (p[1] + q[1]) / 2]]; });
     let hoch = false;
     for (const p of probe) {
@@ -2400,7 +2401,7 @@ const View3D = (() => {
       const all = [...me.fest, ...(d.closed ? [{id: d.id, pts: d.pts, form: d.form, mass: d.mass, area: state(me).area}] : [])].sort((a, b) => a.id - b.id);
       if (all.length) {
         const items = all.map(it => ({id: it.id, pts: it.pts.slice(), form: {...it.form}, area: it.area || 0, vol: it.mass?.vol || 0, first: it.mass?.first || 0,
-          ring: it.pts.map(p => { const c = carto(p); return proj4("EPSG:4326", "EPSG:25832", [c.longitude / rad, c.latitude / rad]); })}));
+          ring: it.pts.map(p => { const c = carto(p); return utm().forward([c.longitude / rad, c.latitude / rad]); })}));
         const sig = JSON.stringify(items.map(it => [it.ring.map(p => p.map(v => v.toFixed(2))), it.form]));
         if (anbau?.sig !== sig) anbau = {key: key(me), sig, items, bild: "", ver: ++anbauVer};
       } else if (anbau?.key === key(me)) anbau = null;
@@ -2606,6 +2607,7 @@ const Baufenster = (() => {
   const A = 6378137, E2 = 6.69437999014e-3, rad = Math.PI / 180;
   const tileOf = (lon, lat) => [Math.floor((lon + 180) / 360 * 65536), Math.floor((90 - lat) / 180 * 32768)];
   const cache = new Map(); // Kachel-URL -> Promise der Baufenster
+  let LL; const utm = () => LL ||= proj4("EPSG:4326", "EPSG:25832"); // Umrechner einmal bauen (proj4 mit Namen baut ihn sonst bei jedem Punkt neu)
 
   // ECEF -> geografische Länge/Breite (Bowring, für unsere Zwecke genau genug)
   function lonLat(x, y, z) {
@@ -2645,7 +2647,7 @@ const Baufenster = (() => {
           const q = [m[0] * x + m[4] * y + m[8] * z + m[12], m[1] * x + m[5] * y + m[9] * z + m[13], m[2] * x + m[6] * y + m[10] * z + m[14]];
           const X = rtc[0] + q[0], Y = rtc[1] - q[2], Z = rtc[2] + q[1]; // glTF: y oben -> z oben
           E.set([X, Y, Z], k * 3);
-          U.set(proj4("EPSG:4326", "EPSG:25832", lonLat(X, Y, Z)), k * 2);
+          U.set(utm().forward(lonLat(X, Y, Z)), k * 2);
         }
         for (let t = 0; t < idx.length; t += 3) {
           const [a, b, c] = [idx[t], idx[t + 1], idx[t + 2]];
@@ -2700,8 +2702,7 @@ const Baufenster = (() => {
 
   // Alle Baufenster in einem Ausschnitt (UTM 32: [minx, miny, maxx, maxy]); Kacheln ohne Baufenster gibt es nicht (404)
   async function load(ext) {
-    const toLL = xy => proj4("EPSG:25832", "EPSG:4326", xy);
-    const t0 = tileOf(...toLL([ext[0], ext[3]])), t1 = tileOf(...toLL([ext[2], ext[1]]));
+    const t0 = tileOf(...utm().inverse([ext[0], ext[3]])), t1 = tileOf(...utm().inverse([ext[2], ext[1]]));
     const urls = [];
     for (let x = t0[0]; x <= t1[0]; x++) for (let y = t0[1]; y <= t1[1]; y++) urls.push(`${BASE}${x}/${y}.b3dm`);
     if (urls.length > 48) return [];
@@ -3212,19 +3213,24 @@ const UTM = ol.proj.get("EPSG:25832");
 UTM.setExtent([-1877994.66, 3932281.56, 836715.13, 9440581.95]);
 const St = o => new ol.style.Style(o), Sk = (color, width, lineDash) => new ol.style.Stroke({color, width, lineDash}), Fl = color => new ol.style.Fill({color});
 const vec = (source, style, o) => new ol.layer.Vector({source, style, ...o});
+const teile = g => !g ? [] : g.getType() === "MultiPolygon" ? g.getPolygons() : [g]; // Einzelflächen eines (Multi-)Polygons
 const LOCK = '<svg class="ico-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>';
 const K = Object.fromEntries(["plan", "plot", "accent", "bf", "bf-fill", "bf-fill2", "sans"].map(v => [v, css("--" + v)])); // Farben einmal lesen, nicht bei jedem Zeichnen
 
 // Grundkarte in Farbe
 const bgLayer = new ol.layer.Tile({source: new ol.source.XYZ({url: CFG.basemap("farbe"), maxZoom: 18, crossOrigin: "anonymous", attributions: ['© <a href="https://basemap.de" target="_blank" rel="noopener">basemap.de</a> / BKG (2026) CC BY 4.0', 'Fachdaten: © Freie und Hansestadt Hamburg, <a href="https://www.govdata.de/dl-de/by-2-0" target="_blank" rel="noopener">dl-de/by-2-0</a>']})});
 // Alle festgestellten B-Plan-Grenzen im Kartenausschnitt, dünn und (nah herangezoomt) mit Namen
-let BOUNDS_RUHIG; // vor der ersten Suche: Plangrenzen nur angedeutet, ohne Plancodes
 const boundsSrc = new ol.source.Vector({format: new ol.format.WFS(), strategy: ol.loadingstrategy.bbox, url: ext => wfsUrlBbox(CFG.bplanWfs, CFG.bplanTypes[0].type, ext, 500)});
 boundsSrc.on("featuresloaderror", () => diag("B-Plan-Grenzen konnten nicht geladen werden"));
-BOUNDS_RUHIG = St({stroke: Sk("rgba(200,16,46,.38)", 1), fill: Fl("rgba(0,0,0,0)")});
-const boundsLayer = vec(boundsSrc, (f, res) => !document.body.classList.contains("has-result") ? BOUNDS_RUHIG : St({stroke: Sk(K.plan, 1.5), fill: Fl("rgba(0,0,0,0)"),
-  text: res < 2.5 ? new ol.style.Text({text: planName(f.getProperties()), font: "600 12px " + K.sans, fill: Fl(K.plan), stroke: Sk("#fff", 3), overflow: false}) : undefined}),
-  {maxResolution: CFG.boundsMaxRes});
+const BOUNDS_RUHIG = St({stroke: Sk("rgba(200,16,46,.38)", 1), fill: Fl("rgba(0,0,0,0)")}); // vor der ersten Suche: Plangrenzen nur angedeutet, ohne Plancodes
+// Stile einmal bauen und wiederverwenden (die Karte fragt sie bei jedem Bild für jede Fläche ab)
+const memo = (m, k, mk) => m.get(k) || m.set(k, mk()).get(k), boundsSt = new Map();
+const boundsLayer = vec(boundsSrc, (f, res) => {
+  if (!body.contains("has-result")) return BOUNDS_RUHIG;
+  const name = res < 2.5 ? planName(f.getProperties()) : null;
+  return memo(boundsSt, name, () => St({stroke: Sk(K.plan, 1.5), fill: Fl("rgba(0,0,0,0)"),
+    text: name != null ? new ol.style.Text({text: name, font: "600 12px " + K.sans, fill: Fl(K.plan), stroke: Sk("#fff", 3), overflow: false}) : undefined}));
+}, {maxResolution: CFG.boundsMaxRes});
 const [selSrc, plotSrc, measureSrc, markerSrc] = [1, 2, 3, 4].map(() => new ol.source.Vector());
 const bfSrc = new ol.source.Vector(), BF_MAXRES = 1.6; // Baufenster für den ganzen Kartenausschnitt, ab 1,6 m/Pixel
 const clearMap = () => { [markerSrc, selSrc, plotSrc].forEach(s => s.clear()); markMine(null); };
@@ -3240,10 +3246,11 @@ const markerLayer = vec(markerSrc, St({image: new ol.style.Circle({radius: 7, fi
 const roman = n => ["", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"][n] || String(n);
 const dez = v => v && String(v).replace(".", ",");
 const bfLabel = a => [a.Anzahl_Vollgeschosse && roman(+a.Anzahl_Vollgeschosse), a.Grundflaechenzahl && "GRZ " + dez(a.Grundflaechenzahl), a.Geschossflaechenzahl && "GFZ " + dez(a.Geschossflaechenzahl)].filter(Boolean).join("  ");
+const bfSt = new Map();
 const bfLayer = vec(bfSrc, (f, res) => {
-  const mine = f.get("mine"), bf = K.bf;
-  return St({stroke: Sk(bf, mine ? 3 : 2), fill: Fl(K[mine ? "bf-fill" : "bf-fill2"]),
-    text: mine && res < 0.6 ? new ol.style.Text({text: bfLabel(f.get("attrs")), font: "700 13px " + K.sans, fill: Fl(bf), stroke: Sk("#fff", 3), overflow: true, offsetY: 16}) : undefined});
+  const mine = !!f.get("mine"), label = mine && res < 0.6 ? bfLabel(f.get("attrs")) : null, bf = K.bf;
+  return memo(bfSt, mine + "|" + label, () => St({stroke: Sk(bf, mine ? 3 : 2), fill: Fl(K[mine ? "bf-fill" : "bf-fill2"]),
+    text: label != null ? new ol.style.Text({text: label, font: "700 13px " + K.sans, fill: Fl(bf), stroke: Sk("#fff", 3), overflow: true, offsetY: 16}) : undefined}));
 }, {zIndex: 10, maxResolution: BF_MAXRES});
 // Baudenkmale (Gebäude aus der Denkmalliste) rot, wie in der Bebauungsplan-Karte; nah herangezoomt für den ganzen Ausschnitt
 const DM_MAXRES = BF_MAXRES;
@@ -3300,7 +3307,7 @@ on("backdrop", "click", () => toggleDrawer(false));
 addEventListener("keydown", e => { if (e.key === "Escape" && $("drawer").classList.contains("open")) toggleDrawer(false); });
 on("q", "focus", () => { ladeStrassen(); renderRecent($("q").value); body.add("searching"); folgeRecent(); });
 on("q", "input", () => renderRecent($("q").value));
-on("q", "blur", () => setTimeout(() => body.remove("searching"), 250));
+on("q", "blur", () => setTimeout(() => { body.remove("searching"); suchEnde = performance.now(); }, 250));
 if (isPhone()) { // Rechtliches ins Menü (Kopie bleibt fürs Merkblatt)
   const legal = side.querySelector(":scope > .legal");
   legal.after(Object.assign(legal.cloneNode(true), {className: "legal printonly"}));
@@ -3495,9 +3502,9 @@ async function loadBaufenster() {
 }
 function markMine(geom) {
   bfPlot = geom;
-  const g = !geom ? [] : geom.getType() === "MultiPolygon" ? geom.getPolygons() : [geom];
-  const touches = poly => g.some(p => poly.getCoordinates()[0].some(c => p.intersectsCoordinate(c)) || p.getCoordinates()[0].some(c => poly.intersectsCoordinate(c)));
-  for (const f of bfSrc.getFeatures()) { const m = !!g.length && f.getGeometry().getPolygons().some(touches); if (m !== !!f.get("mine")) f.set("mine", m); }
+  const g = teile(geom);
+  const ext = geom?.getExtent(), touches = poly => g.some(p => poly.getCoordinates()[0].some(c => p.intersectsCoordinate(c)) || p.getCoordinates()[0].some(c => poly.intersectsCoordinate(c)));
+  for (const f of bfSrc.getFeatures()) { const fg = f.getGeometry(), m = !!g.length && ol.extent.intersects(fg.getExtent(), ext) && fg.getPolygons().some(touches); if (m !== !!f.get("mine")) f.set("mine", m); }
 }
 // Liegt das Grundstück (sonst die Kartenmitte) in einem Baustufenplan, sagt der Schalter, dass es hier keine Baufenster gibt
 const bfKeyUpdate = () => {
@@ -3525,7 +3532,7 @@ function flaecheZone(p) {
     texte, jahr: parseInt(d.slice(0, 4), 10) || null, datum: /^\d{4}-\d\d-\d\d$/.test(d) ? `${d.slice(8)}.${d.slice(5, 7)}.${d.slice(0, 4)}` : ""};
 }
 async function ladeFlaechen(plot, namen) {
-  const g = plot.geometry.getType() === "MultiPolygon" ? plot.geometry.getPolygons() : [plot.geometry];
+  const g = teile(plot.geometry);
   const pts = g.map(p => p.getInteriorPoint().getCoordinates().slice(0, 2)), crs = "http://www.opengis.net/def/crs/EPSG/0/25832";
   const ext = ol.extent.buffer(ol.extent.boundingExtent(pts), 1);
   const u = CFG.xplanApi + "bp_baugebietsteilflaeche/items?" + new URLSearchParams({f: "json", limit: 100, bbox: ext.map(v => v.toFixed(1)).join(","), "bbox-crs": crs, crs});
@@ -3542,7 +3549,7 @@ const ORT_BW = {o: "offen", g: "geschlossen", a: "abweichend", e: "nur Einzelhä
 const ortCache = new Map();
 async function ladeOrtslesen(plot, namen) {
   if (typeof ORTSLESEN === "undefined") return [];
-  const g = plot.geometry.getType() === "MultiPolygon" ? plot.geometry.getPolygons() : [plot.geometry];
+  const g = teile(plot.geometry);
   const dateien = await Promise.all([...namen].filter(k => ORTSLESEN.has(k)).map(k => {
     if (!ortCache.has(k)) ortCache.set(k, fetch(`ortslesen/${k}.json`, {signal: AbortSignal.timeout(4000)}).then(r => r.ok ? r.json() : null).catch(() => { ortCache.delete(k); return null; }));
     return ortCache.get(k);
@@ -3599,7 +3606,7 @@ async function ladeBfFlaeche(plot) {
   if (typeof Baufenster === "undefined" || !plot?.geometry) return;
   const list = await Baufenster.load(ol.extent.buffer(plot.geometry.getExtent(), 5)).catch(() => []);
   if (lastPlot !== plot || !list.length) return;
-  const ext = plot.geometry.getExtent(), g = plot.geometry.getType() === "MultiPolygon" ? plot.geometry.getPolygons() : [plot.geometry];
+  const ext = plot.geometry.getExtent(), g = teile(plot.geometry);
   const bf = list.flatMap(b => b.polys.map(p => new ol.geom.Polygon(p))).filter(p => ol.extent.intersects(p.getExtent(), ext));
   if (!bf.length) return;
   const A = g.reduce((s, p) => s + p.getArea(), 0), step = Math.max(0.25, Math.sqrt(A / 60000));
@@ -3621,7 +3628,7 @@ async function ladeAmtlich(main, valid, plot) {
     fl = await ladeOrtslesen(plot, namen).catch(() => []);
     if (lastPlot !== mine) return;
   }
-  const g = plot.geometry.getType() === "MultiPolygon" ? plot.geometry.getPolygons() : [plot.geometry];
+  const g = teile(plot.geometry);
   const inner = g.map(p => p.getInteriorPoint().getCoordinates());
   const treffer = [];
   for (const b of list) {
@@ -4406,7 +4413,9 @@ function placeRecent() {
 // Während die Tastatur einfährt, Lage ein paar Bilder lang nachführen
 function folgeRecent(ms = 900) { const bis = performance.now() + ms; const tick = () => { placeRecent(); if (performance.now() < bis) requestAnimationFrame(tick); }; requestAnimationFrame(tick); }
 document.body.append($("recent"));
-addEventListener("resize", placeRecent); document.addEventListener("scroll", placeRecent, {passive: true, capture: true}); visualViewport?.addEventListener("resize", () => folgeRecent(300)); visualViewport?.addEventListener("scroll", placeRecent);
+// Beim Scrollen nur nachführen, solange das Blatt zu sehen ist (oder gerade ausblendet): spart bei jedem Scrollschritt eine Layout-Berechnung
+let suchEnde = -1e9; const placeSichtbar = () => { if (body.contains("searching") || performance.now() - suchEnde < 600) placeRecent(); };
+addEventListener("resize", placeRecent); document.addEventListener("scroll", placeSichtbar, {passive: true, capture: true}); visualViewport?.addEventListener("resize", () => folgeRecent(300)); visualViewport?.addEventListener("scroll", placeSichtbar);
 on("recent", "pointerdown", e => e.preventDefault()); // Feld behält den Fokus, Tastatur bleibt bis zur Auswahl
 on("recent", "click", e => { if (e.target.closest("[data-clear]")) { recent = []; try { localStorage.removeItem("recent"); } catch {} renderRecent(); return; } const q = e.target.closest("[data-q]")?.dataset.q; if (q) { $("q").value = q; $("searchForm").requestSubmit(); } });
 renderRecent();
@@ -4568,19 +4577,23 @@ document.addEventListener("click", e => {
   proView(v);
 });
 // Kartenbild aus den OpenLayers-Ebenen; fremde Kacheln ohne CORS machen das Bild unlesbar, dann ohne Karte
-function mapImage() {
-  const [w, h] = map.getSize() || [0, 0]; if (!w || !h) return "";
-  const cv = Object.assign(document.createElement("canvas"), {width: w, height: h}), ctx = cv.getContext("2d");
-  ctx.fillStyle = "#e9eef3"; ctx.fillRect(0, 0, w, h);
-  map.getViewport().querySelectorAll(".ol-layer canvas, canvas.ol-layer").forEach(c => {
+// Alle Ebenen-Bilder einer Karte (root) auf eine Leinwand w×h (pr = Pixeldichte) übereinander malen
+function malKarte(root, w, h, pr) {
+  const cv = Object.assign(document.createElement("canvas"), {width: w * pr, height: h * pr}), ctx = cv.getContext("2d");
+  ctx.fillStyle = "#e9eef3"; ctx.fillRect(0, 0, cv.width, cv.height);
+  root.querySelectorAll(".ol-layer canvas, canvas.ol-layer").forEach(c => {
     if (!c.width) return;
     const op = c.parentNode.style.opacity || c.style.opacity; ctx.globalAlpha = op === "" ? 1 : +op;
     const m = c.style.transform.match(/^matrix\(([^(]*)\)$/);
-    ctx.setTransform(...(m ? m[1].split(",").map(Number) : [w / c.width, 0, 0, h / c.height, 0, 0]));
+    ctx.setTransform(pr, 0, 0, pr, 0, 0); ctx.transform(...(m ? m[1].split(",").map(Number) : [w / c.width, 0, 0, h / c.height, 0, 0]));
     ctx.drawImage(c, 0, 0);
   });
   ctx.setTransform(1, 0, 0, 1, 0, 0);
-  try { return cv.toDataURL("image/jpeg", .86); } catch { return ""; }
+  return cv;
+}
+function mapImage() {
+  const [w, h] = map.getSize() || [0, 0]; if (!w || !h) return "";
+  try { return malKarte(map.getViewport(), w, h, 1).toDataURL("image/jpeg", .86); } catch { return ""; }
 }
 // Karte für das Deckblatt in Druckqualität: eigene unsichtbare Karte im Querformat 3:1, dreifache Pixeldichte, auf das Grundstück eingepasst
 function mapImageHi() {
@@ -4595,18 +4608,7 @@ function mapImageHi() {
   return new Promise(res => {
     const finish = () => {
       clearTimeout(t); let url = "";
-      try {
-        const cv = Object.assign(document.createElement("canvas"), {width: W * pr, height: H * pr}), ctx = cv.getContext("2d");
-        ctx.fillStyle = "#e9eef3"; ctx.fillRect(0, 0, cv.width, cv.height);
-        el.querySelectorAll(".ol-layer canvas, canvas.ol-layer").forEach(c => {
-          if (!c.width) return;
-          const op = c.parentNode.style.opacity || c.style.opacity; ctx.globalAlpha = op === "" ? 1 : +op;
-          const mt = c.style.transform.match(/^matrix\(([^(]*)\)$/);
-          ctx.setTransform(pr, 0, 0, pr, 0, 0); ctx.transform(...(mt ? mt[1].split(",").map(Number) : [W / c.width, 0, 0, H / c.height, 0, 0]));
-          ctx.drawImage(c, 0, 0);
-        });
-        url = cv.toDataURL("image/jpeg", .9);
-      } catch { /* Kacheln ohne Freigabe: dann das kleine Bild */ }
+      try { url = malKarte(el, W, H, pr).toDataURL("image/jpeg", .9); } catch { /* Kacheln ohne Freigabe: dann das kleine Bild */ }
       m.setTarget(null); el.remove(); res(url);
     };
     const t = setTimeout(finish, 9000); // spätestens dann, auch wenn eine Kachel fehlt
