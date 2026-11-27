@@ -785,7 +785,7 @@ body.is3d .view3d { display: block; }
 .v3nav .v3tb svg { width: 21px; height: 21px; }
 .view3d .v3nav .v3tb[aria-pressed="true"] { background: var(--navy); color: #fff; }
 .v3nav .v3tb[hidden] { display: none; }
-@media (max-width: 760px), (hover: none), (pointer: coarse) { .v3nav #v3person, .v3auge { display: none !important; } } /* Person nur am PC */
+@media (max-width: 760px), (hover: none), (pointer: coarse) { .v3sep, .v3nav .v3tb, .v3side, .v3auge, .v3intro { display: none !important; } } /* Handy: 3D wie vorher, neue Knöpfe nur am PC */
 .v3side { position: absolute; z-index: 3; top: calc(12px + env(safe-area-inset-top, 0px)); right: 68px; width: min(270px, calc(100% - 92px)); display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
 .v3pan { pointer-events: auto; padding: 12px 14px; border-radius: 18px; background: var(--panel); box-shadow: var(--shadow-lg); font-size: 12.5px; line-height: 1.35; color: var(--muted); }
 .v3pan[hidden] { display: none; }
@@ -1883,7 +1883,7 @@ const View3D = (() => {
   // opt.erlaubt: [{ring: [[x, y], ...] (UTM 32), top: erlaubte Höhe in m über Gelände oder null, art: "wand" (Wand/Traufe, Dach darf darüber) | "gesamt", text}]
   // Baufenster auf dem Grundstück × erlaubte Höhe. Ein Vorhaben, das seitlich oder oben herausragt, wird rot.
   async function glasBauen(me) {
-    const C = Cesium, list = (me.opt.erlaubt || []).filter(b => b.ring?.length >= 3);
+    const C = Cesium, list = desktop() ? (me.opt.erlaubt || []).filter(b => b.ring?.length >= 3) : []; // Handy: wie vorher, ohne Glaskasten
     if (!list.length) return api.onGlas?.(glasInfo(me));
     const tp = me.viewer.terrainProvider, out = [];
     for (const b of list) {
@@ -4223,7 +4223,7 @@ on("v3glas", "click", () => View3D.glas.an(!v3Glas?.an));
 // Einführung beim ersten Öffnen (und über das Fragezeichen)
 const IC = p => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
 function v3IntroZeigen(immer) {
-  if (!immer && bvMerk("moinplan-3d-intro")) return;
+  if (!bvDesktop() || (!immer && bvMerk("moinplan-3d-intro"))) return;
   const pc = bvDesktop(), L = [
     [IC('<path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/>'), "Drehen", pc ? "Linke Maustaste gedrückt halten und ziehen." : "Mit einem Finger ziehen."],
     [IC('<circle cx="11" cy="11" r="7"/><path d="m20 20-4-4M11 8v6M8 11h6"/>'), "Zoomen und verschieben", pc ? "Mausrad zoomt, rechte Maustaste verschiebt." : "Zwei Finger auseinander, zusammen oder gemeinsam ziehen."],
