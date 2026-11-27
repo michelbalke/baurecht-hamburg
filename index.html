@@ -4131,7 +4131,7 @@ async function runChecks(coord, plot, id) {
   const oks = [...list.querySelectorAll("li.ok")], nHit = list.querySelectorAll("li.hit").length, nUnk = list.querySelectorAll("li.unk").length;
   fold.querySelector("ul").append(...oks);
   fold.hidden = !oks.length;
-  fold.querySelector("summary").textContent = `${oks.length} Prüfungen ohne Befund anzeigen`;
+  fold.querySelector("summary").textContent = `${oks.length} ${oks.length === 1 ? "Prüfung" : "Prüfungen"} ohne Befund anzeigen`;
   list.hidden = !list.children.length;
   $("checkSum").innerHTML = (nHit ? `<span class="s-hit">${nHit} ${nHit === 1 ? "Hinweis" : "Hinweise"}</span>` : "") +
     (oks.length ? `<span class="s-ok">${oks.length} ohne Befund</span>` : "") + (nUnk ? `<span class="s-unk">${nUnk} nicht prüfbar</span>` : "");
