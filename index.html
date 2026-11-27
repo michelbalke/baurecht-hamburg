@@ -514,7 +514,7 @@ dl.contact a { display: block; width: fit-content; padding: 8px 0; }
 /* Kacheln mit Werten */
 .big { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
 .big > * { background: var(--fill); border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 2px; }
-.big b { display: block; font: 700 22px/1.1 var(--display); letter-spacing: .005em; overflow-wrap: break-word; }
+.big b { display: block; font: 700 22px/1.1 var(--display); letter-spacing: .005em; overflow-wrap: break-word; -webkit-hyphens: auto; hyphens: auto; }
 .big > * > span { font-size: 12px; color: var(--muted); line-height: 1.3; }
 #calcOut b { font-size: 20px; color: var(--accent); }
 #calcOut > :first-child, .ov-build .big > :first-child { background: var(--accent-fill); }
@@ -898,7 +898,7 @@ body.is3d .view3d { display: block; }
   .ov-build .big { gap: 6px; }
   .ov-build .big > * { padding: 7px 12px; }
   .ov-build .big b { font-size: 19px; }
-  .ov-build .big span { font-size: 13px; }
+  .ov-build .big span { font-size: 13px; white-space: normal; }
   .ov-row { padding: 11px 18px; }
   .ov-row .ov-label, .ov-build > .ov-label { font-size: 17px; }
 }
@@ -2667,7 +2667,7 @@ const Bericht = (() => {
     const orig = [...r.querySelectorAll("section.card")].find(s => /Originalplan|Kurzfassung/.test(s.querySelector("h2")?.textContent || ""));
     orig ? orig.after(cPlan) : c3d.after(cPlan);
     const cBv = vh ? mk("Ihr Bauvorhaben", "rep-bv") : null;
-    steps.before(cNb); c3d.after(cWis); // „Gut zu wissen“ direkt hinter der 3D-Ansicht
+    (r.querySelector(".procard") || steps).before(cNb); c3d.after(cWis); // Nachbarhäuser über „Bericht als PDF“ // „Gut zu wissen“ direkt hinter der 3D-Ansicht
     if (cBv) c3d.after(cBv); // eigenes Fenster für das gezeichnete Vorhaben, direkt hinter der 3D-Ansicht
     const done = (c, html) => { if (html) { c.classList.remove("loading"); c.querySelector("h2").nextElementSibling.outerHTML = html; } else c.remove(); };
 
@@ -3049,10 +3049,10 @@ async function sucheUnscharf(q) {
   // Straße erkannt, aber die Hausnummer gibt es dort nicht: nächstgelegene Nummern anbieten (gleiche Straßenseite zuerst)
   if (!treffer.length && nr && kand[0]?.d <= 2) {
     const t = await getText(CFG.gazetteer + "&StoredQuery_ID=HausnummernZuStrasse&strassenname=" + encodeURIComponent(kand[0].n), "Hausnummern");
-    const n = parseInt(nr, 10), adr = [...new Set([...(t || "").matchAll(/geographicIdentifier[^>]*>([^<,]+)/g)].map(m => m[1].trim()))];
+    const n = parseInt(nr, 10), ot = {}, adr = [...new Set([...(t || "").matchAll(/geographicIdentifier[^>]*>([^<,]+)([^<]*)/g)].map(m => { const a = m[1].trim(), o = m[2].match(/\(OT ([^)]+)\)/); if (o) ot[a] = o[1]; return a; }))];
     const naechste = adr.map(a => ({adr: a, z: parseInt(teileAdresse(a).nr, 10)})).filter(a => a.z >= 0)
       .sort((a, b) => (a.z % 2 !== n % 2) - (b.z % 2 !== n % 2) || Math.abs(a.z - n) - Math.abs(b.z - n) || a.adr.localeCompare(b.adr, "de")).slice(0, 4);
-    return {treffer: naechste.map(a => ({...kand[0], adr: a.adr})), sicher: false, nummer: {str: kand[0].n, nr}};
+    return {treffer: naechste.map(a => ({...kand[0], adr: a.adr, st: ot[a.adr] ? [ot[a.adr]] : kand[0].st})), sicher: false, nummer: {str: kand[0].n, nr}};
   }
   return {treffer, sicher};
 }
@@ -3442,7 +3442,7 @@ function renderOvBuild(tiles) {
   const amt = z?.ortslesen ? `<span class="ov-place">${esc(z.zusatz)}. Automatisch aus dem Originalplan abgelesen. Verbindlich ist der Originalplan.</span>`
     : z?.amtlich ? `<span class="ov-place">Werte aus den amtlichen Plandaten der Stadt${m?.fromDefault ? `. * ${esc(cur.sum.grzDefaultsNote.replace(/\.$/, ""))}` : ""}. Verbindlich ist der Originalplan.</span>`
     : z?.amtErg ? `<span class="ov-place">GRZ und GFZ aus den amtlichen Plandaten der Stadt. Verbindlich ist der Originalplan.</span>` : "";
-  const lock = cur.hasPlan ? `<span class="ov-place ov-lock">${LOCK}Höhen, Baufenster-Maße und Originalplan im Bericht</span>` : "";
+  const lock = `<span class="ov-place ov-lock">${LOCK}${!cur.hasPlan ? "Nachbarhäuser, Maße und 3D-Ansicht im Bericht" : cur.bs ? "Maße, Nachbarhäuser und Originalplan im Bericht" : "Höhen, Baufenster-Maße und Originalplan im Bericht"}</span>`;
   el.innerHTML = `<span class="ov-label">Was darf ich bauen?</span>${t.length ? `<span class="big">${t.map(x => tile(x)).join("")}</span>` : ""}${msg ? `<span class="ov-place">${esc(msg)}</span>` : ""}`;
   const h = $("ovHinweis"); h.innerHTML = amt + lock; h.hidden = !(amt + lock); // Quelle und Bericht-Hinweis unten bei Impressum, nicht zwischen den Werten
   ovZone();
@@ -3492,7 +3492,7 @@ function ovSet(id, cls) {
 // Eckdaten für das zugeklappte Blatt auf dem Handy: Fläche, Geschosse, Denkmal
 function renderPeek() {
   const el = $("ovPeek"); if (!el) return;
-  const kurz = l => /grundfläche/i.test(l) ? "Grundfläche" : /^Vollgeschoss$/.test(l) ? "Geschoss" : /^Vollgeschoss/.test(l) ? "Geschosse" : /^Geschossfläche/.test(l) ? "Geschossfläche" : /^mit Garage/.test(l) ? "mit Garage" : l;
+  const kurz = l => /grundfläche/i.test(l) ? "Grundfläche" : /^Vollgeschoss/.test(l) ? l : /^Geschossfläche/.test(l) ? "Geschossfläche" : /^mit Garage/.test(l) ? "mit Garage" : l;
   el.innerHTML = (cur.peek || []).map(([b, l]) => `<span><b>${esc(String(b).replace(/^höchstens /, "max. "))}</b> ${esc(kurz(l))}</span>`).join("")
     + (cur.dm ? `<span class="${cur.dm}">${{hit: "<b>Baudenkmal</b>", ok: "<b>✓</b> kein Denkmal", unk: "Denkmal <b>?</b>"}[cur.dm]}</span>` : "");
 }
@@ -3586,7 +3586,7 @@ function zonenListe(sum) {
   const k = v => v != null ? String(v).replace(".", ",") : "–";
   return `<details class="more"><summary>Alle ${sum.zones.length} Bereiche dieses Plans</summary><div class="zlist"><table>
     <tr><th>Lage</th><th>Nutzung</th><th>Geschosse</th><th>GRZ</th><th>GFZ</th><th>Bauweise</th></tr>
-    ${sum.zones.map(z => `<tr><td>${esc(z.lage)}</td><td>${esc(z.art || "–")}</td><td>${esc(z.vg != null ? vgText(z) : "–")}</td><td>${k(z.grz)}</td><td>${k(z.gfz)}</td><td>${esc(z.bauweise || (z.gr ? fmt(z.gr) + " m² Grundfläche" : "–"))}</td></tr>`).join("")}
+    ${sum.zones.map(z => `<tr><td>${esc(z.lage)}</td><td>${esc(z.art ? artTile(z.art, NUTZUNG[z.art])[0] + (NUTZUNG[z.art] ? ` (${z.art})` : "") : "–")}</td><td>${esc(z.vg != null ? vgText(z) : "–")}</td><td>${k(z.grz)}</td><td>${k(z.gfz)}</td><td>${esc(z.bauweise || (z.gr ? fmt(z.gr) + " m² Grundfläche" : "–"))}</td></tr>`).join("")}
   </table></div></details>`;
 }
 function renderGlance() {
@@ -3595,7 +3595,7 @@ function renderGlance() {
   const m = zoneMass(cur.sum, z), n = NUTZUNG[z.art], zahl = (v, t) => z.gr && v == null ? [] : [[v != null ? String(v).replace(".", ",") + (m.fromDefault ? "*" : "") : "–", t]];
   const tiles = [z.art ? artTile(z.art, n) : ["", ""], [vgText(z), vgL(z)], [z.bauweise, "Bauweise"], [z.tiefe, "Tiefe Baufenster"], [z.hoehe, "Höhe laut Plan"],
     [z.gr && fmt(z.gr) + " m²", "Grundfläche max."], [z.dach, "Dach"], [z.wohnungen && String(z.wohnungen), "Wohnungen je Haus max."], ...zahl(m.grz, "GRZ (Anteil bebaubar)"), ...zahl(m.gfz, "GFZ (Geschossfläche)")];
-  const shy = t => esc(t).replace(/([a-zäöüß]{4})(häuser|geschosse|bauweise)/gi, "$1&shy;$2");
+  const shy = t => esc(t).replace(/([a-zäöüß]{4})(häuser|geschosse|bauweise|gebiet)/gi, "$1&shy;$2");
   g.innerHTML = `<div class="big">${tiles.filter(([b]) => b && b !== "–").map(t => tile(t, shy)).join("")}</div>
     <ul class="facts">${[n && ["Nutzung", n.split(": ").slice(1).join(": ") || n], z.extra && ["Besonderheit", z.extra], z.gruen && ["Begrünung", z.gruen],
       z.noGarage && ["Garagen", "Auf diesem Grundstück sind keine eingeschossigen Garagen erlaubt."]].filter(Boolean).map(([t, d]) => `<li><b>${esc(t)}</b>${esc(d)}</li>`).join("")}</ul>
@@ -3913,12 +3913,15 @@ function updateCalc() {
     tiles.push([fmt(gr) + " m²", z?.gr ? "Grundfläche für das Haus (fest im Plan)" : grBf ? "Grundfläche, die bebaut werden darf (Baufenster)" : "Grundfläche, die bebaut werden darf"]);
     if (ueber && grGrz) tiles.push([fmt(a && !z?.grUeber ? Math.min(grGrz * (1 + ueber), Math.max(grGrz, a * 0.8)) : grGrz * (1 + ueber)) + " m²", "inklusive Garage, Zufahrt, Nebengebäude"]); // Garagen dürfen auch außerhalb des Baufensters stehen: Rechnung mit der GRZ-Fläche
   }
-  const gfGfz = a && gfz ? a * gfz : null, gfBf = bfA && vgZ && (!gfGfz || bfA * vgZ < gfGfz);
-  if (gfGfz || gfBf) tiles.push([fmt(gfBf ? bfA * vgZ : gfGfz) + " m²", gfBf ? "Wohn-/Geschossfläche insgesamt (Baufenster)" : "Wohn-/Geschossfläche insgesamt"]);
+  // ohne GFZ: Grundfläche je Geschoss × Zahl der Vollgeschosse; feste Grundfläche aus dem Plan begrenzt auch die Geschossfläche (nicht bei „mindestens“)
+  const vgMax = zm?.vgArt === "mindestens" ? null : vgZ, gfFest = z?.gr ? Math.min(z.gr, bfA || z.gr) : null, gfBasis = gfFest || bfA;
+  const gfGfz = a && gfz ? a * gfz : null, gfBf = !!(gfBasis && vgMax && (!gfGfz || gfBasis * vgMax < gfGfz));
+  if (gfGfz || gfBf) tiles.push([fmt(gfBf ? gfBasis * vgMax : gfGfz) + " m²", gfBf && !gfFest ? "Wohn-/Geschossfläche insgesamt (Baufenster)" : "Wohn-/Geschossfläche insgesamt"]);
   if (z?.hoehe) tiles.push([z.hoehe, "Höhe laut Plan"]);
   out.innerHTML = tiles.map(t => tile(t)).join("");
   renderOvBuild(tiles);
   $("calcNote").textContent = !a && !z?.gr ? "Geben Sie die Grundstücksfläche ein oder umfahren Sie das Grundstück in der Karte."
+    : gfFest && gfBf && !grBf ? `Überschlag. Die Grundfläche fürs Haus ist im Plan fest auf ${fmt(z.gr)} m² begrenzt${bfA && bfA < z.gr ? `, das Baufenster ist nur ${fmt(bfA)} m² groß` : ""}. Die Geschossfläche ergibt sich aus Grundfläche mal ${vgMax === 1 ? "einem Vollgeschoss" : vgMax + " Vollgeschossen"}. Das Haus muss im Baufenster stehen, und Abstände zum Nachbarn müssen eingehalten werden.`
     : grBf || gfBf ? `Überschlag. Das Baufenster auf dem Grundstück ist ${grz || gfz ? "nur " : ""}${fmt(bfA)} m² groß. Das Haus muss darin stehen. ${grz || gfz ? `Deshalb ist ${grBf && gfBf ? "die Fläche" : grBf ? "die Grundfläche" : "die Geschossfläche"} kleiner als nach ${grBf && gfBf ? "GRZ und GFZ" : grBf ? "GRZ" : "GFZ"}.` : "GRZ und GFZ liegen nicht vor, deshalb rechnet die App mit dem Baufenster."} Abstände zum Nachbarn müssen eingehalten werden.`
     : grz || gfz || z?.gr ? "Überschlag. Das Haus muss außerdem im Baufenster liegen, und Abstände zum Nachbarn müssen eingehalten werden."
     : cur.sum && !z ? "Wählen Sie oben die Lage Ihres Grundstücks, dann rechnet die App." : "Für diesen Ort liegen GRZ und GFZ noch nicht vor.";
@@ -4245,7 +4248,7 @@ async function kaufStart(btn) {
     zaehle("kasse", zaehlArt);
     location.href = d.url;
   } catch (e) {
-    btn.disabled = false; btn.textContent = PRO.bezahlung ? "Zahlungspflichtig bestellen" : "Bericht kostenlos ansehen";
+    btn.disabled = false; btn.textContent = PRO.bezahlung ? "Zahlungspflichtig bestellen" : "Vorschau: Bericht kostenlos ansehen";
     btn.insertAdjacentHTML("afterend", `<p class="pro-note">Die Zahlung ist gerade nicht erreichbar. Bitte in ein paar Minuten noch einmal versuchen.</p>`);
   }
 }
