@@ -785,6 +785,7 @@ body.is3d .view3d { display: block; }
 .v3nav .v3tb svg { width: 21px; height: 21px; }
 .view3d .v3nav .v3tb[aria-pressed="true"] { background: var(--navy); color: #fff; }
 .v3nav .v3tb[hidden] { display: none; }
+@media (max-width: 760px), (hover: none), (pointer: coarse) { .v3nav #v3person, .v3auge { display: none !important; } } /* Person nur am PC */
 .v3side { position: absolute; z-index: 3; top: calc(12px + env(safe-area-inset-top, 0px)); right: 68px; width: min(270px, calc(100% - 92px)); display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
 .v3pan { pointer-events: auto; padding: 12px 14px; border-radius: 18px; background: var(--panel); box-shadow: var(--shadow-lg); font-size: 12.5px; line-height: 1.35; color: var(--muted); }
 .v3pan[hidden] { display: none; }
@@ -1803,7 +1804,7 @@ const View3D = (() => {
     me.handler = new C.ScreenSpaceEventHandler(scene.canvas);
     me.handler.setInputAction(e => {
       if (me.setzen) { const p = groundAt(me, e.position); if (p) personSetzen(me, p); return; }
-      if (me.eye) return augeHin(me, e.position);
+      if (me.eye) { const i = schrittAt(me, e.position); if (i >= 0) geheZu(me, i); return; }
       if (me.draw?.on && me.draw.tool) return drawClick(me, e.position);
       if (!opt.shot && desktop()) { // Klick auf ein Vorhaben: auswählen und bearbeiten
         const i = pickFest(me, e.position); if (i >= 0) return waehleAus(me, i);
@@ -1845,7 +1846,7 @@ const View3D = (() => {
       cursor(me);
     }, C.ScreenSpaceEventType.LEFT_UP);
     me.handler.setInputAction(e => {
-      if (me.eye) return;
+      if (me.eye) { if (!me.blick) cursor(me, schrittAt(me, e.endPosition) >= 0 ? "pointer" : "grab"); return; }
       if (me.setzen) return cursor(me, "crosshair");
       if (me.dragIdx != null) return dragCorner(me, e.endPosition);
       if (me.hDrag) return dragBody(me, e.endPosition);
@@ -1960,7 +1961,7 @@ const View3D = (() => {
   // ---------- Person auf dem Grundstück: umsehen auf Augenhöhe (wie Street View, im grauen Modell) ----------
   const AUGE = 1.65, GROESSE = 1.8;
   function personStart() {
-    const me = st; if (!me?.viewer || me.opt.shot) return;
+    const me = st; if (!me?.viewer || me.opt.shot || !desktop()) return; // nur PC
     if (me.draw?.on) drawStop();
     if (me.figur && !me.eye) return augeAn(me, me.figur.pos); // Person steht schon: auf ihre Augenhöhe
     if (me.eye) augeAus(me);
@@ -2004,36 +2005,56 @@ const View3D = (() => {
     let heading = cam.heading;
     if (ziel) { const F = C.Transforms.eastNorthUpToFixedFrame(p), L = C.Matrix4.multiplyByPoint(C.Matrix4.inverseTransformation(F, new C.Matrix4()), ziel, new C.Cartesian3()); if (Math.hypot(L.x, L.y) > 1) heading = Math.atan2(L.x, L.y); }
     cam.frustum.fov = C.Math.toRadians(75);
-    cam.flyTo({destination: C.Cartesian3.fromRadians(c.longitude, c.latitude, c.height + AUGE), orientation: {heading, pitch: C.Math.toRadians(4), roll: 0}, duration: 1.1});
+    const g = me.viewer.scene.globe.getHeight(c) ?? c.height;
+    me.stand = C.Cartographic.fromRadians(c.longitude, c.latitude, g);
+    cam.flyTo({destination: C.Cartesian3.fromRadians(c.longitude, c.latitude, g + AUGE), orientation: {heading, pitch: C.Math.toRadians(-4), roll: 0}, duration: 1.1});
+    schritte(me);
     cursor(me, "grab"); api.onPerson?.("auge");
   }
   function augeAus(me) {
     const C = Cesium, cam = me.viewer.camera;
-    laufTasten.clear();
-    const c = carto(cam.position), g = me.viewer.scene.globe.getHeight(c) ?? c.height - AUGE;
+    laufTasten.clear(); schritte(me, true);
+    const c = me.stand || carto(cam.position), g = me.stand ? c.height : me.viewer.scene.globe.getHeight(c) ?? c.height - AUGE;
     figur(me, C.Cartesian3.fromRadians(c.longitude, c.latitude, g)); // Person bleibt dort stehen, wo man zuletzt war
     me.eye = false;
     me.viewer.scene.screenSpaceCameraController.enableInputs = true;
     if (me.eyeBack) { cam.frustum.fov = me.eyeBack.fov; cam.flyTo({destination: me.eyeBack.destination, orientation: me.eyeBack.orientation, duration: 0.9}); }
     cursor(me); api.onPerson?.("steht");
   }
-  // Auf den Boden klicken: dorthin gehen
-  function augeHin(me, pos) {
-    const C = Cesium, cam = me.viewer.camera, p = groundAt(me, pos); if (!p) return;
-    const c = carto(p), from = carto(cam.position);
-    const d = C.Cartesian3.distance(C.Cartesian3.fromRadians(c.longitude, c.latitude, 0), C.Cartesian3.fromRadians(from.longitude, from.latitude, 0));
-    if (d > 120 || d < 0.3) return;
-    const g = me.viewer.scene.globe.getHeight(c) ?? c.height;
-    cam.flyTo({destination: C.Cartesian3.fromRadians(c.longitude, c.latitude, g + AUGE), orientation: {heading: cam.heading, pitch: cam.pitch, roll: 0}, duration: Math.min(1.6, 0.35 + d / 12)});
+  // Feste Schritt-Punkte: 8 Richtungen (N, NO, O, …) je SCHRITT Meter um den Standort. Klick = dorthin, Blickrichtung bleibt.
+  const SCHRITT = 2;
+  function schritte(me, weg) {
+    const C = Cesium, E = me.viewer.entities;
+    for (const e of me.schrittEnt || []) E.remove(e);
+    me.schrittEnt = []; me.schrittPos = [];
+    if (weg || !me.stand) return me.viewer.scene.requestRender();
+    const F = C.Transforms.eastNorthUpToFixedFrame(C.Cartographic.toCartesian(me.stand)), globe = me.viewer.scene.globe;
+    for (let i = 0; i < 8; i++) {
+      const w = i * Math.PI / 4, p = C.Matrix4.multiplyByPoint(F, new C.Cartesian3(Math.sin(w) * SCHRITT, Math.cos(w) * SCHRITT, 0), new C.Cartesian3());
+      const c = carto(p), g = globe.getHeight(c) ?? me.stand.height, pos = C.Cartesian3.fromRadians(c.longitude, c.latitude, g + 0.04);
+      me.schrittPos.push(C.Cartographic.fromRadians(c.longitude, c.latitude, g));
+      me.schrittEnt.push(E.add({position: pos, properties: {schritt: i},
+        ellipse: {semiMajorAxis: 0.35, semiMinorAxis: 0.35, height: g + 0.04, material: C.Color.fromCssColorString(BLAU).withAlpha(0.35), outline: true, outlineColor: C.Color.WHITE},
+        point: {pixelSize: 15, color: C.Color.WHITE, outlineColor: C.Color.fromCssColorString(BLAU), outlineWidth: 4}}));
+    }
+    me.viewer.scene.requestRender();
   }
-  // schrittweise gehen (Pfeiltasten): vorwärts in Blickrichtung, Boden folgt dem Gelände
-  function gehe(me, vor, seit) {
-    const C = Cesium, cam = me.viewer.camera, h = cam.heading;
-    const F = C.Transforms.eastNorthUpToFixedFrame(cam.position);
-    const ziel = C.Matrix4.multiplyByPoint(F, new C.Cartesian3(Math.sin(h) * vor + Math.cos(h) * seit, Math.cos(h) * vor - Math.sin(h) * seit, 0), new C.Cartesian3());
-    const c = carto(ziel), g = me.viewer.scene.globe.getHeight(c);
-    if (g == null) return;
-    cam.setView({destination: C.Cartesian3.fromRadians(c.longitude, c.latitude, g + AUGE), orientation: {heading: h, pitch: cam.pitch, roll: 0}});
+  function schrittAt(me, pos) {
+    if (!me.schrittEnt?.length) return -1;
+    const hits = me.viewer.scene.drillPick(pos, 5);
+    for (const h of hits) { const i = h.id?.properties?.schritt?.getValue?.(); if (i != null) return i; }
+    return -1;
+  }
+  function geheZu(me, i) {
+    const C = Cesium, cam = me.viewer.camera, c = me.schrittPos?.[i]; if (!c) return;
+    me.stand = c; schritte(me, true);
+    cam.flyTo({destination: C.Cartesian3.fromRadians(c.longitude, c.latitude, c.height + AUGE), orientation: {heading: cam.heading, pitch: cam.pitch, roll: 0}, duration: 0.45,
+      easingFunction: C.EasingFunction.QUADRATIC_IN_OUT, complete: () => { if (st === me && me.eye) schritte(me); }});
+  }
+  // Pfeil hoch/runter: zum Punkt, der am ehesten vorn bzw. hinten liegt
+  function schrittRichtung(me, vor) {
+    const h = me.viewer.camera.heading + (vor ? 0 : Math.PI), i = ((Math.round(h / (Math.PI / 4)) % 8) + 8) % 8;
+    geheZu(me, i);
   }
   function blickweite(me, f) { const C = Cesium, cam = me.viewer.camera; cam.frustum.fov = C.Math.clamp(cam.frustum.fov * (f < 1 ? 0.85 : 1.18), C.Math.toRadians(25), C.Math.toRadians(100)); me.viewer.scene.requestRender(); }
   const laufTasten = new Set();
@@ -2043,24 +2064,29 @@ const View3D = (() => {
     if (!me?.eye || !laufTasten.size) return;
     const now = performance.now(), dt = Math.min(0.05, (now - laufT) / 1000); laufT = now;
     const k = t => laufTasten.has(t), schnell = k("Shift") ? 3 : 1, cam = me.viewer.camera;
-    const vor = (k("ArrowUp") || k("w") ? 1 : 0) - (k("ArrowDown") || k("s") ? 1 : 0), seit = (k("d") ? 1 : 0) - (k("a") ? 1 : 0), dreh = (k("ArrowRight") ? 1 : 0) - (k("ArrowLeft") ? 1 : 0);
-    if (dreh) cam.setView({orientation: {heading: cam.heading + dreh * 1.1 * dt, pitch: cam.pitch, roll: 0}});
-    if (vor || seit) gehe(me, vor * 2.2 * schnell * dt, seit * 1.6 * schnell * dt);
+    const dreh = (k("ArrowRight") || k("d") ? 1 : 0) - (k("ArrowLeft") || k("a") ? 1 : 0);
+    if (dreh) cam.setView({orientation: {heading: cam.heading + dreh * 1.1 * schnell * dt, pitch: cam.pitch, roll: 0}});
     me.viewer.scene.requestRender();
     laufRaf = requestAnimationFrame(laufen);
   }
   // Maus/Finger ziehen = umsehen (die Welt greifen wie bei Street View), Mausrad = Blickwinkel, Tasten = gehen
   function augenSteuerung(me) {
     const cv = me.viewer.scene.canvas, cam = () => me.viewer.camera;
-    let drag = null;
-    cv.addEventListener("pointerdown", e => { if (st !== me || !me.eye) return; drag = {x: e.clientX, y: e.clientY}; cursor(me, "grabbing"); });
+    // Linke Maustaste gedrückt halten und ziehen = umsehen; Drehung gesammelt einmal je Bild, damit es ruhig läuft
+    let drag = null, ddx = 0, ddy = 0, raf = 0;
+    const dreh = () => {
+      raf = 0; if (st !== me || !me.eye || (!ddx && !ddy)) return;
+      const c = cam(), k = c.frustum.fov / Math.max(300, cv.clientHeight);
+      c.setView({orientation: {heading: c.heading - ddx * k, pitch: Cesium.Math.clamp(c.pitch + ddy * k, -1.25, 1.25), roll: 0}});
+      ddx = ddy = 0; me.viewer.scene.requestRender();
+    };
+    cv.addEventListener("pointerdown", e => { if (st !== me || !me.eye || e.button !== 0) return; drag = {x: e.clientX, y: e.clientY}; me.blick = true; cursor(me, "grabbing"); });
     addEventListener("pointermove", e => {
       if (!drag || st !== me || !me.eye) return;
-      const c = cam(), k = c.frustum.fov / Math.max(300, cv.clientHeight), dx = e.clientX - drag.x, dy = e.clientY - drag.y; drag = {x: e.clientX, y: e.clientY};
-      c.setView({orientation: {heading: c.heading - dx * k, pitch: Cesium.Math.clamp(c.pitch + dy * k, -1.25, 1.25), roll: 0}});
-      me.viewer.scene.requestRender();
+      ddx += e.clientX - drag.x; ddy += e.clientY - drag.y; drag = {x: e.clientX, y: e.clientY};
+      if (!raf) raf = requestAnimationFrame(dreh);
     });
-    addEventListener("pointerup", () => { if (drag) { drag = null; if (st === me && me.eye) cursor(me, "grab"); } });
+    addEventListener("pointerup", () => { if (drag) { drag = null; me.blick = false; if (st === me && me.eye) cursor(me, "grab"); } });
     cv.addEventListener("wheel", e => { if (st !== me || !me.eye) return; e.preventDefault(); blickweite(me, e.deltaY < 0 ? 0.9 : 1.1); }, {passive: false});
   }
   addEventListener("keydown", e => {
@@ -2071,6 +2097,7 @@ const View3D = (() => {
     const t = e.key.length === 1 ? e.key.toLowerCase() : e.key;
     if (!["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "w", "a", "s", "d", "Shift"].includes(t)) return;
     e.preventDefault(); e.stopImmediatePropagation();
+    if (["ArrowUp", "ArrowDown", "w", "s"].includes(t)) { if (!e.repeat && !me.viewer.camera._currentFlight) schrittRichtung(me, t === "ArrowUp" || t === "w"); return; }
     laufTasten.add(t); if (!laufRaf) { laufT = performance.now(); laufRaf = requestAnimationFrame(laufen); }
   }, true);
   addEventListener("keyup", e => { const t = e.key.length === 1 ? e.key.toLowerCase() : e.key; laufTasten.delete(t); if (t === "Shift") return; });
@@ -2591,7 +2618,7 @@ const View3D = (() => {
   };
   const person = {start: personStart, ende: () => st && personEnde(st), aktiv: () => !!(st?.eye || st?.setzen), da: () => !!st?.figur};
   const api = {open, close, north, zoom, snapshot, buildings, draw, vorhaben, capture: () => capture(st), preload: loadCesium, isOpen: () => !!st,
-    person, sonne, glas: {an: glasSchalten, info: () => glasInfo(st)}, onHeading: null, onDraw: null, onHover: null, onPerson: null, onGlas: null};
+    person, sonne, glas: {an: glasSchalten, info: () => glasInfo(st)}, _st: () => st, onHeading: null, onDraw: null, onHover: null, onPerson: null, onGlas: null};
   return api;
 })();
 </script>
@@ -4150,7 +4177,7 @@ function v3Reset() {
 }
 const PERSON_T = {
   setzen: () => bvDesktop() ? "<b>Person absetzen:</b> Klicken Sie auf den Boden, wo die Person stehen soll." : "<b>Person absetzen:</b> Tippen Sie auf den Boden, wo die Person stehen soll.",
-  auge: () => bvDesktop() ? "<b>Augenhöhe 1,65 m.</b> Ziehen: umsehen · Boden anklicken: hingehen · Pfeiltasten: gehen" : "<b>Augenhöhe 1,65 m.</b> Ziehen: umsehen · Boden antippen: hingehen"
+  auge: () => "<b>Augenhöhe 1,65 m.</b> Linke Maustaste halten und ziehen: umsehen · Punkt am Boden anklicken: 2 m dorthin gehen"
 };
 View3D.onPerson = m => {
   $("v3person").setAttribute("aria-pressed", String(m === "setzen" || m === "auge"));
@@ -4201,7 +4228,7 @@ function v3IntroZeigen(immer) {
     [IC('<path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/>'), "Drehen", pc ? "Linke Maustaste gedrückt halten und ziehen." : "Mit einem Finger ziehen."],
     [IC('<circle cx="11" cy="11" r="7"/><path d="m20 20-4-4M11 8v6M8 11h6"/>'), "Zoomen und verschieben", pc ? "Mausrad zoomt, rechte Maustaste verschiebt." : "Zwei Finger auseinander, zusammen oder gemeinsam ziehen."],
     ...(pc ? [[IC('<rect x="4" y="6" width="16" height="12" rx="1"/><circle cx="4" cy="6" r="1.6" fill="currentColor"/><circle cx="20" cy="18" r="1.6" fill="currentColor"/>'), "Zeichnen", "Links „Rechteck“ wählen und zwei Ecken auf den Boden klicken."]] : []),
-    [IC('<circle cx="12" cy="4.5" r="2"/><path d="M12 8v7M9 21l3-6 3 6M7.5 11.5 12 9l4.5 2.5"/>'), "Umsehen wie vor Ort", "Rechts die Person wählen und auf den Boden setzen. Dann sehen Sie alles auf Augenhöhe."],
+    ...(pc ? [[IC('<circle cx="12" cy="4.5" r="2"/><path d="M12 8v7M9 21l3-6 3 6M7.5 11.5 12 9l4.5 2.5"/>'), "Umsehen wie vor Ort", "Rechts die Person wählen und auf den Boden setzen. Dann sehen Sie alles auf Augenhöhe und gehen über weiße Punkte."]] : []),
     [IC('<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2"/>'), "Sonne und Schatten", "Rechts die Sonne wählen, dann Uhrzeit und Jahreszeit einstellen."]];
   $("v3introL").innerHTML = L.map(([i, t, d]) => `<li>${i}<span><b>${t}</b>${d}</span></li>`).join("");
   $("v3intro").hidden = false; $("v3tip").hidden = true;
