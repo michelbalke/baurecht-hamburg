@@ -744,6 +744,7 @@ body.measuring .mtip { display: flex; }
 .view3d { container-type: size; }
 @container (max-width: 900px) {
   .v3nav2 { display: none; }
+  .view3d.drawing .v3side { top: 12px; }
   .v3bil { left: 12px; right: 12px; bottom: 26px; padding: 10px 14px; border-radius: 18px; }
   .v3bil header { margin-bottom: 8px; font-size: 12px; flex-wrap: wrap; }
   .v3bil > p { display: none; }
@@ -779,6 +780,42 @@ body.is3d .view3d { display: block; }
 .v3nav { position: absolute; z-index: 2; top: calc(12px + env(safe-area-inset-top, 0px)); right: 12px; display: flex; flex-direction: column; gap: 8px; }
 .v3nav button { width: 44px; height: 44px; padding: 0; border-radius: 50%; justify-content: center; font: 600 19px/1 var(--sans); }
 .v3nav .compass { position: static; }
+.v3dtext .v3rot { display: block; margin-top: 6px; padding: 5px 9px; border-radius: 9px; font-style: normal; font-weight: 600; font-size: 12.5px; color: #ff453a; background: rgba(255,69,58,.15); }
+.v3sep { width: 26px; margin: 2px auto; border: 0; border-top: 1px solid color-mix(in srgb, var(--fg) 18%, transparent); }
+.v3nav .v3tb svg { width: 21px; height: 21px; }
+.view3d .v3nav .v3tb[aria-pressed="true"] { background: var(--navy); color: #fff; }
+.v3nav .v3tb[hidden] { display: none; }
+.v3side { position: absolute; z-index: 3; top: calc(12px + env(safe-area-inset-top, 0px)); right: 68px; width: min(270px, calc(100% - 92px)); display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+.v3pan { pointer-events: auto; padding: 12px 14px; border-radius: 18px; background: var(--panel); box-shadow: var(--shadow-lg); font-size: 12.5px; line-height: 1.35; color: var(--muted); }
+.v3pan[hidden] { display: none; }
+.view3d.drawing .v3side { top: 118px; } /* unter der Hinweiszeile beim Zeichnen */
+.v3pan header { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 6px; }
+.v3pan header b { font: 700 14px/1.2 var(--display); color: var(--fg); }
+.v3pan p { margin: 6px 0 0; }
+.v3pan .v3sl { color: var(--fg); }
+.v3pan .v3sl input { accent-color: var(--navy); }
+.v3pan output { white-space: nowrap; }
+.v3pan .glk { display: flex; align-items: center; gap: 8px; margin: 2px 0; color: var(--fg); font-weight: 600; }
+.v3pan .glk i { flex: none; width: 18px; height: 14px; border-radius: 2px; background: linear-gradient(160deg, rgba(191,233,255,.55), rgba(143,216,255,.15)); border: 1.5px solid #bfe9ff; }
+.v3pan .glst { margin-top: 8px; padding: 7px 10px; border-radius: 10px; font-weight: 600; color: var(--ok); background: var(--ok-soft); }
+.v3pan .glst.rot { color: #ff453a; background: rgba(255,69,58,.15); }
+.v3auge { position: absolute; z-index: 4; left: 50%; top: calc(12px + env(safe-area-inset-top, 0px)); transform: translateX(-50%); display: flex; align-items: center; gap: 12px; max-width: calc(100% - 300px); padding: 7px 7px 7px 16px; border-radius: 99px; background: var(--panel); box-shadow: var(--shadow-lg); font-size: 13px; }
+.v3auge[hidden] { display: none; }
+.view3d.auge .v3left, .view3d.auge .v3bil, .view3d.auge .v3info, .view3d.auge .v3tip { display: none !important; } /* auf Augenhöhe: freie Sicht */
+.view3d.auge .v3auge { top: auto; bottom: calc(34px + env(safe-area-inset-bottom, 0px)); max-width: calc(100% - 40px); }
+.v3auge p { margin: 0; }
+.view3d .v3auge button { flex: none; padding: 8px 14px; border-radius: 99px; font-weight: 600; font-size: 13px; color: #fff; background: var(--navy); }
+.v3intro { position: absolute; inset: 0; z-index: 9; display: grid; place-items: center; padding: 16px; background: rgba(0,0,0,.38); animation: v3tipin .3s var(--ease) both; }
+.v3intro[hidden] { display: none; }
+.v3introK { width: min(400px, 100%); padding: 22px 22px 18px; border-radius: 24px; background: var(--panel); box-shadow: var(--shadow-lg); }
+.v3introK h3 { margin: 0 0 12px; font: 700 18px/1.2 var(--display); }
+.v3introK ul { list-style: none; margin: 0 0 16px; padding: 0; display: grid; gap: 11px; }
+.v3introK li { display: grid; grid-template-columns: 36px 1fr; gap: 12px; align-items: center; font-size: 13.5px; line-height: 1.35; color: var(--muted); }
+.v3introK li b { display: block; color: var(--fg); font-size: 14px; }
+.v3introK li svg { width: 36px; height: 36px; padding: 7px; border-radius: 10px; color: var(--navy); background: var(--accent-soft); }
+.view3d .v3introK button { width: 100%; justify-content: center; padding: 11px; border-radius: 14px; font-weight: 700; color: #fff; background: var(--navy); }
+@media (max-width: 760px) { .v3side { top: calc(104px + env(safe-area-inset-top, 0px)); left: 12px; width: auto; } .v3pan { padding: 10px 12px; } .v3pan p { display: none; } .v3pan .glst { margin-top: 6px; } .view3d:has(.v3auge:not([hidden])) .v3side { display: none; }
+  .v3auge { left: 12px; right: 68px; transform: none; max-width: none; flex-wrap: wrap; gap: 6px; padding: 9px 12px; border-radius: 16px; top: calc(104px + env(safe-area-inset-top, 0px)); } .v3auge p { font-size: 12px; } }
 .v3status { position: absolute; z-index: 2; left: 50%; top: 45%; transform: translate(-50%, -50%); margin: 0; padding: 10px 18px; border-radius: 99px; font-weight: 600; text-align: center; max-width: calc(100% - 40px); background: var(--panel); }
 .v3info { position: absolute; z-index: 2; left: 12px; bottom: calc(30px + env(safe-area-inset-bottom, 0px)); width: min(300px, calc(100% - 24px)); padding: 14px 16px; border-radius: 22px; background: var(--panel); }
 .v3info:empty, .v3info[hidden] { display: none; }
@@ -1203,6 +1240,27 @@ ul.quellen b { color: var(--fg); font-weight: 600; }
         <button type="button" id="v3in" aria-label="Näher heran">+</button>
         <button type="button" id="v3out" aria-label="Weiter weg">−</button>
         <button type="button" class="compass" id="v3north" aria-label="Nach Norden ausrichten" title="Nach Norden ausrichten"><svg viewBox="0 0 44 44" aria-hidden="true"><g class="needle"><text x="22" y="10.5" text-anchor="middle">N</text><path d="M22 12 27 22H17z" fill="#ff3b30"/><path d="M22 34 17 22h10z" fill="currentColor" opacity=".38"/></g></svg></button>
+        <hr class="v3sep">
+        <button type="button" class="v3tb" id="v3person" aria-pressed="false" aria-label="Als Person auf dem Grundstück umsehen" title="Person (1,80 m) absetzen und auf Augenhöhe umsehen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="4.5" r="2"/><path d="M12 8v7M9 21l3-6 3 6M7.5 11.5 12 9l4.5 2.5"/></svg></button>
+        <button type="button" class="v3tb" id="v3sonne" aria-pressed="false" aria-label="Sonne und Schatten" title="Sonne und Schatten"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></button>
+        <button type="button" class="v3tb" id="v3glas" hidden aria-pressed="false" aria-label="Erlaubten Umfang als Glaskasten zeigen" title="Erlaubter Umfang: Baufenster × erlaubte Höhe"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 7v10l8 4 8-4V7z"/><path d="m4 7 8 4 8-4M12 11v10" opacity=".55"/></svg></button>
+        <button type="button" class="v3tb" id="v3hilfe" aria-label="Kurze Einführung" title="Kurze Einführung">?</button>
+      </div>
+      <div class="v3side">
+        <div class="v3pan" id="v3sonneP" hidden>
+          <header><b>Sonne und Schatten</b><span id="v3sonneT"></span></header>
+          <label class="v3sl">Uhrzeit <input type="range" id="v3zeit" min="5" max="22" step="0.25"><output id="v3zeitO"></output></label>
+          <label class="v3sl">Jahreszeit <input type="range" id="v3monat" min="1" max="12" step="1"><output id="v3monatO"></output></label>
+        </div>
+        <div class="v3pan" id="v3glasP" hidden></div>
+      </div>
+      <div class="v3auge" id="v3auge" hidden><p id="v3augeT"></p><button type="button" id="v3augeX">Zur Übersicht</button></div>
+      <div class="v3intro" id="v3intro" hidden role="dialog" aria-modal="false" aria-labelledby="v3introH">
+        <div class="v3introK">
+          <h3 id="v3introH">So funktioniert die 3D-Ansicht</h3>
+          <ul id="v3introL"></ul>
+          <button type="button" id="v3introGo">Los geht’s</button>
+        </div>
       </div>
       <div class="v3left">
       <div class="v3tools" id="v3tools" hidden role="toolbar" aria-label="Bauvorhaben zeichnen">
@@ -1712,7 +1770,7 @@ const View3D = (() => {
     if (opt.showBf) try {
       const bt = me.bfTileset = await C.Cesium3DTileset.fromUrl(GDI3D + "Ueberbaubare_Grundstuecksflaechen/tileset.json", {maximumScreenSpaceError: phone ? 6 : 4});
       if (st !== me) return;
-      bt.style = new C.Cesium3DTileStyle({color: "color('#0a6cff', 0.32)"});
+      bt.style = new C.Cesium3DTileStyle({color: "color('#0a6cff', 0.32)"}); bt.shadows = C.ShadowMode.DISABLED;
       scene.primitives.add(bt);
     } catch (e) { console.warn("Baufenster 3D", e); }
     ts.initialTilesLoaded.addEventListener(() => { if (st === me) opt.onStatus(""); });
@@ -1727,6 +1785,7 @@ const View3D = (() => {
     }
     if (!opt.shot) streetLabels(me, lon, lat);
     me.plotRings = plot;
+    me.glas = []; me.glasAn = false;
     // gezeichnetes Bauvorhaben wieder einsetzen (auch im Foto für den Bericht)
     me.fest = [];
     if (anbau && anbau.key === key(me)) { me.fest = anbau.items.map(it => ({id: it.id, pts: it.pts.slice(), form: {...it.form}})); festId = Math.max(festId, ...me.fest.map(it => it.id)); me.draw = newDraw(); drawEntities(me); drawRefresh(me); }
@@ -1734,6 +1793,7 @@ const View3D = (() => {
     let h = me.gz;
     try { const [c] = await C.sampleTerrainMostDetailed(terrainProvider, [C.Cartographic.fromDegrees(lon, lat)]); if (isFinite(c.height)) h = c.height; } catch { /* Sockelhöhe aus LoD2 */ }
     me.lon = lon; me.lat = lat; me.h = h;
+    if (!opt.shot) { glasBauen(me); augenSteuerung(me); }
     viewer.camera.lookAt(C.Cartesian3.fromDegrees(lon, lat, h + 4), new C.HeadingPitchRange(me.yaw, -me.pitch, me.dist));
     viewer.camera.lookAtTransform(C.Matrix4.IDENTITY);
     viewer.camera.percentageChanged = 0.001;
@@ -1741,6 +1801,8 @@ const View3D = (() => {
     // Antippen: Gebäudeangaben aus dem LoD2-Modell (gleiche ALKIS-Kennung)
     me.handler = new C.ScreenSpaceEventHandler(scene.canvas);
     me.handler.setInputAction(e => {
+      if (me.setzen) { const p = groundAt(me, e.position); if (p) personSetzen(me, p); return; }
+      if (me.eye) return augeHin(me, e.position);
       if (me.draw?.on && me.draw.tool) return drawClick(me, e.position);
       if (!opt.shot && desktop()) { // Klick auf ein Vorhaben: auswählen und bearbeiten
         const i = pickFest(me, e.position); if (i >= 0) return waehleAus(me, i);
@@ -1772,6 +1834,7 @@ const View3D = (() => {
     me.viewer.scene.canvas.addEventListener("contextmenu", e => e.preventDefault());
     me.handler.setInputAction(e => {
       me.orbit = null;
+      if (me.eye || me.setzen) return;
       if (grabCorner(me, e.position) || grabBody(me, e.position)) return;
       me.orbit = {x: e.position.x, y: e.position.y, piv: null};
     }, C.ScreenSpaceEventType.LEFT_DOWN);
@@ -1781,6 +1844,8 @@ const View3D = (() => {
       cursor(me);
     }, C.ScreenSpaceEventType.LEFT_UP);
     me.handler.setInputAction(e => {
+      if (me.eye) return;
+      if (me.setzen) return cursor(me, "crosshair");
       if (me.dragIdx != null) return dragCorner(me, e.endPosition);
       if (me.hDrag) return dragBody(me, e.endPosition);
       if (me.mDrag) return dragMove(me, e.endPosition);
@@ -1812,6 +1877,204 @@ const View3D = (() => {
     sc.requestRender();
   }
 
+  // ---------- Erlaubter Umfang als Glaskasten ----------
+  // opt.erlaubt: [{ring: [[x, y], ...] (UTM 32), top: erlaubte Höhe in m über Gelände oder null, art: "wand" (Wand/Traufe, Dach darf darüber) | "gesamt", text}]
+  // Baufenster auf dem Grundstück × erlaubte Höhe. Ein Vorhaben, das seitlich oder oben herausragt, wird rot.
+  async function glasBauen(me) {
+    const C = Cesium, list = (me.opt.erlaubt || []).filter(b => b.ring?.length >= 3);
+    if (!list.length) return api.onGlas?.(glasInfo(me));
+    const tp = me.viewer.terrainProvider, out = [];
+    for (const b of list) {
+      const ll = b.ring.map(toLonLat);
+      let g = me.h;
+      try { const hs = (await C.sampleTerrainMostDetailed(tp, ll.map(([lo, la]) => C.Cartographic.fromDegrees(lo, la)))).map(c => c.height).filter(isFinite); if (hs.length) g = Math.min(...hs); } catch { /* Bodenhöhe der Mitte */ }
+      if (st !== me) return;
+      out.push({...b, ll, g});
+    }
+    me.glas = out;
+    glasSchalten(out.some(b => b.top));
+  }
+  function glasSchalten(an) {
+    const me = st; if (!me?.viewer || !me.glas) return;
+    const C = Cesium, E = me.viewer.entities;
+    for (const e of me.glasEnt || []) E.remove(e);
+    me.glasEnt = [];
+    me.glasAn = !!an && me.glas.some(b => b.top);
+    if (me.glasAn) for (const b of me.glas) {
+      if (!b.top) continue;
+      const flat = b.ll.flat(), oben = b.g + b.top, kante = C.Color.fromCssColorString("#bfe9ff");
+      me.glasEnt.push(E.add({polygon: {hierarchy: C.Cartesian3.fromDegreesArray(flat), height: b.g - 0.5, extrudedHeight: oben, material: C.Color.fromCssColorString("#8fd8ff").withAlpha(0.16), shadows: C.ShadowMode.DISABLED}}));
+      const ring = [...b.ll, b.ll[0]];
+      me.glasEnt.push(E.add({polyline: {positions: C.Cartesian3.fromDegreesArrayHeights(ring.flatMap(([lo, la]) => [lo, la, oben])), width: 2, material: kante.withAlpha(0.95), depthFailMaterial: kante.withAlpha(0.35)}}));
+      for (const [lo, la] of b.ll) me.glasEnt.push(E.add({polyline: {positions: C.Cartesian3.fromDegreesArrayHeights([lo, la, b.g - 0.5, lo, la, oben]), width: 1.2, material: kante.withAlpha(0.7), depthFailMaterial: kante.withAlpha(0.25)}}));
+      // erlaubte Höhe als Schild an der höchsten Kante
+      me.glasEnt.push(E.add({position: C.Cartesian3.fromDegrees(...b.ll[0], oben), label: {text: b.text, font: `600 12px ${getComputedStyle(document.documentElement).getPropertyValue("--sans").trim() || "sans-serif"}`,
+        fillColor: C.Color.fromCssColorString("#0b2a3c"), showBackground: true, backgroundColor: C.Color.fromCssColorString("#bfe9ff").withAlpha(0.92), backgroundPadding: new C.Cartesian2(7, 4),
+        pixelOffset: new C.Cartesian2(0, -14), disableDepthTestDistance: Infinity, distanceDisplayCondition: new C.DistanceDisplayCondition(0, 260)}}));
+    }
+    if (me.bfTileset) me.bfTileset.show = !me.glasAn; // blaue Baufenster-Körper würden den Glaskasten verdecken
+    for (const it of me.fest || []) baueFest(me, it); // Vorhaben neu färben
+    if (me.draw) drawRefresh(me); else { api.onDraw?.(state(me)); me.viewer.scene.requestRender(); }
+    api.onGlas?.(glasInfo(me));
+  }
+  const glasInfo = me => !me?.glas ? null : {da: me.glas.some(b => b.top), an: !!me.glasAn, boxen: me.glas.map(b => ({top: b.top, art: b.art, text: b.text})), rot: rotListe(me)};
+  // Abstand eines Punkts zum Ring (Meter), für die Toleranz an der Kante
+  const randAbstand = (p, r) => { let m = 1e9; for (let i = 0; i < r.length; i++) { const a = r[i], b = r[(i + 1) % r.length], dx = b[0] - a[0], dy = b[1] - a[1], l = dx * dx + dy * dy || 1, t = Math.max(0, Math.min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / l)); m = Math.min(m, Math.hypot(p[0] - a[0] - t * dx, p[1] - a[1] - t * dy)); } return m; };
+  // "" = passt, "seite" = ragt aus dem Baufenster, "hoch" = höher als erlaubt
+  function zuViel(me, pts, form, first) {
+    if (!me.glasAn || me.opt.shot || !me.glas?.length || pts.length < 3) return "";
+    const xy = pts.map(p => { const c = carto(p); return proj4("EPSG:4326", "EPSG:25832", [c.longitude / rad, c.latitude / rad]); });
+    const probe = xy.flatMap((p, i) => { const q = xy[(i + 1) % xy.length]; return [p, [(p[0] + q[0]) / 2, (p[1] + q[1]) / 2]]; });
+    let hoch = false;
+    for (const p of probe) {
+      const drin = me.glas.filter(b => inPoly(p[0], p[1], b.ring) || randAbstand(p, b.ring) < 0.25);
+      if (!drin.length) return "seite";
+      if (drin.every(b => b.top)) {
+        const b = drin.reduce((a, c) => c.top > a.top ? c : a), h = b.art === "gesamt" ? first : form.wand;
+        if (h > b.top + 0.05) hoch = true;
+      }
+    }
+    return hoch ? "hoch" : "";
+  }
+  const rotListe = me => [...(me.fest || []).map(it => it.mass?.rot), me.draw?.closed && me.draw.mass?.rot].filter(Boolean);
+
+  // ---------- Sonne und Schatten ----------
+  // monat 1-12 (jeweils der 21.), stunde in Hamburger Ortszeit; gibt die Sonnenhöhe in Grad zurück
+  function sonne(an, monat = 6, stunde = 12) {
+    const me = st; if (!me?.viewer) return null;
+    const C = Cesium, v = me.viewer;
+    if (!an) { v.shadows = false; v.clock.currentTime = C.JulianDate.fromIso8601("2026-06-21T11:00:00Z"); v.scene.requestRender(); return null; }
+    const off = monat >= 4 && monat <= 10 ? 2 : 1; // Sommerzeit grob April bis Oktober
+    const t = new Date(Date.UTC(2026, monat - 1, 21) + (stunde - off) * 3600e3);
+    v.clock.currentTime = C.JulianDate.fromDate(t);
+    v.shadows = true; v.terrainShadows = C.ShadowMode.RECEIVE_ONLY;
+    const sm = v.scene.shadowMap; sm.softShadows = true; sm.size = matchMedia("(max-width: 760px)").matches ? 2048 : 4096; sm.darkness = 0.42; sm.maximumDistance = 700;
+    v.scene.requestRender();
+    // Sonnenhöhe (Näherung, für den Hinweis „Sonne untergegangen“)
+    const doy = Math.floor((t - Date.UTC(2026, 0, 0)) / 864e5), dek = 23.44 * Math.sin(2 * Math.PI * (284 + doy) / 365) * rad;
+    const sz = t.getUTCHours() + t.getUTCMinutes() / 60 + me.lon / 15, ha = 15 * (sz - 12) * rad, br = me.lat * rad;
+    return Math.asin(Math.sin(br) * Math.sin(dek) + Math.cos(br) * Math.cos(dek) * Math.cos(ha)) / rad;
+  }
+
+  // ---------- Person auf dem Grundstück: umsehen auf Augenhöhe (wie Street View, im grauen Modell) ----------
+  const AUGE = 1.65, GROESSE = 1.8;
+  function personStart() {
+    const me = st; if (!me?.viewer || me.opt.shot) return;
+    if (me.draw?.on) drawStop();
+    if (me.figur && !me.eye) return augeAn(me, me.figur.pos); // Person steht schon: auf ihre Augenhöhe
+    if (me.eye) augeAus(me);
+    me.setzen = true; cursor(me, "crosshair"); api.onPerson?.("setzen");
+  }
+  function personEnde(me) {
+    if (me.eye) augeAus(me);
+    me.setzen = false; cursor(me); api.onPerson?.(me.figur ? "steht" : "");
+  }
+  function personSetzen(me, p) {
+    me.setzen = false;
+    figur(me, p);
+    // Blick zum Grundstück bzw. zum Vorhaben
+    const ziel = [...(me.fest || []), me.draw?.closed && me.draw].filter(Boolean).flatMap(it => it.pts);
+    const Z = ziel.length ? Cesium.BoundingSphere.fromPoints(ziel).center : Cesium.Cartesian3.fromDegrees(me.lon, me.lat, me.h);
+    augeAn(me, p, Z);
+  }
+  function figur(me, p) {
+    const C = Cesium, E = me.viewer.entities;
+    for (const e of me.figur?.ent || []) E.remove(e);
+    const c = carto(p), g = c.height, at = z => C.Cartesian3.fromRadians(c.longitude, c.latitude, g + z);
+    const farbe = C.Color.fromCssColorString("#1f6feb"), haut = C.Color.fromCssColorString("#f2c29b"), sh = C.ShadowMode.ENABLED;
+    const f = GROESSE / 1.8;
+    const ent = [
+      E.add({position: at(0.43 * f), cylinder: {length: 0.86 * f, topRadius: 0.16, bottomRadius: 0.12, material: C.Color.fromCssColorString("#2b3440"), shadows: sh}}), // Beine
+      E.add({position: at(1.15 * f), cylinder: {length: 0.6 * f, topRadius: 0.21, bottomRadius: 0.17, material: farbe, shadows: sh}}), // Oberkörper
+      E.add({position: at(1.6 * f), ellipsoid: {radii: new C.Cartesian3(0.11, 0.11, 0.13 * f), material: haut, shadows: sh}}), // Kopf
+      E.add({position: at(GROESSE + 0.35), label: {text: "1,80 m", font: `600 12px ${getComputedStyle(document.documentElement).getPropertyValue("--sans").trim() || "sans-serif"}`,
+        fillColor: C.Color.WHITE, showBackground: true, backgroundColor: farbe.withAlpha(0.9), backgroundPadding: new C.Cartesian2(6, 3), disableDepthTestDistance: Infinity,
+        distanceDisplayCondition: new C.DistanceDisplayCondition(0, 220)}})
+    ];
+    me.figur = {pos: C.Cartesian3.fromRadians(c.longitude, c.latitude, g), ent};
+    me.viewer.scene.requestRender();
+  }
+  function augeAn(me, p, ziel) {
+    const C = Cesium, cam = me.viewer.camera, c = carto(p);
+    if (!me.eye) me.eyeBack = {destination: cam.position.clone(), orientation: {heading: cam.heading, pitch: cam.pitch, roll: 0}, fov: cam.frustum.fov};
+    me.eye = true; me.setzen = false;
+    me.figur?.ent.forEach(e => e.show = false); // man ist selbst die Person
+    me.viewer.scene.screenSpaceCameraController.enableInputs = false;
+    let heading = cam.heading;
+    if (ziel) { const F = C.Transforms.eastNorthUpToFixedFrame(p), L = C.Matrix4.multiplyByPoint(C.Matrix4.inverseTransformation(F, new C.Matrix4()), ziel, new C.Cartesian3()); if (Math.hypot(L.x, L.y) > 1) heading = Math.atan2(L.x, L.y); }
+    cam.frustum.fov = C.Math.toRadians(75);
+    cam.flyTo({destination: C.Cartesian3.fromRadians(c.longitude, c.latitude, c.height + AUGE), orientation: {heading, pitch: C.Math.toRadians(4), roll: 0}, duration: 1.1});
+    cursor(me, "grab"); api.onPerson?.("auge");
+  }
+  function augeAus(me) {
+    const C = Cesium, cam = me.viewer.camera;
+    laufTasten.clear();
+    const c = carto(cam.position), g = me.viewer.scene.globe.getHeight(c) ?? c.height - AUGE;
+    figur(me, C.Cartesian3.fromRadians(c.longitude, c.latitude, g)); // Person bleibt dort stehen, wo man zuletzt war
+    me.eye = false;
+    me.viewer.scene.screenSpaceCameraController.enableInputs = true;
+    if (me.eyeBack) { cam.frustum.fov = me.eyeBack.fov; cam.flyTo({destination: me.eyeBack.destination, orientation: me.eyeBack.orientation, duration: 0.9}); }
+    cursor(me); api.onPerson?.("steht");
+  }
+  // Auf den Boden klicken: dorthin gehen
+  function augeHin(me, pos) {
+    const C = Cesium, cam = me.viewer.camera, p = groundAt(me, pos); if (!p) return;
+    const c = carto(p), from = carto(cam.position);
+    const d = C.Cartesian3.distance(C.Cartesian3.fromRadians(c.longitude, c.latitude, 0), C.Cartesian3.fromRadians(from.longitude, from.latitude, 0));
+    if (d > 120 || d < 0.3) return;
+    const g = me.viewer.scene.globe.getHeight(c) ?? c.height;
+    cam.flyTo({destination: C.Cartesian3.fromRadians(c.longitude, c.latitude, g + AUGE), orientation: {heading: cam.heading, pitch: cam.pitch, roll: 0}, duration: Math.min(1.6, 0.35 + d / 12)});
+  }
+  // schrittweise gehen (Pfeiltasten): vorwärts in Blickrichtung, Boden folgt dem Gelände
+  function gehe(me, vor, seit) {
+    const C = Cesium, cam = me.viewer.camera, h = cam.heading;
+    const F = C.Transforms.eastNorthUpToFixedFrame(cam.position);
+    const ziel = C.Matrix4.multiplyByPoint(F, new C.Cartesian3(Math.sin(h) * vor + Math.cos(h) * seit, Math.cos(h) * vor - Math.sin(h) * seit, 0), new C.Cartesian3());
+    const c = carto(ziel), g = me.viewer.scene.globe.getHeight(c);
+    if (g == null) return;
+    cam.setView({destination: C.Cartesian3.fromRadians(c.longitude, c.latitude, g + AUGE), orientation: {heading: h, pitch: cam.pitch, roll: 0}});
+  }
+  function blickweite(me, f) { const C = Cesium, cam = me.viewer.camera; cam.frustum.fov = C.Math.clamp(cam.frustum.fov * (f < 1 ? 0.85 : 1.18), C.Math.toRadians(25), C.Math.toRadians(100)); me.viewer.scene.requestRender(); }
+  const laufTasten = new Set();
+  let laufRaf = 0, laufT = 0;
+  function laufen() {
+    const me = st; laufRaf = 0;
+    if (!me?.eye || !laufTasten.size) return;
+    const now = performance.now(), dt = Math.min(0.05, (now - laufT) / 1000); laufT = now;
+    const k = t => laufTasten.has(t), schnell = k("Shift") ? 3 : 1, cam = me.viewer.camera;
+    const vor = (k("ArrowUp") || k("w") ? 1 : 0) - (k("ArrowDown") || k("s") ? 1 : 0), seit = (k("d") ? 1 : 0) - (k("a") ? 1 : 0), dreh = (k("ArrowRight") ? 1 : 0) - (k("ArrowLeft") ? 1 : 0);
+    if (dreh) cam.setView({orientation: {heading: cam.heading + dreh * 1.1 * dt, pitch: cam.pitch, roll: 0}});
+    if (vor || seit) gehe(me, vor * 2.2 * schnell * dt, seit * 1.6 * schnell * dt);
+    me.viewer.scene.requestRender();
+    laufRaf = requestAnimationFrame(laufen);
+  }
+  // Maus/Finger ziehen = umsehen (die Welt greifen wie bei Street View), Mausrad = Blickwinkel, Tasten = gehen
+  function augenSteuerung(me) {
+    const cv = me.viewer.scene.canvas, cam = () => me.viewer.camera;
+    let drag = null;
+    cv.addEventListener("pointerdown", e => { if (st !== me || !me.eye) return; drag = {x: e.clientX, y: e.clientY}; cursor(me, "grabbing"); });
+    addEventListener("pointermove", e => {
+      if (!drag || st !== me || !me.eye) return;
+      const c = cam(), k = c.frustum.fov / Math.max(300, cv.clientHeight), dx = e.clientX - drag.x, dy = e.clientY - drag.y; drag = {x: e.clientX, y: e.clientY};
+      c.setView({orientation: {heading: c.heading - dx * k, pitch: Cesium.Math.clamp(c.pitch + dy * k, -1.25, 1.25), roll: 0}});
+      me.viewer.scene.requestRender();
+    });
+    addEventListener("pointerup", () => { if (drag) { drag = null; if (st === me && me.eye) cursor(me, "grab"); } });
+    cv.addEventListener("wheel", e => { if (st !== me || !me.eye) return; e.preventDefault(); blickweite(me, e.deltaY < 0 ? 0.9 : 1.1); }, {passive: false});
+  }
+  addEventListener("keydown", e => {
+    const me = st;
+    if (!me?.viewer || e.target.matches?.("input, textarea, select") || e.metaKey || e.ctrlKey || e.altKey) return;
+    if (e.key === "Escape" && (me.eye || me.setzen)) { personEnde(me); e.preventDefault(); e.stopImmediatePropagation(); return; }
+    if (!me.eye) return;
+    const t = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+    if (!["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "w", "a", "s", "d", "Shift"].includes(t)) return;
+    e.preventDefault(); e.stopImmediatePropagation();
+    laufTasten.add(t); if (!laufRaf) { laufT = performance.now(); laufRaf = requestAnimationFrame(laufen); }
+  }, true);
+  addEventListener("keyup", e => { const t = e.key.length === 1 ? e.key.toLowerCase() : e.key; laufTasten.delete(t); if (t === "Shift") return; });
+  addEventListener("blur", () => laufTasten.clear());
+
   // ---------- Bauvorhaben zeichnen ----------
   // Werkzeuge wie in CAD-Programmen: Rechteck (zwei Ecken, richtet sich an der Grundstücksgrenze aus) und Vieleck (Ecke für Ecke,
   // rechte Winkel rasten ein). Maße lassen sich eintippen. Erst wenn die Form fertig ist, steht der Körper mit Dach. Danach:
@@ -1821,7 +2084,7 @@ const View3D = (() => {
   let anbauVer = 0, festId = 0;
   const key = me => me.opt.center.map(v => Math.round(v)).join(",");
   const FORM0 = {dach: "sattel", wand: 3, neigung: 30, dreh: 0}; // dreh: Firstrichtung in 90°-Schritten (0 bis 3)
-  const ORANGE = "#9b87f5", DACH = "#6e56cf", BLAU = "#4766f0"; // Vorhaben in Lila: hebt sich von Grundstück (gelb), Baufenster (blau) und Häusern (grau) ab
+  const ORANGE = "#9b87f5", DACH = "#6e56cf", BLAU = "#4766f0", ROT = "#ff453a", ROT_DACH = "#c9302c"; // Vorhaben in Lila: hebt sich von Grundstück (gelb), Baufenster (blau) und Häusern (grau) ab
   const r1 = v => Math.round(v * 10) / 10; // Maße auf 10 cm
   // Punkt auf dem Gelände unter der Maus (geht durch Gebäude und das Vorhaben hindurch)
   function groundAt(me, pos) {
@@ -1834,6 +2097,7 @@ const View3D = (() => {
   // Zeichnen beginnen: ohne Vorhaben gleich mit dem Rechteck, sonst Vorhaben auswählen
   function drawStart(tool) {
     const me = st; if (!me?.viewer) return;
+    if (me.eye || me.setzen) personEnde(me);
     if (!me.draw) me.draw = newDraw();
     if (!me.drawEnt) drawEntities(me);
     let d = me.draw;
@@ -1976,13 +2240,13 @@ const View3D = (() => {
   function state(me) {
     const d = me.draw;
     const festA = (me.fest || []).reduce((s, it) => s + (it.area || 0), 0), festN = (me.fest || []).length;
-    if (!d) return {on: false, n: 0, closed: false, area: 0, tool: null, festN, count: festN, areaAll: festA};
+    if (!d) return {on: false, n: 0, closed: false, area: 0, tool: null, festN, count: festN, areaAll: festA, rot: rotListe(me)};
     let pts = outline(me); if (d.tool === "vieleck" && d.hover && d.snap !== "zu") pts = [...pts, d.hover];
     const F = pts.length ? frame(me, pts[0]) : null, area = pts.length >= 3 ? Math.abs(flaeche(pts.map(p => F.loc(p)))) : 0;
     let dims = "";
     if (d.tool === "rechteck" && d.pts.length === 1 && d.hover) { const r = rect(me, d.hover); dims = `${fmt(r.du)} × ${fmt(r.dv)} m`; }
     return {on: d.on, tool: d.tool, n: d.pts.length, closed: d.closed, area, dims, form: {...d.form}, snap: d.snap, vcb: d.vcb, mass: d.mass || null,
-      festN, count: festN + (d.closed ? 1 : 0), areaAll: festA + (d.closed || d.tool ? area : 0)};
+      festN, count: festN + (d.closed ? 1 : 0), areaAll: festA + (d.closed || d.tool ? area : 0), rot: rotListe(me)};
   }
 
   // Körper mit Dach als eigene Geometrie (schattiert, damit die Flächen plastisch wirken)
@@ -2046,17 +2310,18 @@ const View3D = (() => {
     const F = frame(me, pts[0]), L = pts.map(p => F.loc(p)), base = Math.min(...L.map(p => p.z));
     let P = L.map(p => [p.x, p.y]); if (flaeche(L) < 0) P = P.reverse();
     const M = mass(P, form), m = C.Matrix4.multiplyByTranslation(F.m, new C.Cartesian3(0, 0, base), new C.Matrix4());
-    const col = c => C.Color.fromCssColorString(c).brighten(hi ? 0.12 : 0, new C.Color());
+    const rot = zuViel(me, pts, form, M.first); // ragt aus dem erlaubten Umfang (Glaskasten): rot
+    const col = c => C.Color.fromCssColorString(rot ? (c === DACH ? ROT_DACH : ROT) : c).brighten(hi ? 0.12 : 0, new C.Color());
     const inst = (tris, c) => new C.GeometryInstance({geometry: geom(tris), modelMatrix: m, attributes: {color: C.ColorGeometryInstanceAttribute.fromColor(col(c))}});
     const prim = sc.primitives.add(new C.Primitive({geometryInstances: [inst(M.wall, ORANGE), ...(M.roof.length ? [inst(M.roof, form.dach === "flach" ? ORANGE : DACH)] : [])],
-      appearance: new C.PerInstanceColorAppearance({flat: false, translucent: false, closed: false}), asynchronous: false, compressVertices: false}));
+      appearance: new C.PerInstanceColorAppearance({flat: false, translucent: false, closed: false}), asynchronous: false, compressVertices: false, shadows: C.ShadowMode.ENABLED}));
     prim.vorhaben = true;
     const lines = sc.primitives.add(new C.PolylineCollection({modelMatrix: m}));
     const v = a => new C.Cartesian3(a[0], a[1], a[2]), white = C.Material.fromType("Color", {color: C.Color.WHITE.withAlpha(0.95)});
     for (const r of M.pieces) lines.add({positions: [...r, r[0]].map(v), width: 1.5, material: white});
     lines.add({positions: P.concat([P[0]]).map(p => v([p[0], p[1], 0.05])), width: 2, material: white});
     P.forEach((p, i) => lines.add({positions: [v([p[0], p[1], 0]), v([p[0], p[1], M.tops[i]])], width: 1.5, material: white}));
-    return {prim, lines, mass: {vol: M.vol, first: M.first, base, F, P}, area: Math.abs(flaeche(L))};
+    return {prim, lines, mass: {vol: M.vol, first: M.first, base, F, P, rot}, area: Math.abs(flaeche(L))};
   }
   function buildMass(me) {
     const sc = me.viewer.scene, d = me.draw;
@@ -2236,6 +2501,7 @@ const View3D = (() => {
 
   function north() {
     const me = st; if (!me) return;
+    if (me.eye) { const cam = me.viewer.camera; cam.setView({orientation: {heading: 0, pitch: cam.pitch, roll: 0}}); me.viewer.scene.requestRender(); return; }
     if (me.viewer) { // wie der Kompass in Apple Karten: nur nach Norden drehen, Neigung und Ausschnitt bleiben
       const C = Cesium, sc = me.viewer.scene, cam = me.viewer.camera, cv = sc.canvas;
       const c = sc.pickPosition(new C.Cartesian2(cv.clientWidth / 2, cv.clientHeight / 2)) || C.Cartesian3.fromDegrees(me.lon, me.lat, me.h);
@@ -2245,11 +2511,12 @@ const View3D = (() => {
   }
   function zoom(f) {
     const me = st; if (!me) return;
+    if (me.eye) return blickweite(me, f);
     if (me.viewer) { const cam = me.viewer.camera, d = Math.max(cam.positionCartographic.height - me.h, 20); f < 1 ? cam.zoomIn(d * (1 - f)) : cam.zoomOut(d * (f - 1)); me.viewer.scene.requestRender(); }
   }
   function close() {
     const me = st; if (!me) return;
-    st = null; api.onDraw?.(null);
+    st = null; api.onDraw?.(null); api.onPerson?.(""); laufTasten.clear();
     if (me.viewer) { me.handler?.destroy(); me.viewer.destroy(); }
     me.box?.remove();
   }
@@ -2321,7 +2588,9 @@ const View3D = (() => {
     return {n: it.length, items: it.map(x => ({ring: x.ring, form: {...x.form}, area: x.area, vol: x.vol, first: x.first})), ring: it[0].ring, rings: it.map(x => x.ring), form: {...it[0].form},
       area: sum("area"), vol: sum("vol"), first: Math.max(...it.map(x => x.first)), bild: anbau.bild, ver: anbau.ver};
   };
-  const api = {open, close, north, zoom, snapshot, buildings, draw, vorhaben, capture: () => capture(st), preload: loadCesium, isOpen: () => !!st, onHeading: null, onDraw: null, onHover: null};
+  const person = {start: personStart, ende: () => st && personEnde(st), aktiv: () => !!(st?.eye || st?.setzen), da: () => !!st?.figur};
+  const api = {open, close, north, zoom, snapshot, buildings, draw, vorhaben, capture: () => capture(st), preload: loadCesium, isOpen: () => !!st,
+    person, sonne, glas: {an: glasSchalten, info: () => glasInfo(st)}, onHeading: null, onDraw: null, onHover: null, onPerson: null, onGlas: null};
   return api;
 })();
 </script>
@@ -3829,13 +4098,27 @@ function measureFromInfo() { fitPlot(); startMeasure("Polygon", true); }
 
 // ---------- 3D-Ansicht ----------
 const rings = g => !g ? [] : g.getType() === "Polygon" ? [g.getCoordinates()[0]] : g.getType() === "MultiPolygon" ? g.getCoordinates().map(p => p[0]) : [];
+// Erlaubter Umfang für den Glaskasten: Baufenster auf dem Grundstück × erlaubte Höhe über Gelände
+// (Höhe aus dem Plan, sonst grob 3 m je Vollgeschoss; Höhen über NN lassen wir weg, die passen nicht zum Geländemodell)
+function erlaubtHoehe(a) {
+  const hs = [...String(a.Hoehenangabe || "").matchAll(/Höhenbezug: (\w+)\|Bezugspunkt: (\w+)\|Höhe: ([\d.]+)/g)].filter(([, bez]) => !/NHN|NN/.test(bez)).map(([, , pkt, h]) => ({pkt, h: +h})).filter(x => x.h > 0);
+  const ges = hs.filter(x => ["GBH", "FH", "OK", "HBA"].includes(x.pkt)).sort((x, y) => y.h - x.h)[0], wand = hs.filter(x => ["TH", "WH"].includes(x.pkt)).sort((x, y) => y.h - x.h)[0];
+  if (ges) return {top: ges.h, art: "gesamt", text: `${AMT_HOEHE[ges.pkt]} ${fl1(ges.h)} m`};
+  if (wand) return {top: wand.h, art: "wand", text: `${AMT_HOEHE[wand.pkt]} ${fl1(wand.h)} m`};
+  const z = amtZone(a);
+  if (z.vg > 0) return {top: z.vg * 3, art: "wand", text: `${roman(z.vg)} · ca. ${fl1(z.vg * 3)} m`, vg: z.vg};
+  return {top: null, art: "", text: ""};
+}
+const bfErlaubt = () => bfSrc.getFeatures().filter(f => f.get("mine")).flatMap(f => { const h = erlaubtHoehe(f.get("attrs") || {}); return rings(f.getGeometry()).map(ring => ({ring, ...h})); });
 function open3d() {
   stopMeasure();
   const pg = plotSrc.getFeatures()[0]?.getGeometry(), mk = markerSrc.getFeatures()[0]?.getGeometry();
   const center = pg ? ol.extent.getCenter(pg.getExtent()) : mk ? mk.getCoordinates() : view.getCenter();
   body.add("is3d"); $("v3info").innerHTML = "";
+  v3Reset(); v3IntroZeigen();
   View3D.open({el: $("view3d"), center, plot: rings(pg), plan: selSrc.getFeatures().flatMap(f => rings(f.getGeometry())),
     bf: bfLayer.getVisible() ? bfSrc.getFeaturesInExtent(ol.extent.buffer(ol.extent.boundingExtent([center]), 200)).flatMap(f => rings(f.getGeometry())) : [], showBf: bfLayer.getVisible(),
+    erlaubt: bfErlaubt(),
     onInfo: h => { $("v3info").innerHTML = h; $("v3info").hidden = !h; },
     onStatus: t => { $("v3status").textContent = t; $("v3status").hidden = !t; }});
 }
@@ -3851,6 +4134,74 @@ const setNeedle = (id, rad) => { $(id).querySelector(".needle").style.transform 
 view.on("change:rotation", () => setNeedle("compass", view.getRotation()));
 on("compass", "click", () => view.animate({rotation: 0, duration: 400}));
 View3D.onHeading = h => setNeedle("v3north", -h);
+// Person auf Augenhöhe, Sonne und Schatten, erlaubter Umfang (Glaskasten), Einführung
+let v3Glas = null;
+function v3Reset() {
+  ["v3sonneP", "v3glasP", "v3auge", "v3glas"].forEach(i => $(i).hidden = true);
+  ["v3person", "v3sonne", "v3glas"].forEach(i => $(i).setAttribute("aria-pressed", "false"));
+  v3Glas = null;
+}
+const PERSON_T = {
+  setzen: () => bvDesktop() ? "<b>Person absetzen:</b> Klicken Sie auf den Boden, wo die Person stehen soll." : "<b>Person absetzen:</b> Tippen Sie auf den Boden, wo die Person stehen soll.",
+  auge: () => bvDesktop() ? "<b>Augenhöhe 1,65 m.</b> Ziehen: umsehen · Boden anklicken: hingehen · Pfeiltasten: gehen" : "<b>Augenhöhe 1,65 m.</b> Ziehen: umsehen · Boden antippen: hingehen"
+};
+View3D.onPerson = m => {
+  $("v3person").setAttribute("aria-pressed", String(m === "setzen" || m === "auge"));
+  $("v3person").title = m === "steht" ? "Auf Augenhöhe der Person umsehen" : "Person (1,80 m) absetzen und auf Augenhöhe umsehen";
+  $("v3auge").hidden = !PERSON_T[m];
+  if (PERSON_T[m]) { $("v3augeT").innerHTML = PERSON_T[m](); $("v3augeX").textContent = m === "setzen" ? "Abbrechen" : "Zur Übersicht"; }
+  $("view3d").classList.toggle("auge", m === "auge");
+};
+on("v3person", "click", () => View3D.person.aktiv() ? View3D.person.ende() : View3D.person.start());
+on("v3augeX", "click", () => View3D.person.ende());
+// Sonne: Regler für Uhrzeit und Jahreszeit; beim Einschalten heute um diese Uhrzeit
+const MONATE = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
+function v3SonneSetzen() {
+  const h = +$("v3zeit").value, m = +$("v3monat").value, el = View3D.sonne(true, m, h);
+  $("v3zeitO").textContent = `${Math.floor(h)}:${String(Math.round(h % 1 * 60)).padStart(2, "0")} Uhr`;
+  $("v3monatO").textContent = `21. ${MONATE[m - 1]}`;
+  $("v3sonneT").textContent = el == null ? "" : el < 0 ? "Sonne ist untergegangen" : `Sonne ${Math.round(el)}° hoch`;
+}
+on("v3sonne", "click", () => {
+  const an = $("v3sonne").getAttribute("aria-pressed") !== "true";
+  $("v3sonne").setAttribute("aria-pressed", String(an)); $("v3sonneP").hidden = !an;
+  if (!an) return View3D.sonne(false);
+  if (!$("v3zeit").dataset.gesetzt) { const d = new Date(); $("v3zeit").value = Math.min(19, Math.max(8, d.getHours())); $("v3monat").value = d.getMonth() + 1; $("v3zeit").dataset.gesetzt = "1"; }
+  v3SonneSetzen();
+});
+$("v3zeit").addEventListener("input", v3SonneSetzen);
+$("v3monat").addEventListener("input", v3SonneSetzen);
+// Glaskasten: Baufenster × erlaubte Höhe; ragt ein Vorhaben heraus, ist es rot
+function v3GlasPanel() {
+  const g = v3Glas, b = $("v3glasP"), btn = $("v3glas");
+  btn.hidden = !g?.da; btn.setAttribute("aria-pressed", String(!!g?.an));
+  b.hidden = !g?.an; if (!g?.an) return;
+  const rot = g.rot || [], n = bvLast?.count || 0, boxen = [...new Set(g.boxen.filter(x => x.top).map(x => x.text))];
+  const vg = g.boxen.some(x => x.top && x.art === "wand");
+  b.innerHTML = `<header><b>Erlaubter Umfang</b></header>${boxen.map(t => `<div class="glk"><i></i>${esc(t)}</div>`).join("")}
+    <p>Glaskasten = Baufenster auf Ihrem Grundstück × erlaubte Höhe.${vg ? " Ein Dach ohne Vollgeschoss darf darüber hinaus." : ""}</p>
+    ${n ? `<div class="glst${rot.length ? " rot" : ""}">${rot.includes("seite") ? "Rot: ragt aus dem Baufenster" : rot.length ? "Rot: höher als erlaubt" : n > 1 ? "Ihre Vorhaben passen hinein" : "Ihr Vorhaben passt hinein"}</div>`
+      : `<p>${bvDesktop() ? "Zeichnen Sie ein Vorhaben. Ragt es heraus, wird es rot." : "Ein Vorhaben können Sie am PC einzeichnen."}</p>`}
+    <p>Richtwert. Verbindlich ist der Plan.</p>`;
+}
+View3D.onGlas = g => { v3Glas = g; v3GlasPanel(); };
+on("v3glas", "click", () => View3D.glas.an(!v3Glas?.an));
+// Einführung beim ersten Öffnen (und über das Fragezeichen)
+const IC = p => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
+function v3IntroZeigen(immer) {
+  if (!immer && bvMerk("moinplan-3d-intro")) return;
+  const pc = bvDesktop(), L = [
+    [IC('<path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/>'), "Drehen", pc ? "Linke Maustaste gedrückt halten und ziehen." : "Mit einem Finger ziehen."],
+    [IC('<circle cx="11" cy="11" r="7"/><path d="m20 20-4-4M11 8v6M8 11h6"/>'), "Zoomen und verschieben", pc ? "Mausrad zoomt, rechte Maustaste verschiebt." : "Zwei Finger auseinander, zusammen oder gemeinsam ziehen."],
+    ...(pc ? [[IC('<rect x="4" y="6" width="16" height="12" rx="1"/><circle cx="4" cy="6" r="1.6" fill="currentColor"/><circle cx="20" cy="18" r="1.6" fill="currentColor"/>'), "Zeichnen", "Links „Rechteck“ wählen und zwei Ecken auf den Boden klicken."]] : []),
+    [IC('<circle cx="12" cy="4.5" r="2"/><path d="M12 8v7M9 21l3-6 3 6M7.5 11.5 12 9l4.5 2.5"/>'), "Umsehen wie vor Ort", "Rechts die Person wählen und auf den Boden setzen. Dann sehen Sie alles auf Augenhöhe."],
+    [IC('<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2"/>'), "Sonne und Schatten", "Rechts die Sonne wählen, dann Uhrzeit und Jahreszeit einstellen."]];
+  $("v3introL").innerHTML = L.map(([i, t, d]) => `<li>${i}<span><b>${t}</b>${d}</span></li>`).join("");
+  $("v3intro").hidden = false; $("v3tip").hidden = true;
+  setTimeout(() => $("v3introGo").focus(), 50);
+}
+on("v3introGo", "click", () => { $("v3intro").hidden = true; bvMerk("moinplan-3d-intro", "1"); if (!bvMerk("moinplan-bv") && !bvLast?.count && bvDesktop()) $("v3tip").hidden = false; });
+on("v3hilfe", "click", () => v3IntroZeigen(true));
 // Bauvorhaben zeichnen (nur PC), bedient wie ein CAD-Programm: Werkzeugleiste links, Statuszeile mit Maßfeld unten, Eigenschaften rechts.
 // Rechts oben steht live, wie viel Grundfläche noch bebaubar ist.
 let bvStand, bvLast = null, bvAuto = "", bvHat = false;
@@ -3904,13 +4255,14 @@ View3D.onDraw = d => {
   $("v3stat").hidden = $("v3props").hidden = !aktiv;
   $("v3bil").hidden = !(aktiv || d.count);
   if (aktiv) { $("v3tip").hidden = true; bvMerk("moinplan-bv", "1"); $("bvHinweis").hidden = true; }
-  else if (!bvMerk("moinplan-bv") && !d.count) $("v3tip").hidden = false;
+  else if (!bvMerk("moinplan-bv") && !d.count && $("v3intro").hidden) $("v3tip").hidden = false;
+  if (v3Glas) { v3Glas.rot = d.rot || []; v3GlasPanel(); }
   if (bvAuto && !d.tool && !d.closed) { const t = bvAuto; bvAuto = ""; return View3D.draw.start(t); }
   if (aktiv || d.count) bvFrei(d);
   if (!aktiv) return;
   bvHint(d);
   const m = d.mass;
-  $("v3dtext").innerHTML = d.closed ? `<b>${fl1(d.area)} m²</b> Grundfläche<span>${m ? `Höchster Punkt ${fl1(m.first)} m · umbauter Raum ca. ${fl(m.vol)} m³` : ""}</span>`
+  $("v3dtext").innerHTML = d.closed ? `<b>${fl1(d.area)} m²</b> Grundfläche<span>${m ? `Höchster Punkt ${fl1(m.first)} m · umbauter Raum ca. ${fl(m.vol)} m³` : ""}</span>${m?.rot ? `<em class="v3rot">${m.rot === "seite" ? "Ragt aus dem Baufenster" : "Höher als erlaubt"}</em>` : ""}`
     : d.area ? `<b>${fl1(d.area)} m²</b> Grundfläche${d.dims ? `<span>${d.dims}</span>` : ""}`
     : !d.tool ? `${d.count === 1 ? "1 Bauvorhaben" : d.count + " Bauvorhaben"}<span>Klicken Sie eines an, um es zu verschieben oder Höhe und Dach zu ändern.</span>`
     : `${d.festN ? "Weiteres Bauvorhaben" : "Ihr Bauvorhaben"}<span>Erst den Grundriss zeichnen. Danach wählen Sie Höhe und Dach.</span>`;
