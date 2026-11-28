@@ -1649,11 +1649,13 @@ const View3D = (() => {
   // herausgerechnet; die Straßennamen kommen stattdessen klein und lesbar aus dem Straßennetz (streetLabels).
   const CLEAN_LEVEL = 16;
   function mapProvider(C) {
-    const p = new C.WebMapServiceImageryProvider({url: MAP_WMS, layers: MAP_LAYER, parameters: {format: "image/png", transparent: false}, tilingScheme: new C.WebMercatorTilingScheme(), maximumLevel: 19});
+    const o = window.__karte3d || {}; // Vorschau anderer Bodenkarten (z. B. Luftbild), sonst Stadtplan
+    const p = new C.WebMapServiceImageryProvider({url: o.url || MAP_WMS, layers: o.layer || MAP_LAYER, parameters: {format: o.format || "image/png", transparent: false, ...(o.params || {})},
+      tilingScheme: o.geo ? new C.GeographicTilingScheme() : new C.WebMercatorTilingScheme(), maximumLevel: o.max || 19, tileWidth: o.size || 256, tileHeight: o.size || 256});
     const load = p.requestImage.bind(p);
     p.requestImage = (x, y, level, request) => {
       const r = load(x, y, level, request);
-      return r && level >= CLEAN_LEVEL ? Promise.resolve(r).then(img => { try { return stripText(img); } catch { return img; } }) : r;
+      return r && level >= CLEAN_LEVEL && !o.url ? Promise.resolve(r).then(img => { try { return stripText(img); } catch { return img; } }) : r;
     };
     return p;
   }
