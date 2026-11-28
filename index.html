@@ -1959,7 +1959,7 @@ const View3D = (() => {
   }
 
   // ---------- Person auf dem Grundstück: umsehen auf Augenhöhe (wie Street View, im grauen Modell) ----------
-  const AUGE = 1.65, GROESSE = 1.8;
+  const AUGE = 1.8, GROESSE = 1.8; // Augenhöhe wie gewünscht 1,80 m über dem Boden
   function personStart() {
     const me = st; if (!me?.viewer || me.opt.shot || !desktop()) return; // nur PC
     if (me.draw?.on) drawStop();
@@ -2001,7 +2001,11 @@ const View3D = (() => {
     if (!me.eye) me.eyeBack = {destination: cam.position.clone(), orientation: {heading: cam.heading, pitch: cam.pitch, roll: 0}, fov: cam.frustum.fov};
     me.eye = true; me.setzen = false;
     me.figur?.ent.forEach(e => e.show = false); // man ist selbst die Person
-    me.viewer.scene.screenSpaceCameraController.enableInputs = false;
+    const ssc = me.viewer.scene.screenSpaceCameraController;
+    ssc.enableInputs = false;
+    // sonst schiebt Cesium die Kamera mindestens minimumZoomDistance (8 m) über das Gelände
+    if (!me.eyeSsc) me.eyeSsc = {min: ssc.minimumZoomDistance, kol: ssc.enableCollisionDetection};
+    ssc.minimumZoomDistance = 0.5; ssc.enableCollisionDetection = false;
     let heading = cam.heading;
     if (ziel) { const F = C.Transforms.eastNorthUpToFixedFrame(p), L = C.Matrix4.multiplyByPoint(C.Matrix4.inverseTransformation(F, new C.Matrix4()), ziel, new C.Cartesian3()); if (Math.hypot(L.x, L.y) > 1) heading = Math.atan2(L.x, L.y); }
     cam.frustum.fov = C.Math.toRadians(75);
@@ -2017,7 +2021,9 @@ const View3D = (() => {
     const c = me.stand || carto(cam.position), g = me.stand ? c.height : me.viewer.scene.globe.getHeight(c) ?? c.height - AUGE;
     figur(me, C.Cartesian3.fromRadians(c.longitude, c.latitude, g)); // Person bleibt dort stehen, wo man zuletzt war
     me.eye = false;
-    me.viewer.scene.screenSpaceCameraController.enableInputs = true;
+    const ssc = me.viewer.scene.screenSpaceCameraController;
+    ssc.enableInputs = true;
+    if (me.eyeSsc) { ssc.minimumZoomDistance = me.eyeSsc.min; ssc.enableCollisionDetection = me.eyeSsc.kol; me.eyeSsc = null; }
     if (me.eyeBack) { cam.frustum.fov = me.eyeBack.fov; cam.flyTo({destination: me.eyeBack.destination, orientation: me.eyeBack.orientation, duration: 0.9}); }
     cursor(me); api.onPerson?.("steht");
   }
@@ -4177,7 +4183,7 @@ function v3Reset() {
 }
 const PERSON_T = {
   setzen: () => bvDesktop() ? "<b>Person absetzen:</b> Klicken Sie auf den Boden, wo die Person stehen soll." : "<b>Person absetzen:</b> Tippen Sie auf den Boden, wo die Person stehen soll.",
-  auge: () => "<b>Augenhöhe 1,65 m.</b> Linke Maustaste halten und ziehen: umsehen · Punkt am Boden anklicken: 2 m dorthin gehen"
+  auge: () => "<b>Augenhöhe 1,80 m.</b> Linke Maustaste halten und ziehen: umsehen · Punkt am Boden anklicken: 2 m dorthin gehen"
 };
 View3D.onPerson = m => {
   $("v3person").setAttribute("aria-pressed", String(m === "setzen" || m === "auge"));
